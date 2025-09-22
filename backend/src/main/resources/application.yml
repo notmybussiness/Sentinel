@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: sentinel
+  profiles:
+    include: secret
+    active: dev
+# Common settings for all environments
+server:
+  port: 8080
+
+# 비동기 처리 설정
+async:
+  executor:
+    core-pool-size: 10
+    max-pool-size: 50
+    queue-capacity: 200
+    thread-name-prefix: "StockAPI-"
+    keep-alive-seconds: 60
+
+# RestTemplate 설정
+rest:
+  template:
+    connect-timeout: 10000
+    read-timeout: 15000
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.pjsent.sentinel: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 모니터링 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
+  access-token-expiration: 900000  # 15분 (밀리초)
+  refresh-token-expiration: 604800000  # 7일 (밀리초)
+
+# Kakao OAuth2 설정
+kakao:
+  oauth:
+    client-id: ${KAKAO_CLIENT_ID:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/v1/auth/kakao/callback}
+    scope: profile_nickname,account_email,profile_image
+
+# Stock Market API 기본 설정 (API 키 제외)
+stock:
+  market:
+    alphavantage:
+      enabled: ${ALPHAVANTAGE_ENABLED:true}
+      base-url: https://www.alphavantage.co/query
+      rate-limit: 5
+      timeout: 10000
+      
+    finnhub:
+      enabled: ${FINNHUB_ENABLED:true}
+      base-url: https://finnhub.io/api/v1
+      rate-limit: 60
+      timeout: 10000

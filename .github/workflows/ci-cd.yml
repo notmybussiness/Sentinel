@@ -1,0 +1,303 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_BACKEND: sentinel-backend
+  ECR_REPOSITORY_FRONTEND: sentinel-frontend
+
+jobs:
+  # Code Quality & Security
+  quality-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check: [frontend, backend]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Java 17 (Backend)
+      if: matrix.check == 'backend'
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Node.js (Frontend)
+      if: matrix.check == 'frontend'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install Frontend Dependencies
+      if: matrix.check == 'frontend'
+      run: |
+        cd frontend
+        npm ci
+        
+    - name: Frontend Lint & Type Check
+      if: matrix.check == 'frontend'
+      run: |
+        cd frontend
+        npm run lint
+        npm run type-check
+        
+    - name: Frontend Tests
+      if: matrix.check == 'frontend'
+      run: |
+        cd frontend
+        npm run test -- --ci --coverage --watchAll=false
+        
+    - name: Backend Tests
+      if: matrix.check == 'backend'
+      run: |
+        cd backend
+        ./gradlew test jacocoTestReport
+        
+    - name: Security Scan (Snyk)
+      uses: snyk/actions/node@master
+      if: matrix.check == 'frontend'
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high --project-name=sentinel-frontend
+        
+    - name: Upload Coverage Reports
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ${{ matrix.check == 'frontend' && 'frontend/coverage' || 'backend/build/reports/jacoco/test' }}
+
+  # Build Docker Images
+  build:
+    needs: quality-checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    
+    outputs:
+      backend-image-tag: ${{ steps.backend-meta.outputs.tags }}
+      frontend-image-tag: ${{ steps.frontend-meta.outputs.tags }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      
+    - name: Extract metadata (Backend)
+      id: backend-meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          
+    - name: Extract metadata (Frontend)
+      id: frontend-meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_FRONTEND }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          
+    - name: Build and push Backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: ${{ steps.backend-meta.outputs.tags }}
+        labels: ${{ steps.backend-meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Build and push Frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ${{ steps.frontend-meta.outputs.tags }}
+        labels: ${{ steps.frontend-meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Deploy to Staging
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Deploy to EC2 (Staging)
+      run: |
+        aws ssm send-command \
+          --instance-ids ${{ secrets.STAGING_INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --parameters 'commands=["
+            cd /opt/sentinel && 
+            docker-compose -f docker-compose.staging.yml pull &&
+            docker-compose -f docker-compose.staging.yml up -d --force-recreate &&
+            docker system prune -f
+          "]'
+          
+    - name: Wait for deployment
+      run: sleep 60
+      
+    - name: Health check
+      run: |
+        curl -f ${{ secrets.STAGING_URL }}/api/actuator/health || exit 1
+
+  # Integration Tests
+  integration-tests:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install Playwright
+      run: |
+        npm install -D @playwright/test
+        npx playwright install
+        
+    - name: Run E2E tests
+      run: |
+        npx playwright test --config=playwright.config.staging.ts
+      env:
+        BASE_URL: ${{ secrets.STAGING_URL }}
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+
+  # Deploy to Production
+  deploy-production:
+    needs: [build, integration-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: 
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Deploy to EC2 (Production)
+      run: |
+        aws ssm send-command \
+          --instance-ids ${{ secrets.PRODUCTION_INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --parameters 'commands=["
+            cd /opt/sentinel && 
+            docker-compose -f docker-compose.prod.yml pull &&
+            docker-compose -f docker-compose.prod.yml up -d --force-recreate &&
+            docker system prune -f
+          "]'
+          
+    - name: Wait for deployment
+      run: sleep 90
+      
+    - name: Production health check
+      run: |
+        curl -f ${{ secrets.PRODUCTION_URL }}/api/actuator/health || exit 1
+        
+    - name: Notify deployment success
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#deployments'
+        text: 'Production deployment successful! 🚀'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Gemini Code Review
+  code-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v39
+      with:
+        files: |
+          **/*.java
+          **/*.ts
+          **/*.tsx
+          **/*.js
+          **/*.jsx
+          
+    - name: Gemini Code Review
+      if: steps.changed-files.outputs.any_changed == 'true'
+      uses: ./scripts/gemini-review-action
+      with:
+        files: ${{ steps.changed-files.outputs.all_changed_files }}
+        api-key: ${{ secrets.GEMINI_API_KEY }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}

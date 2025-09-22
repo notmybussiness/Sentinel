@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Development)
+  db:
+    image: postgres:15
+    container_name: sentinel-db-dev
+    environment:
+      POSTGRES_DB: sentinel_dev
+      POSTGRES_USER: postgres  
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sentinel-dev-network
+
+  # Redis Cache (Development)
+  redis:
+    image: redis:7-alpine
+    container_name: sentinel-redis-dev
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - sentinel-dev-network
+
+  # Backend API (Development with hot reload)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: sentinel-backend-dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DATABASE_URL=jdbc:postgresql://db:5432/sentinel_dev
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID:-your_dev_client_id}
+      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET:-your_dev_client_secret}
+      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY:-your_dev_api_key}
+      - JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - sentinel-dev-network
+
+  # Frontend (Development with hot reload)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: deps
+    container_name: sentinel-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/package.json:/app/package.json
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - sentinel-dev-network
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  sentinel-dev-network:
+    driver: bridge
