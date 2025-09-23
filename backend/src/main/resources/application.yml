@@ -44,8 +44,8 @@ management:
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
-  access-token-expiration: 900000  # 15분 (밀리초)
-  refresh-token-expiration: 604800000  # 7일 (밀리초)
+  access-token-expiration: 90000000  # 15분 (밀리초)
+  refresh-token-expiration: 60480000000  # 7일 (밀리초)
 
 # Kakao OAuth2 설정
 kakao:
@@ -63,9 +63,11 @@ stock:
       base-url: https://www.alphavantage.co/query
       rate-limit: 5
       timeout: 10000
+      api-key: ${ALPHAVANTAGE_API_KEY}
       
     finnhub:
       enabled: ${FINNHUB_ENABLED:true}
       base-url: https://finnhub.io/api/v1
       rate-limit: 60
       timeout: 10000
+      api-key: ${FINNHUB_API_KEY}
