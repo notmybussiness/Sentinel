@@ -43,7 +43,7 @@ management:
 
 # JWT 설정
 jwt:
-  secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
+  secret: ${JWT_SECRET}
   access-token-expiration: 90000000  # 15분 (밀리초)
   refresh-token-expiration: 60480000000  # 7일 (밀리초)
 

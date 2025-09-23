@@ -54,7 +54,13 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").permitAll()
                 // H2 Console 허용 (개발용)
                 .requestMatchers("/h2-console/**").permitAll()
-                // 모든 요청 허용 (개발용)
+                // 개발용 토큰 생성 API 허용
+                .requestMatchers("/api/dev/**").permitAll()
+                // Market API는 누구나 접근 가능 (공개 시장 데이터)
+                .requestMatchers("/api/v1/market/**").permitAll()
+                // Portfolio API는 인증 필요 (개인 데이터)
+                .requestMatchers("/api/v1/portfolios/**").authenticated()
+                // 기타 모든 요청 허용 (개발용)
                 .anyRequest().permitAll()
             )
             

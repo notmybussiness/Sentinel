@@ -206,15 +206,30 @@ public class ThresholdBasedRebalancingStrategy implements RebalancingStrategy {
                 BigDecimal currentQuantity = holding != null ? holding.getQuantity() : BigDecimal.ZERO;
                 BigDecimal currentPrice = holding != null ? holding.getCurrentPrice() : BigDecimal.ZERO;
 
+                // 현재 가격 검증 및 안전장치
+                if (currentPrice == null || currentPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                    log.warn("리밸런싱 액션 생성 불가: {} - 현재 가격 정보 없음 (가격: {})", symbol, currentPrice);
+                    // HOLD 액션으로 추가하여 사용자에게 정보 제공
+                    actions.add(createHoldActionForMissingPrice(symbol, currentQuantity,
+                        currentAllocation.getOrDefault(symbol, 0.0), targetAllocation.get(symbol), deviation));
+                    continue;
+                }
+
                 // 목표 금액 계산
                 BigDecimal targetAmount = portfolio.getTotalValue()
                         .multiply(BigDecimal.valueOf(targetAllocation.get(symbol)))
                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-                // 목표 수량 계산
-                BigDecimal targetQuantity = currentPrice.compareTo(BigDecimal.ZERO) > 0
-                        ? targetAmount.divide(currentPrice, 6, RoundingMode.HALF_UP)
-                        : BigDecimal.ZERO;
+                // 목표 수량 계산 (안전한 나눗셈)
+                BigDecimal targetQuantity;
+                try {
+                    targetQuantity = targetAmount.divide(currentPrice, 6, RoundingMode.HALF_UP);
+                } catch (ArithmeticException e) {
+                    log.error("목표 수량 계산 실패: {} - 가격: {}, 목표금액: {}", symbol, currentPrice, targetAmount);
+                    actions.add(createHoldActionForCalculationError(symbol, currentQuantity,
+                        currentAllocation.getOrDefault(symbol, 0.0), targetAllocation.get(symbol), deviation));
+                    continue;
+                }
 
                 BigDecimal quantityChange = targetQuantity.subtract(currentQuantity);
 
@@ -307,5 +322,47 @@ public class ThresholdBasedRebalancingStrategy implements RebalancingStrategy {
         }
 
         return notes.toString();
+    }
+
+    /**
+     * 가격 정보 부족으로 인한 HOLD 액션 생성
+     */
+    private RebalancingRecommendationDto.RebalancingActionDto createHoldActionForMissingPrice(
+            String symbol, BigDecimal currentQuantity, double currentWeight,
+            double targetWeight, double deviation) {
+        return RebalancingRecommendationDto.RebalancingActionDto.builder()
+                .actionType(RebalancingRecommendationDto.ActionType.HOLD)
+                .symbol(symbol)
+                .currentQuantity(currentQuantity)
+                .targetQuantity(currentQuantity)
+                .quantityChange(BigDecimal.ZERO)
+                .currentPrice(BigDecimal.ZERO)
+                .estimatedAmount(BigDecimal.ZERO)
+                .currentWeight(currentWeight)
+                .targetWeight(targetWeight)
+                .deviation(deviation)
+                .priority(5) // 낮은 우선순위
+                .build();
+    }
+
+    /**
+     * 계산 오류로 인한 HOLD 액션 생성
+     */
+    private RebalancingRecommendationDto.RebalancingActionDto createHoldActionForCalculationError(
+            String symbol, BigDecimal currentQuantity, double currentWeight,
+            double targetWeight, double deviation) {
+        return RebalancingRecommendationDto.RebalancingActionDto.builder()
+                .actionType(RebalancingRecommendationDto.ActionType.HOLD)
+                .symbol(symbol)
+                .currentQuantity(currentQuantity)
+                .targetQuantity(currentQuantity)
+                .quantityChange(BigDecimal.ZERO)
+                .currentPrice(BigDecimal.ZERO)
+                .estimatedAmount(BigDecimal.ZERO)
+                .currentWeight(currentWeight)
+                .targetWeight(targetWeight)
+                .deviation(deviation)
+                .priority(5) // 낮은 우선순위
+                .build();
     }
 }

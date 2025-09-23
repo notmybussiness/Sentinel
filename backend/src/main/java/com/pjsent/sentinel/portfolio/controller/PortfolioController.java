@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,13 +28,13 @@ public class PortfolioController {
      * 사용자의 모든 포트폴리오 조회
      */
     @GetMapping
-    public ResponseEntity<List<PortfolioDto>> getPortfolios(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<List<PortfolioDto>> getPortfolios(@AuthenticationPrincipal Long userId) {
         log.info("포트폴리오 목록 조회 요청");
         
-        // JWT에서 사용자 ID 추출 (향후 구현)
+        // JWT 사용자 ID 추출 (향후 구현)
         // Long userId = jwtService.getUserIdFromToken(authorization.replace("Bearer ", ""));
-        // 임시로 하드코딩 (실제 구현 시 JWT에서 추출)
-        Long userId = 1L;
+        // 임시로 하드코딩 (실제 구현 시 JWT 추출)
+        // Long userId = 1L;
         
         List<PortfolioDto> portfolios = portfolioService.getPortfoliosByUserId(userId);
         
@@ -46,7 +47,7 @@ public class PortfolioController {
     @GetMapping("/{portfolioId}")
     public ResponseEntity<PortfolioDto> getPortfolio(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal Long userId) {
         log.info("포트폴리오 조회 요청. 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
         
         PortfolioDto portfolio = portfolioService.getPortfolioById(portfolioId, userId);
@@ -59,7 +60,7 @@ public class PortfolioController {
      */
     @PostMapping
     public ResponseEntity<PortfolioDto> createPortfolio(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody CreatePortfolioRequest request) {
         log.info("포트폴리오 생성 요청. 사용자 ID: {}, 이름: {}", userId, request.getName());
         
@@ -74,7 +75,7 @@ public class PortfolioController {
     @PutMapping("/{portfolioId}")
     public ResponseEntity<PortfolioDto> updatePortfolio(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody UpdatePortfolioRequest request) {
         log.info("포트폴리오 수정 요청. 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
         
@@ -89,7 +90,7 @@ public class PortfolioController {
     @DeleteMapping("/{portfolioId}")
     public ResponseEntity<Void> deletePortfolio(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal Long userId) {
         log.info("포트폴리오 삭제 요청. 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
         
         portfolioService.deletePortfolio(portfolioId, userId);
@@ -103,7 +104,7 @@ public class PortfolioController {
     @PostMapping("/{portfolioId}/holdings")
     public ResponseEntity<PortfolioHoldingDto> addHolding(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody AddHoldingRequest request) {
         log.info("보유 종목 추가 요청. 포트폴리오 ID: {}, 심볼: {}", portfolioId, request.getSymbol());
         
@@ -119,7 +120,7 @@ public class PortfolioController {
     public ResponseEntity<PortfolioHoldingDto> updateHolding(
             @PathVariable Long portfolioId,
             @PathVariable Long holdingId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody UpdateHoldingRequest request) {
         log.info("보유 종목 수정 요청. 포트폴리오 ID: {}, 보유 종목 ID: {}", portfolioId, holdingId);
         
@@ -135,7 +136,7 @@ public class PortfolioController {
     public ResponseEntity<Void> deleteHolding(
             @PathVariable Long portfolioId,
             @PathVariable Long holdingId,
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal Long userId) {
         log.info("보유 종목 삭제 요청. 포트폴리오 ID: {}, 보유 종목 ID: {}", portfolioId, holdingId);
         
         portfolioService.deleteHolding(portfolioId, holdingId, userId);
@@ -149,7 +150,7 @@ public class PortfolioController {
     @PostMapping("/{portfolioId}/recalculate")
     public ResponseEntity<PortfolioDto> recalculatePortfolio(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId) {
+            @AuthenticationPrincipal Long userId) {
         log.info("포트폴리오 재계산 요청. 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
         
         PortfolioDto portfolio = portfolioService.recalculatePortfolio(portfolioId, userId);

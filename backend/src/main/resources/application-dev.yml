@@ -1,6 +1,9 @@
 # Development Environment Configuration
 # Use: --spring.profiles.active=dev
 
+server:
+  port: 8081
+
 spring:
   # H2 Database Configuration (for local development)
   datasource:

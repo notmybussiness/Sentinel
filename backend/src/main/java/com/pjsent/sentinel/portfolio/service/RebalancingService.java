@@ -11,9 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 포트폴리오 리밸런싱 서비스
@@ -50,8 +54,14 @@ public class RebalancingService {
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
 
-        // 목표 배분 검증
-        validateTargetAllocation(targetAllocation);
+        // 포트폴리오 데이터 검증
+        validatePortfolioData(portfolio);
+
+        // 포트폴리오 총 가치 자동 계산
+        portfolio.calculateTotalValueFromHoldings();
+
+        // 목표 배분 검증 강화
+        validateTargetAllocationEnhanced(targetAllocation, portfolio);
 
         // 전략 선택
         RebalancingStrategy strategy = strategyFactory.getStrategy(strategyName);
@@ -85,6 +95,9 @@ public class RebalancingService {
 
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
+
+        // 포트폴리오 총 가치 자동 계산
+        portfolio.calculateTotalValueFromHoldings();
 
         double portfolioValue = portfolio.getTotalValue() != null
                 ? portfolio.getTotalValue().doubleValue()
@@ -123,6 +136,9 @@ public class RebalancingService {
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
 
+        // 포트폴리오 총 가치 자동 계산
+        portfolio.calculateTotalValueFromHoldings();
+
         validateTargetAllocation(targetAllocation);
 
         RebalancingStrategy strategy = strategyFactory.getStrategy(strategyName);
@@ -158,6 +174,9 @@ public class RebalancingService {
 
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
+
+        // 포트폴리오 총 가치 자동 계산
+        portfolio.calculateTotalValueFromHoldings();
 
         validateTargetAllocation(targetAllocation);
 
@@ -226,7 +245,7 @@ public class RebalancingService {
     private Map<String, Double> calculateCurrentAllocation(Portfolio portfolio) {
         Map<String, Double> allocation = new HashMap<>();
 
-        if (portfolio.getTotalValue() == null || portfolio.getTotalValue().doubleValue() == 0) {
+        if (portfolio.getTotalValue() == null || portfolio.getTotalValue().compareTo(BigDecimal.ZERO) == 0) {
             return allocation;
         }
 
@@ -240,5 +259,63 @@ public class RebalancingService {
         });
 
         return allocation;
+    }
+
+    /**
+     * 포트폴리오 데이터 검증
+     */
+    private void validatePortfolioData(Portfolio portfolio) {
+        if (portfolio.getHoldings() == null || portfolio.getHoldings().isEmpty()) {
+            throw new IllegalStateException("포트폴리오에 보유 종목이 없습니다. 리밸런싱을 위해서는 최소 1개 이상의 종목이 필요합니다.");
+        }
+
+        // 보유 종목의 기본 데이터 검증
+        for (var holding : portfolio.getHoldings()) {
+            if (holding.getSymbol() == null || holding.getSymbol().trim().isEmpty()) {
+                throw new IllegalStateException("잘못된 종목 심볼이 포함되어 있습니다.");
+            }
+
+            if (holding.getQuantity() == null || holding.getQuantity().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalStateException(
+                    String.format("종목 %s의 보유 수량이 유효하지 않습니다: %s",
+                        holding.getSymbol(), holding.getQuantity()));
+            }
+        }
+
+        log.debug("포트폴리오 데이터 검증 완료 - 보유 종목 수: {}", portfolio.getHoldings().size());
+    }
+
+    /**
+     * 강화된 목표 자산 배분 검증
+     */
+    private void validateTargetAllocationEnhanced(Map<String, Double> targetAllocation, Portfolio portfolio) {
+        // 기본 검증
+        validateTargetAllocation(targetAllocation);
+
+        // 포트폴리오 종목과 목표 배분 종목 일치 여부 확인
+        Set<String> portfolioSymbols = portfolio.getHoldings().stream()
+                .map(holding -> holding.getSymbol())
+                .collect(Collectors.toSet());
+
+        Set<String> targetSymbols = targetAllocation.keySet();
+
+        // 목표 배분에 없는 보유 종목 확인
+        Set<String> missingInTarget = new HashSet<>(portfolioSymbols);
+        missingInTarget.removeAll(targetSymbols);
+
+        // 보유하지 않은 목표 종목 확인
+        Set<String> missingInPortfolio = new HashSet<>(targetSymbols);
+        missingInPortfolio.removeAll(portfolioSymbols);
+
+        if (!missingInTarget.isEmpty()) {
+            log.warn("목표 배분에 포함되지 않은 보유 종목: {}", missingInTarget);
+        }
+
+        if (!missingInPortfolio.isEmpty()) {
+            log.warn("보유하지 않은 목표 종목: {}", missingInPortfolio);
+            // 새로운 종목 매수는 허용하되 경고만 기록
+        }
+
+        log.debug("목표 배분 검증 완료 - 종목 수: {}", targetAllocation.size());
     }
 }

@@ -93,6 +93,25 @@ public class Portfolio {
     }
 
     /**
+     * 보유 종목 기반으로 총 가치 자동 계산
+     */
+    public void calculateTotalValueFromHoldings() {
+        BigDecimal calculatedTotalValue = holdings.stream()
+                .filter(holding -> holding.getMarketValue() != null)
+                .map(PortfolioHolding::getMarketValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal calculatedTotalCost = holdings.stream()
+                .filter(holding -> holding.getTotalCost() != null)
+                .map(PortfolioHolding::getTotalCost)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        this.totalValue = calculatedTotalValue;
+        this.totalCost = calculatedTotalCost;
+        calculateGainLoss();
+    }
+
+    /**
      * 손익 계산
      */
     private void calculateGainLoss() {

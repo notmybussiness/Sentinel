@@ -1,11 +1,13 @@
 package com.pjsent.sentinel.portfolio.controller;
 
+import com.pjsent.sentinel.common.exception.ResourceNotFoundException;
 import com.pjsent.sentinel.portfolio.dto.RebalancingRecommendationDto;
 import com.pjsent.sentinel.portfolio.service.RebalancingService;
 import com.pjsent.sentinel.portfolio.service.rebalancing.RebalancingStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -31,21 +33,48 @@ public class RebalancingController {
      * @return 리밸런싱 추천안
      */
     @PostMapping("/recommendation")
-    public ResponseEntity<RebalancingRecommendationDto> generateRecommendation(
+    public ResponseEntity<?> generateRecommendation(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody RebalancingRequest request) {
 
         log.info("리밸런싱 추천안 생성 API 호출 - 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
 
-        RebalancingRecommendationDto recommendation = rebalancingService.generateRebalancingRecommendation(
-                portfolioId,
-                userId,
-                request.getTargetAllocation(),
-                request.getStrategyName()
-        );
+        try {
+            // 요청 데이터 기본 검증
+            if (request.getTargetAllocation() == null || request.getTargetAllocation().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("목표 자산 배분 정보가 필요합니다."));
+            }
 
-        return ResponseEntity.ok(recommendation);
+            RebalancingRecommendationDto recommendation = rebalancingService.generateRebalancingRecommendation(
+                    portfolioId,
+                    userId,
+                    request.getTargetAllocation(),
+                    request.getStrategyName()
+            );
+
+            return ResponseEntity.ok(recommendation);
+
+        } catch (ResourceNotFoundException e) {
+            log.warn("포트폴리오 없음: 포트폴리오 ID: {}, 사용자 ID: {}, 메시지: {}", portfolioId, userId, e.getMessage());
+            return ResponseEntity.notFound().build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("잘못된 요청 데이터: 포트폴리오 ID: {}, 메시지: {}", portfolioId, e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(createErrorResponse(e.getMessage()));
+
+        } catch (IllegalStateException e) {
+            log.error("시스템 상태 오류: 포트폴리오 ID: {}, 메시지: {}", portfolioId, e.getMessage());
+            return ResponseEntity.status(503)
+                    .body(createServiceUnavailableResponse(e.getMessage()));
+
+        } catch (Exception e) {
+            log.error("예상치 못한 오류 발생: 포트폴리오 ID: {}, 오류: {}", portfolioId, e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body(createInternalErrorResponse());
+        }
     }
 
     /**
@@ -59,7 +88,7 @@ public class RebalancingController {
     @PostMapping("/check")
     public ResponseEntity<Map<String, Object>> checkRebalancingNeed(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody RebalancingCheckRequest request) {
 
         log.info("리밸런싱 필요 여부 확인 API 호출 - 포트폴리오 ID: {}", portfolioId);
@@ -91,7 +120,7 @@ public class RebalancingController {
     @PostMapping("/quick-analysis")
     public ResponseEntity<Map<String, Object>> getQuickAnalysis(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody QuickAnalysisRequest request) {
 
         log.info("빠른 리밸런싱 분석 API 호출 - 포트폴리오 ID: {}", portfolioId);
@@ -117,7 +146,7 @@ public class RebalancingController {
     @GetMapping("/strategy/recommendation")
     public ResponseEntity<Map<String, Object>> getRecommendedStrategy(
             @PathVariable Long portfolioId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) Integer riskTolerance,
             @RequestParam(required = false) Integer investmentHorizon) {
 
@@ -213,5 +242,45 @@ public class RebalancingController {
         public void setTargetAllocation(Map<String, Double> targetAllocation) {
             this.targetAllocation = targetAllocation;
         }
+    }
+
+    // Error Response Helper Methods
+
+    /**
+     * 일반 에러 응답 생성
+     */
+    private Map<String, Object> createErrorResponse(String message) {
+        return Map.of(
+                "error", true,
+                "message", message,
+                "timestamp", java.time.LocalDateTime.now(),
+                "code", "REBALANCING_ERROR"
+        );
+    }
+
+    /**
+     * 서비스 사용 불가 에러 응답 생성
+     */
+    private Map<String, Object> createServiceUnavailableResponse(String message) {
+        return Map.of(
+                "error", true,
+                "message", message,
+                "timestamp", java.time.LocalDateTime.now(),
+                "code", "SERVICE_UNAVAILABLE",
+                "suggestion", "외부 API 연결 문제이거나 포트폴리오 데이터 문제일 수 있습니다. 잠시 후 다시 시도해주세요."
+        );
+    }
+
+    /**
+     * 내부 서버 에러 응답 생성
+     */
+    private Map<String, Object> createInternalErrorResponse() {
+        return Map.of(
+                "error", true,
+                "message", "내부 서버 오류가 발생했습니다.",
+                "timestamp", java.time.LocalDateTime.now(),
+                "code", "INTERNAL_SERVER_ERROR",
+                "suggestion", "문제가 지속되면 개발팀에 문의해주세요."
+        );
     }
 }
