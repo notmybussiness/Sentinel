@@ -24,7 +24,11 @@ import com.pjsent.sentinel.market.dto.StockPriceDto;
 @TestPropertySource(properties = {
     "stock.market.alphavantage.api-key=test-api-key",
     "stock.market.alphavantage.base-url=https://www.alphavantage.co/query",
-    "stock.market.alphavantage.enabled=true"
+    "stock.market.alphavantage.enabled=true",
+    "jwt.secret=test-jwt-secret-for-integration-test",
+    "kakao.oauth.client-id=test-integration-client-id",
+    "kakao.oauth.client-secret=test-integration-client-secret",
+    "kakao.oauth.redirect-uri=http://localhost:8080/test/callback"
 })
 @DisplayName("AlphaVantageProvider 통합 테스트")
 class AlphaVantageProviderIntegrationTest {

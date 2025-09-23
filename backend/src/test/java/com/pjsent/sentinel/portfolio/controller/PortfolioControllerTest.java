@@ -3,6 +3,8 @@ package com.pjsent.sentinel.portfolio.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pjsent.sentinel.portfolio.dto.*;
 import com.pjsent.sentinel.portfolio.service.PortfolioService;
+import com.pjsent.sentinel.user.service.JwtService;
+import com.pjsent.sentinel.user.service.KakaoOAuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -26,6 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * PortfolioController 테스트
  */
 @WebMvcTest(PortfolioController.class)
+@TestPropertySource(properties = {
+    "jwt.secret=test-jwt-secret-for-controller-test",
+    "kakao.oauth.client-id=test-controller-client-id",
+    "kakao.oauth.client-secret=test-controller-client-secret",
+    "kakao.oauth.redirect-uri=http://localhost:8080/test/callback",
+    "stock.market.alphavantage.api-key=test-controller-key",
+    "stock.market.finnhub.api-key=test-controller-key"
+})
 class PortfolioControllerTest {
 
     @Autowired
@@ -33,6 +44,12 @@ class PortfolioControllerTest {
 
     @MockBean
     private PortfolioService portfolioService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private KakaoOAuthService kakaoOAuthService;
 
     @Autowired
     private ObjectMapper objectMapper;

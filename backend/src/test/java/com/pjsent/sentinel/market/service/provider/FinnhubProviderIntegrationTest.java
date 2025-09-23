@@ -23,7 +23,11 @@ import com.pjsent.sentinel.market.dto.StockPriceDto;
 @TestPropertySource(properties = {
     "stock.market.finnhub.api-key=test-api-key",
     "stock.market.finnhub.base-url=https://finnhub.io/api/v1",
-    "stock.market.finnhub.enabled=true"
+    "stock.market.finnhub.enabled=true",
+    "jwt.secret=test-jwt-secret-for-integration-test",
+    "kakao.oauth.client-id=test-integration-client-id",
+    "kakao.oauth.client-secret=test-integration-client-secret",
+    "kakao.oauth.redirect-uri=http://localhost:8080/test/callback"
 })
 @DisplayName("FinnhubProvider 통합 테스트")
 class FinnhubProviderIntegrationTest {
