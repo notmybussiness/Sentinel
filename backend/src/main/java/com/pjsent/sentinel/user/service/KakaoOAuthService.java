@@ -25,13 +25,13 @@ public class KakaoOAuthService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${kakao.client-id}")
+    @Value("${kakao.oauth.client-id}")
     private String clientId;
 
-    @Value("${kakao.client-secret}")
+    @Value("${kakao.oauth.client-secret}")
     private String clientSecret;
 
-    @Value("${kakao.redirect-uri}")
+    @Value("${kakao.oauth.redirect-uri}")
     private String redirectUri;
 
     private static final String KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize";

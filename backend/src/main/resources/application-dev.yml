@@ -25,10 +25,13 @@ spring:
       hibernate:
         format_sql: true
 
-  # Disable Spring Security for development
+  # Disable Spring Security and Redis for development
   autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-# 개발환경용 Redis (선택사항 - 로컬에서 Redis 없이도 동작하도록)
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+  # 개발환경용 Redis (선택사항 - 로컬에서 Redis 없이도 동작하도록)
   cache:
     type: simple  # Redis 대신 간단한 인메모리 캐시 사용
 
