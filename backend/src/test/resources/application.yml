@@ -1,0 +1,55 @@
+# Test Configuration
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  # Disable security for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+# Test API keys
+stock:
+  market:
+    alphavantage:
+      api-key: "TEST_KEY"
+      enabled: true
+      base-url: https://www.alphavantage.co/query
+      rate-limit: 5
+      timeout: 10000
+    finnhub:
+      api-key: "TEST_KEY"
+      enabled: true
+      base-url: https://finnhub.io/api/v1
+      rate-limit: 60
+      timeout: 10000
+
+kakao:
+  client-id: "TEST_CLIENT_ID"
+  client-secret: "TEST_CLIENT_SECRET"
+  redirect-uri: "http://localhost:8080/api/v1/auth/kakao/callback"
+
+jwt:
+  secret: "test-secret-key-for-testing-environment-only"
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+ai:
+  gemini:
+    api-key: "TEST_KEY"
+
+# Disable logging for faster tests
+logging:
+  level:
+    root: WARN
+    com.pjsent.sentinel: INFO
