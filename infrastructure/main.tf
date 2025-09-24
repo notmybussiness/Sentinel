@@ -13,8 +13,8 @@ terraform {
   # backend "s3" {
   #   bucket = "sentinel-terraform-state"
   #   key    = "prod/terraform.tfstate"
-  #   region = "us-east-1"
-  #   
+  #   region = "ap-northeast-2"
+  #
   #   # State locking
   #   dynamodb_table = "sentinel-terraform-locks"
   #   encrypt        = true

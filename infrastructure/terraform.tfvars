@@ -2,7 +2,7 @@
 # Copy this file to terraform.tfvars and customize the values
 
 # Basic Configuration
-aws_region   = "us-east-1"
+aws_region   = "ap-northeast-2"
 environment  = "prod"
 project_name = "sentinel"
 
