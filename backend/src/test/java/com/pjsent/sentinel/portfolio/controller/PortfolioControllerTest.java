@@ -1,6 +1,7 @@
 package com.pjsent.sentinel.portfolio.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pjsent.sentinel.config.TestSecurityConfig;
 import com.pjsent.sentinel.portfolio.dto.*;
 import com.pjsent.sentinel.portfolio.service.PortfolioService;
 import com.pjsent.sentinel.user.service.JwtService;
@@ -11,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * PortfolioController 테스트
  */
 @WebMvcTest(PortfolioController.class)
+@WithMockUser
+@Import(TestSecurityConfig.class)
 @TestPropertySource(properties = {
     "jwt.secret=test-jwt-secret-for-controller-test",
     "kakao.oauth.client-id=test-controller-client-id",

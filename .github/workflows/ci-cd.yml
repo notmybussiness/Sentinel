@@ -36,11 +36,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Java 17 (Backend)
+    - name: Setup Java 21 (Backend)
       if: matrix.check == 'backend'
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         
     - name: Setup Node.js (Frontend)

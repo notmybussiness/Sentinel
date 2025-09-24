@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 COPY gradlew .
@@ -13,7 +13,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew bootJar --no-daemon
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
