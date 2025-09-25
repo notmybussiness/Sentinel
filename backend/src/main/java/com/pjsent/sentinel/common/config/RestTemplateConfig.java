@@ -2,6 +2,7 @@ package com.pjsent.sentinel.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
@@ -10,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 public class RestTemplateConfig {
     
     @Bean
+    @Primary
     public RestTemplate restTemplate() {
         // RestTemplate 설정
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

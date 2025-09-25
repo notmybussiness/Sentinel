@@ -46,8 +46,8 @@ public class YahooFinanceConfig {
     public RestTemplate yahooRestTemplate() {
         // 커넥션 팩토리 설정
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10000);  // 10초로 증가
-        factory.setReadTimeout(15000);     // 15초로 증가
+        factory.setConnectTimeout(2500);
+        factory.setReadTimeout(5000);
 
         RestTemplate restTemplate = new RestTemplate(factory);
 

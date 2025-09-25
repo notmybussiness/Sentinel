@@ -3,6 +3,7 @@ package com.pjsent.sentinel.market.service.provider;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 public class FinnhubProvider implements MarketDataProvider {
     
     private final RestTemplate restTemplate;
-    
+
+
     @Value("${stock.market.finnhub.api-key}")
     private String apiKey;
     

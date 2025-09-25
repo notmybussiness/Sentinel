@@ -7,6 +7,7 @@ import { PortfolioCard } from '@/components/dashboard/PortfolioCard'
 import { StockPriceCard } from '@/components/dashboard/StockPriceCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import ApiIntegrationTest from '@/components/test/ApiIntegrationTest'
 
 const portfolioData = [
   {
@@ -226,6 +227,16 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+        </motion.section>
+
+        {/* API Integration Test Section */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="mb-12"
+        >
+          <ApiIntegrationTest />
         </motion.section>
       </main>
     </div>

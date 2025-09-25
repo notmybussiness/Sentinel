@@ -1,9 +1,9 @@
 package com.pjsent.sentinel.market.service.provider;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AlphaVantageProvider implements MarketDataProvider {
     
     private final RestTemplate restTemplate;
-    
+
     @Value("${stock.market.alphavantage.api-key}")
     private String apiKey;
     
@@ -33,7 +33,6 @@ public class AlphaVantageProvider implements MarketDataProvider {
     
     private static final String QUOTE_FUNCTION = "GLOBAL_QUOTE";
 
-    
     @Override
     public StockPriceDto getMarketData(String symbol) {
         if (!isAvailable()) {
