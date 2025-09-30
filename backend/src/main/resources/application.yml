@@ -3,10 +3,11 @@ spring:
     name: sentinel
   profiles:
     include: secret
-    active: dev
-# Common settings for all environments
+    active: local
+
+# 서버 포트 설정 (PortConfig가 자동 감지)
 server:
-  port: 8081
+  port: 8080
 
 # 비동기 처리 설정
 async:
@@ -41,21 +42,21 @@ management:
     health:
       show-details: always
 
-# JWT 설정
+# JWT 설정 (secret에서 실제 값 주입)
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: 90000000  # 15분 (밀리초)
-  refresh-token-expiration: 60480000000  # 7일 (밀리초)
+  access-token-expiration: 900000    # 15분 (밀리초)
+  refresh-token-expiration: 604800000 # 7일 (밀리초)
 
-# Kakao OAuth2 설정
+# Kakao OAuth2 설정 (secret에서 실제 값 주입)
 kakao:
   oauth:
     client-id: ${KAKAO_CLIENT_ID:}
     client-secret: ${KAKAO_CLIENT_SECRET:}
-    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8081/api/v1/auth/kakao/callback}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/v1/auth/kakao/callback}
     scope: profile_nickname,account_email,profile_image
 
-# Stock Market API 기본 설정 (API 키 제외)
+# Stock Market API 기본 설정 (API 키는 secret에서 주입)
 stock:
   market:
     alphavantage:
@@ -64,10 +65,14 @@ stock:
       rate-limit: 5
       timeout: 10000
       api-key: ${ALPHAVANTAGE_API_KEY}
-      
+
     finnhub:
       enabled: ${FINNHUB_ENABLED:true}
       base-url: https://finnhub.io/api/v1
       rate-limit: 60
       timeout: 10000
       api-key: ${FINNHUB_API_KEY}
+
+    gemini:
+      enabled: ${GEMINI_ENABLED:true}
+      api-key: ${GEMINI_API_KEY}

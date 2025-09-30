@@ -32,6 +32,10 @@ public class Portfolio {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private com.pjsent.sentinel.user.entity.User user;
+
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 

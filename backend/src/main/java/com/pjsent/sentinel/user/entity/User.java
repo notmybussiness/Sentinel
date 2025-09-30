@@ -53,6 +53,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UserSession> sessions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<com.pjsent.sentinel.portfolio.entity.Portfolio> portfolios = new ArrayList<>();
+
     @Builder
     public User(String kakaoId, String email, String name, String profileImageUrl) {
         this.kakaoId = kakaoId;

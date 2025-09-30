@@ -68,3 +68,66 @@ node_modules
 # AI Development Tools
 .claude/
 .cursor/
+CLAUDE.md
+
+# Configuration backups and temporary files
+*.backup
+*.bak
+*.tmp
+*-backup.*
+*-bak.*
+
+# Spring Boot configuration secrets
+**/application-dev.yml.backup
+**/application-prod.yml
+**/application-local.yml
+**/application-staging.yml
+
+# Database dumps and migrations
+*.sql.backup
+*.dump
+migrations/
+
+# IDE and editor settings
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary deployment files
+docker-compose.override.yml
+.env.example
+terraform.tfvars
+*.tfstate
+*.tfstate.backup
+
+# Build and packaging artifacts
+*.jar
+*.war
+*.ear
+*.nar
+dist/
+target/
+build/
+
+# Log and debug files
+*.log.*
+debug.log
+error.log
+application.log
+
+# Cache and temporary directories
+.cache/
+tmp/
+temp/
