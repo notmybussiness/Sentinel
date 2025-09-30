@@ -66,9 +66,7 @@ logs/
 node_modules
 
 # AI Development Tools
-.claude/
 .cursor/
-CLAUDE.md
 
 # Configuration backups and temporary files
 *.backup
