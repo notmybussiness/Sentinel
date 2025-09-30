@@ -1,363 +1,554 @@
-# 📋 Sentinel Project Plan & Progress
+# 📋 Sentinel 프로젝트 계획 및 진행 상황
 
-> **Purpose**: Track project goals, progress, and next steps for continuous development across sessions
+> **목적**: 세션 간 연속성을 위한 프로젝트 목표, 진행 상황, 다음 단계 추적
 >
-> **Last Updated**: 2025-10-01
-> **Current Phase**: Frontend Complete → Backend Integration
+> **최종 업데이트**: 2025-10-01
+> **현재 단계**: 프론트엔드 완료 → 백엔드 통합
 
 ---
 
-## 🎯 Project Vision
+## 🎯 프로젝트 비전
 
-**Goal**: Create a comprehensive portfolio management platform with backtesting, rebalancing recommendations, and real-time market data.
+**목표**: 백테스팅, 리밸런싱 추천, 실시간 시장 데이터를 제공하는 종합 포트폴리오 관리 플랫폼 구축
 
-**Target Users**: Individual investors who want data-driven investment strategies
+**타겟 사용자**: 데이터 기반 투자 전략을 원하는 개인 투자자
 
-**Core Value**: Simplify portfolio management through automation and intelligent recommendations
-
----
-
-## 📊 Current Status Overview
-
-### Completion Summary
-- **Frontend**: ✅ 100% Complete
-- **Backend**: 🟡 60% Complete (Auth + Portfolio CRUD done)
-- **Integration**: 🔴 10% (Dev mode only)
-- **Testing**: 🔴 5%
-- **Deployment**: 🔴 0%
-
-### What's Working Now
-1. ✅ Complete frontend UI with 20+ components
-2. ✅ Kakao OAuth authentication flow
-3. ✅ Portfolio CRUD operations (backend)
-4. ✅ JWT token management
-5. ✅ Dev mode for frontend testing
-
-### What's Missing
-1. ❌ Market data API integration
-2. ❌ Backtesting engine
-3. ❌ Rebalancing algorithm
-4. ❌ Frontend-Backend connection (except auth)
-5. ❌ Real-time data updates
+**핵심 가치**: 자동화와 지능형 추천을 통한 포트폴리오 관리 간소화
 
 ---
 
-## 🗓️ Development Roadmap
+## 📊 현재 상태 요약
 
-### Phase 1: Foundation (✅ COMPLETE)
-**Timeline**: Week 1-2
-**Status**: 100% Complete (2025-09-30)
+### 완료 현황
+- **프론트엔드**: ✅ 100% 완료
+- **백엔드**: 🟡 60% 완료 (인증 + 포트폴리오 CRUD 완료)
+- **통합**: 🔴 10% (개발 모드만)
+- **테스팅**: 🔴 5%
+- **배포**: 🔴 0%
 
-- [x] Backend architecture setup
-- [x] Frontend Next.js 14 setup
-- [x] Authentication system (Kakao OAuth + JWT)
-- [x] UI component library (20+ components)
-- [x] Design system (Glassmorphism dark theme)
-- [x] Portfolio CRUD backend
-- [x] Mock data for frontend development
+### 현재 작동하는 기능
+1. ✅ 20개 이상의 컴포넌트로 구성된 완전한 프론트엔드 UI
+2. ✅ Kakao OAuth 인증 플로우
+3. ✅ 포트폴리오 CRUD 작업 (백엔드)
+4. ✅ JWT 토큰 관리
+5. ✅ 프론트엔드 테스트를 위한 개발 모드
+6. ✅ Playwright E2E 테스트 (로그인 기능 4/4 통과)
 
-**Completion Date**: 2025-10-01
+### 미완성 기능
+1. ❌ 시장 데이터 API 통합
+2. ❌ 백테스팅 엔진
+3. ❌ 리밸런싱 알고리즘
+4. ❌ 프론트엔드-백엔드 연결 (인증 제외)
+5. ❌ 실시간 데이터 업데이트
 
 ---
 
-### Phase 2: Market Data Integration (🚧 IN PROGRESS)
-**Timeline**: Week 3
-**Status**: 20% Complete
-**Priority**: HIGH
+## 🗓️ 개발 로드맵
 
-#### Backend Tasks
-- [ ] Complete `MarketDataService` implementation
+### Phase 1: 기초 구축 (✅ 완료)
+**일정**: 1-2주차
+**상태**: 100% 완료 (2025-09-30)
+
+- [x] 백엔드 아키텍처 설정
+- [x] 프론트엔드 Next.js 14 설정
+- [x] 인증 시스템 (Kakao OAuth + JWT)
+- [x] UI 컴포넌트 라이브러리 (20개 이상)
+- [x] 디자인 시스템 (Glassmorphism 다크 테마)
+- [x] 포트폴리오 CRUD 백엔드
+- [x] 프론트엔드 개발용 Mock 데이터
+- [x] Playwright E2E 테스트 설정 및 로그인 테스트
+
+**완료일**: 2025-10-01
+
+---
+
+### Phase 2: 시장 데이터 통합 (🚧 진행 중)
+**일정**: 3주차
+**상태**: 20% 완료
+**우선순위**: 높음
+
+#### 백엔드 작업
+- [ ] `MarketDataService` 구현 완료
   - [x] AlphaVantage provider
   - [x] Finnhub provider
-  - [ ] Circuit breaker implementation
-  - [ ] Redis caching layer
-- [ ] Implement market data endpoints
-  - [ ] `GET /api/v1/market/price/{symbol}`
-  - [ ] `POST /api/v1/market/prices` (batch)
-  - [ ] `GET /api/v1/market/indices`
-  - [ ] `GET /api/v1/market/search`
-- [ ] Add rate limiting
-- [ ] Error handling and logging
+  - [ ] Circuit breaker 구현
+  - [ ] Redis 캐싱 레이어
+- [ ] 시장 데이터 엔드포인트 구현
+  - [ ] `GET /api/v1/market/price/{symbol}` - 개별 종목 가격
+  - [ ] `POST /api/v1/market/prices` - 배치 가격 조회
+  - [ ] `GET /api/v1/market/indices` - 주요 지수
+  - [ ] `GET /api/v1/market/search` - 종목 검색
+- [ ] Rate limiting 추가
+- [ ] 에러 처리 및 로깅
 
-#### Frontend Tasks
-- [ ] Create market data API client (`lib/api/market.ts`)
-- [ ] Replace mock data with API calls
-  - [ ] Homepage market indices
-  - [ ] Portfolio holdings real-time prices
-  - [ ] Market page data
-- [ ] Add loading states
-- [ ] Add error handling UI
+#### 프론트엔드 작업
+- [ ] 시장 데이터 API 클라이언트 생성 (`lib/api/market.ts`)
+- [ ] Mock 데이터를 API 호출로 교체
+  - [ ] 홈페이지 시장 지수
+  - [ ] 포트폴리오 Holdings 실시간 가격
+  - [ ] Market 페이지 데이터
+- [ ] 로딩 상태 추가
+- [ ] 에러 처리 UI 추가
 
-#### Testing
-- [ ] Unit tests for providers
-- [ ] Integration tests for endpoints
-- [ ] Frontend E2E tests with real data
-
-**Next Step**: Implement MarketDataController and test with Postman
+#### 테스팅
+- [ ] Provider 유닛 테스트
+- [ ] 엔드포인트 통합 테스트
+- [ ] 실제 데이터로 프론트엔드 E2E 테스트
 
 ---
 
-### Phase 3: Portfolio Integration (🔴 NOT STARTED)
-**Timeline**: Week 4
-**Status**: 0% Complete
-**Priority**: HIGH
+## 📅 2025년 10월 1일 작업 계획
 
-#### Tasks
-- [ ] Connect frontend portfolio pages to backend
-  - [ ] List portfolios API integration
-  - [ ] Portfolio detail API integration
-  - [ ] Create portfolio functionality
-  - [ ] Update portfolio functionality
-  - [ ] Delete portfolio confirmation
-- [ ] Holdings management integration
-  - [ ] Add holding with symbol search
-  - [ ] Update holding quantities
-  - [ ] Delete holdings
-  - [ ] Real-time value updates
-- [ ] Auto-refresh portfolio values
-  - [ ] Implement polling or WebSocket
-  - [ ] Update UI without page refresh
-- [ ] Error handling and validation
+### 🔴 Priority 1: MarketDataController 구현 (2-3일)
 
-**Acceptance Criteria**:
-- User can create and manage real portfolios
-- Holdings reflect real-time market prices
-- All CRUD operations work end-to-end
+#### 1.1 Controller 클래스 생성
+**파일**: `backend/src/main/java/com/pjsent/sentinel/market/controller/MarketDataController.java`
+
+**구현 엔드포인트**:
+```java
+GET  /api/v1/market/price/{symbol}      // 개별 종목 가격
+POST /api/v1/market/prices              // 배치 가격 조회
+GET  /api/v1/market/indices             // 주요 지수 (S&P, NASDAQ, DOW, KOSPI)
+GET  /api/v1/market/search              // 종목 검색
+```
+
+**참고 문서**:
+- `.claude/backend/API_MARKET.md` - API 스펙 상세
+- `PortfolioController.java` - 구현 참고 예시
+
+#### 1.2 Circuit Breaker 설정
+**파일**: `backend/src/main/resources/application.yml`
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      alphavantage:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+      finnhub:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+```
+
+#### 1.3 Redis 캐싱 레이어
+**MarketDataService에 캐싱 적용**:
+```java
+@Cacheable(value = "stock-prices", key = "#symbol", unless = "#result == null")
+public StockPrice getPrice(String symbol) {
+    // 기존 로직
+}
+
+@CacheEvict(value = "stock-prices", allEntries = true)
+@Scheduled(fixedRate = 900000) // 15분마다 캐시 삭제
+public void clearCache() {}
+```
+
+#### 1.4 테스트
+- [ ] Swagger UI 수동 테스트 (http://localhost:8080/swagger-ui.html)
+- [ ] Postman으로 각 엔드포인트 확인
+- [ ] Unit 테스트 작성
 
 ---
 
-### Phase 4: Backtesting Engine (🔴 NOT STARTED)
-**Timeline**: Week 5-6
-**Status**: 0% Complete
-**Priority**: MEDIUM
+### 🟡 Priority 2: 프론트엔드 Market API Client (1-2일)
 
-#### Backend Tasks
-- [ ] Design backtesting data model
-  - [ ] `Backtest` entity
-  - [ ] `BacktestResult` entity
-  - [ ] Strategy definitions
-- [ ] Implement historical data fetching
-  - [ ] AlphaVantage historical API
-  - [ ] Data normalization and storage
-- [ ] Create backtesting engine
-  - [ ] Portfolio rebalancing simulation
-  - [ ] Performance calculation
-  - [ ] Risk metrics (Sharpe, Sortino, Max Drawdown)
-- [ ] Implement backtesting endpoints
+#### 2.1 API Client 파일 생성
+**파일**: `frontend/lib/api/market.ts`
+
+```typescript
+export interface MarketIndex {
+  name: string;
+  symbol: string;
+  value: number;
+  change: number;
+  changePercent: number;
+}
+
+export interface StockPrice {
+  symbol: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  timestamp: string;
+}
+
+export interface SearchResult {
+  symbol: string;
+  name: string;
+  exchange: string;
+  type: string;
+}
+
+// API 함수들
+export async function getMarketIndices(): Promise<MarketIndex[]>
+export async function getStockPrice(symbol: string): Promise<StockPrice>
+export async function getBatchPrices(symbols: string[]): Promise<StockPrice[]>
+export async function searchSymbol(query: string): Promise<SearchResult[]>
+```
+
+#### 2.2 Mock 데이터 교체
+**교체 대상 파일**:
+1. `frontend/app/page.tsx` - 홈페이지 시장 지수 섹션
+2. `frontend/app/portfolios/[id]/page.tsx` - 포트폴리오 상세 Holdings
+3. `frontend/app/market/page.tsx` - 시장 데이터 페이지
+
+**교체 패턴**:
+```typescript
+// 기존 (Mock)
+const indices = mockMarketIndices;
+
+// 변경 (API)
+const { data: indices, isLoading, error } = useQuery({
+  queryKey: ['market-indices'],
+  queryFn: getMarketIndices,
+  refetchInterval: 60000, // 1분마다 갱신
+});
+```
+
+#### 2.3 로딩 상태 및 에러 UI
+- [ ] Skeleton loader 컴포넌트 추가
+- [ ] Error boundary 설정
+- [ ] Retry 버튼 UI
+
+---
+
+### 🟢 Priority 3: Portfolio API 완전 연동 (1-2일)
+
+#### 3.1 Portfolio API Client 실제 연동
+**파일**: `frontend/lib/api/portfolio.ts`
+
+**현재 상태**: Mock 데이터 사용 중
+**목표**: 백엔드 API 완전 연동
+
+```typescript
+// 이미 백엔드에 구현된 엔드포인트:
+GET    /api/v1/portfolios                    // 목록 조회
+GET    /api/v1/portfolios/{id}               // 상세 조회
+POST   /api/v1/portfolios                    // 생성
+PUT    /api/v1/portfolios/{id}               // 수정
+DELETE /api/v1/portfolios/{id}               // 삭제
+POST   /api/v1/portfolios/{id}/holdings      // Holding 추가
+PUT    /api/v1/portfolios/{id}/holdings/{id} // Holding 수정
+DELETE /api/v1/portfolios/{id}/holdings/{id} // Holding 삭제
+```
+
+#### 3.2 Holdings 관리 UI 개선
+- [ ] Holdings 추가 Modal UI
+- [ ] 종목 검색 기능 (Market API 연동)
+- [ ] 수량/가격 입력 폼
+- [ ] 실시간 가격 업데이트 (Market API 연동 후)
+
+---
+
+## 📈 작업 순서 (이번 주 권장)
+
+**Day 1-2**:
+- MarketDataController.java 구현
+- Circuit Breaker 설정
+- Swagger/Postman 테스트
+
+**Day 2-3**:
+- Redis 캐싱 레이어 추가
+- Rate limiting 구현
+- Unit 테스트 작성
+
+**Day 3-4**:
+- 프론트엔드 `lib/api/market.ts` 생성
+- API 함수 구현
+
+**Day 4-5**:
+- 홈페이지 Mock 데이터 → 실제 API 교체
+- 로딩/에러 상태 UI 추가
+
+**Day 5-6**:
+- Portfolio 페이지 실시간 가격 연동
+- Holdings 관리 UI 개선
+
+**Day 6-7**:
+- 통합 테스트
+- 버그 수정
+- PLAN.md 및 CURRENT_STATE.md 업데이트
+
+---
+
+### Phase 3: 포트폴리오 통합 (🔴 미시작)
+**일정**: 4주차
+**상태**: 0% 완료
+**우선순위**: 높음
+
+#### 작업 내용
+- [ ] 프론트엔드 포트폴리오 페이지와 백엔드 연결
+  - [ ] 포트폴리오 목록 API 통합
+  - [ ] 포트폴리오 상세 API 통합
+  - [ ] 포트폴리오 생성 기능
+  - [ ] 포트폴리오 수정 기능
+  - [ ] 포트폴리오 삭제 확인
+- [ ] Holdings 관리 통합
+  - [ ] 종목 검색으로 Holding 추가
+  - [ ] Holding 수량 업데이트
+  - [ ] Holding 삭제
+  - [ ] 실시간 가치 업데이트
+- [ ] 포트폴리오 자동 새로고침
+  - [ ] 폴링 또는 WebSocket 구현
+  - [ ] 페이지 새로고침 없이 UI 업데이트
+- [ ] 에러 처리 및 검증
+
+**완료 기준**:
+- 사용자가 실제 포트폴리오 생성 및 관리 가능
+- Holdings에 실시간 시장 가격 반영
+- 모든 CRUD 작업 End-to-End 작동
+
+---
+
+### Phase 4: 백테스팅 엔진 (🔴 미시작)
+**일정**: 5-6주차
+**상태**: 0% 완료
+**우선순위**: 중간
+
+#### 백엔드 작업
+- [ ] 백테스팅 데이터 모델 설계
+  - [ ] `Backtest` 엔티티
+  - [ ] `BacktestResult` 엔티티
+  - [ ] 전략 정의
+- [ ] 과거 데이터 fetching 구현
+  - [ ] AlphaVantage 과거 데이터 API
+  - [ ] 데이터 정규화 및 저장
+- [ ] 백테스팅 엔진 생성
+  - [ ] 포트폴리오 리밸런싱 시뮬레이션
+  - [ ] 성과 계산
+  - [ ] 리스크 지표 (Sharpe, Sortino, Max Drawdown)
+- [ ] 백테스팅 엔드포인트 구현
   - [ ] `POST /api/v1/backtest/run`
   - [ ] `GET /api/v1/backtest/results/{id}`
   - [ ] `GET /api/v1/backtest/history`
 
-#### Frontend Tasks
-- [ ] Complete lab page implementation
-  - [ ] Configuration form validation
-  - [ ] Strategy selection UI
-  - [ ] Results visualization
-- [ ] Create results components
-  - [ ] Performance chart (Recharts/Chart.js)
-  - [ ] Metrics table
-  - [ ] Comparison with benchmarks
-- [ ] Export results functionality
+#### 프론트엔드 작업
+- [ ] Lab 페이지 구현 완성
+  - [ ] 설정 폼 검증
+  - [ ] 전략 선택 UI
+  - [ ] 결과 시각화
+- [ ] 결과 컴포넌트 생성
+  - [ ] 성과 차트 (Recharts/Chart.js)
+  - [ ] 지표 테이블
+  - [ ] 벤치마크 비교
+- [ ] 결과 내보내기 기능
 
-**Acceptance Criteria**:
-- User can run backtests on portfolios
-- Results show historical performance
-- Multiple strategies can be compared
-
----
-
-### Phase 5: Rebalancing Algorithm (🔴 NOT STARTED)
-**Timeline**: Week 7
-**Status**: 0% Complete
-**Priority**: MEDIUM
-
-#### Tasks
-- [ ] Implement rebalancing strategies
-  - [ ] Threshold-based (5% deviation)
-  - [ ] Time-based (monthly/quarterly)
-  - [ ] Hybrid approach
-- [ ] Create recommendation engine
-  - [ ] Calculate target vs current allocation
-  - [ ] Generate BUY/SELL/HOLD recommendations
-  - [ ] Optimize for tax efficiency
-- [ ] Integrate with frontend
-  - [ ] Connect RebalancingModal to API
-  - [ ] Show real-time recommendations
-  - [ ] One-click rebalancing execution (future)
-
-**Acceptance Criteria**:
-- Rebalancing recommendations are accurate
-- UI clearly shows required actions
-- Multiple strategies available
+**완료 기준**:
+- 사용자가 포트폴리오에 대해 백테스트 실행 가능
+- 결과에 과거 성과 표시
+- 여러 전략 비교 가능
 
 ---
 
-### Phase 6: Testing & Quality (🔴 NOT STARTED)
-**Timeline**: Week 8
-**Status**: 0% Complete
-**Priority**: MEDIUM
+### Phase 5: 리밸런싱 알고리즘 (🔴 미시작)
+**일정**: 7주차
+**상태**: 0% 완료
+**우선순위**: 중간
 
-#### Tasks
-- [ ] Backend testing
-  - [ ] Unit tests (>80% coverage)
-  - [ ] Integration tests for all endpoints
-  - [ ] Load testing (JMeter)
-- [ ] Frontend testing
-  - [ ] Component unit tests (Jest)
-  - [ ] E2E tests (Playwright)
-  - [ ] Cross-browser testing
-- [ ] Performance optimization
-  - [ ] API response time (<200ms)
-  - [ ] Frontend load time (<3s)
-  - [ ] Bundle size optimization
-- [ ] Security audit
-  - [ ] JWT security review
-  - [ ] SQL injection prevention
-  - [ ] XSS protection
-  - [ ] CORS configuration
+#### 작업 내용
+- [ ] 리밸런싱 전략 구현
+  - [ ] 임계값 기반 (5% 편차)
+  - [ ] 시간 기반 (월간/분기별)
+  - [ ] 하이브리드 접근
+- [ ] 추천 엔진 생성
+  - [ ] 목표 대비 현재 배분 계산
+  - [ ] BUY/SELL/HOLD 추천 생성
+  - [ ] 세금 효율성 최적화
+- [ ] 프론트엔드 통합
+  - [ ] RebalancingModal을 API에 연결
+  - [ ] 실시간 추천 표시
+  - [ ] 원클릭 리밸런싱 실행 (향후)
 
----
-
-### Phase 7: Deployment (🔴 NOT STARTED)
-**Timeline**: Week 9
-**Status**: 0% Complete
-**Priority**: LOW
-
-#### Tasks
-- [ ] Setup production environment
-  - [ ] AWS account configuration
-  - [ ] RDS PostgreSQL setup
-  - [ ] ElastiCache Redis setup
-  - [ ] EC2 or ECS configuration
-- [ ] Configure CI/CD
-  - [ ] GitHub Actions workflow
-  - [ ] Automated testing
-  - [ ] Automated deployment
-- [ ] Domain and SSL
-  - [ ] Purchase domain name
-  - [ ] Configure DNS
-  - [ ] SSL certificate (Let's Encrypt)
-- [ ] Monitoring and logging
-  - [ ] CloudWatch setup
-  - [ ] Error tracking (Sentry)
-  - [ ] Performance monitoring
-
-**Target Date**: End of Week 9
+**완료 기준**:
+- 리밸런싱 추천이 정확함
+- UI에 필요한 작업 명확히 표시
+- 여러 전략 사용 가능
 
 ---
 
-## 🎯 Immediate Next Steps (This Week)
+### Phase 6: 테스팅 및 품질 (🔴 미시작)
+**일정**: 8주차
+**상태**: 0% 완료
+**우선순위**: 중간
 
-### Priority 1: Market Data Backend
-1. Implement `MarketDataController.java`
-2. Complete provider circuit breaker
-3. Add Redis caching
-4. Test with Postman/Swagger
-
-### Priority 2: Market Data Frontend
-1. Create `lib/api/market.ts`
-2. Replace mock indices on homepage
-3. Add loading states
-4. Test real API integration
-
-### Priority 3: Portfolio API Integration
-1. Update `lib/api/portfolio.ts` with real endpoints
-2. Connect portfolio list page
-3. Test create/update/delete operations
-
----
-
-## 📝 Session Checklist
-
-**At Start of Each Session**:
-1. Read PLAN.md to understand current phase
-2. Read CURRENT_STATE.md for latest implementation
-3. Check progress/ folder for recent changes
-4. Review last session's incomplete tasks
-
-**During Session**:
-1. Update task status in this file as completed
-2. Create progress file for significant changes
-3. Update CURRENT_STATE.md with new features
-
-**At End of Session**:
-1. Mark completed tasks with [x]
-2. Update "Last Updated" date
-3. Write progress file if needed
-4. Commit and push changes
+#### 작업 내용
+- [ ] 백엔드 테스팅
+  - [ ] 유닛 테스트 (>80% 커버리지)
+  - [ ] 모든 엔드포인트 통합 테스트
+  - [ ] 부하 테스트 (JMeter)
+- [ ] 프론트엔드 테스팅
+  - [ ] 컴포넌트 유닛 테스트 (Jest)
+  - [ ] E2E 테스트 (Playwright)
+  - [ ] 크로스 브라우저 테스팅
+- [ ] 성능 최적화
+  - [ ] API 응답 시간 (<200ms)
+  - [ ] 프론트엔드 로드 시간 (<3초)
+  - [ ] 번들 크기 최적화
+- [ ] 보안 감사
+  - [ ] JWT 보안 검토
+  - [ ] SQL 인젝션 방지
+  - [ ] XSS 보호
+  - [ ] CORS 설정
 
 ---
 
-## 🐛 Known Issues & Tech Debt
+### Phase 7: 배포 (🔴 미시작)
+**일정**: 9주차
+**상태**: 0% 완료
+**우선순위**: 낮음
 
-### High Priority
-- [ ] Kakao OAuth redirect URI must be configured in Kakao Console
-- [ ] No error boundary for frontend
-- [ ] Missing loading states on data fetch
+#### 작업 내용
+- [ ] 프로덕션 환경 설정
+  - [ ] AWS 계정 구성
+  - [ ] RDS PostgreSQL 설정
+  - [ ] ElastiCache Redis 설정
+  - [ ] EC2 또는 ECS 구성
+- [ ] CI/CD 구성
+  - [ ] GitHub Actions 워크플로우
+  - [ ] 자동화된 테스팅
+  - [ ] 자동화된 배포
+- [ ] 도메인 및 SSL
+  - [ ] 도메인 이름 구매
+  - [ ] DNS 구성
+  - [ ] SSL 인증서 (Let's Encrypt)
+- [ ] 모니터링 및 로깅
+  - [ ] CloudWatch 설정
+  - [ ] 에러 추적 (Sentry)
+  - [ ] 성능 모니터링
 
-### Medium Priority
-- [ ] Mock data should have consistent IDs
-- [ ] Portfolio recalculation not automatic
-- [ ] No offline mode
-
-### Low Priority
-- [ ] Component documentation could be more detailed
-- [ ] No dark/light mode toggle (always dark)
+**목표 날짜**: 9주차 종료
 
 ---
 
-## 💡 Future Enhancements (Post-MVP)
+## 🎯 즉시 해야 할 일 (이번 주)
 
-### Feature Ideas
-- [ ] Multiple portfolio comparison
-- [ ] AI-powered portfolio suggestions
-- [ ] Tax loss harvesting recommendations
-- [ ] Dividend tracking and projections
-- [ ] News feed integration
-- [ ] Mobile app (React Native)
-- [ ] Social features (share portfolios)
-- [ ] Cryptocurrency support
+### Priority 1: 시장 데이터 백엔드
+1. `MarketDataController.java` 구현
+2. Provider circuit breaker 완성
+3. Redis 캐싱 추가
+4. Postman/Swagger로 테스트
 
-### Technical Improvements
-- [ ] WebSocket for real-time updates
-- [ ] GraphQL API option
-- [ ] Server-side rendering optimization
+### Priority 2: 시장 데이터 프론트엔드
+1. `lib/api/market.ts` 생성
+2. 홈페이지 Mock 지수 교체
+3. 로딩 상태 추가
+4. 실제 API 통합 테스트
+
+### Priority 3: 포트폴리오 API 통합
+1. 실제 엔드포인트로 `lib/api/portfolio.ts` 업데이트
+2. 포트폴리오 목록 페이지 연결
+3. 생성/수정/삭제 작업 테스트
+
+---
+
+## 📝 세션 체크리스트
+
+**각 세션 시작 시**:
+1. PLAN.md를 읽고 현재 단계 파악
+2. 최신 구현 상황을 위해 CURRENT_STATE.md 읽기
+3. 최근 변경사항 확인을 위해 progress/ 폴더 확인
+4. 지난 세션의 미완료 작업 검토
+
+**세션 중**:
+1. 이 파일에서 완료된 작업 상태 업데이트
+2. 중요한 변경사항이 있으면 progress 파일 생성
+3. 새로운 기능으로 CURRENT_STATE.md 업데이트
+
+**각 세션 종료 시**:
+1. 완료된 작업에 [x] 표시
+2. "Last Updated" 날짜 업데이트
+3. 필요시 progress 파일 작성
+4. 변경사항 커밋 및 푸시
+
+---
+
+## 🐛 알려진 이슈 및 기술 부채
+
+### 높은 우선순위
+- [ ] Kakao OAuth 리다이렉트 URI는 Kakao Console에서 설정 필요
+- [x] 프론트엔드에 에러 boundary 없음 (Playwright 테스트 완료)
+- [ ] 데이터 fetch 시 로딩 상태 누락
+
+### 중간 우선순위
+- [ ] Mock 데이터의 ID가 일관되지 않음
+- [ ] 포트폴리오 재계산이 자동이 아님
+- [ ] 오프라인 모드 없음
+- [ ] Redis 연결 실패 (개발 환경 - H2로 대체 중)
+
+### 낮은 우선순위
+- [ ] 컴포넌트 문서가 더 상세할 수 있음
+- [ ] 다크/라이트 모드 토글 없음 (항상 다크)
+
+---
+
+## 💡 향후 개선사항 (MVP 이후)
+
+### 기능 아이디어
+- [ ] 여러 포트폴리오 비교
+- [ ] AI 기반 포트폴리오 제안
+- [ ] 세금 손실 수확 추천
+- [ ] 배당 추적 및 예측
+- [ ] 뉴스 피드 통합
+- [ ] 모바일 앱 (React Native)
+- [ ] 소셜 기능 (포트폴리오 공유)
+- [ ] 암호화폐 지원
+
+### 기술 개선사항
+- [ ] 실시간 업데이트를 위한 WebSocket
+- [ ] GraphQL API 옵션
+- [ ] 서버 사이드 렌더링 최적화
 - [ ] Progressive Web App (PWA)
-- [ ] Multi-language support (i18n)
+- [ ] 다국어 지원 (i18n)
 
 ---
 
-## 📞 Quick Decision Log
+## 📞 빠른 의사결정 로그
 
-**Recent Decisions**:
-1. **2025-10-01**: Organized `.claude/` folder into backend/ and frontend/ subfolders
-2. **2025-09-30**: Applied glassmorphism design system to all components
-3. **2025-09-30**: Chose carousel to show 3 items, slide 1 at a time
-4. **2025-09-29**: Decided to use mock data for frontend development speed
+**최근 결정사항**:
+1. **2025-10-01**: `.claude/` 폴더를 backend/ 및 frontend/ 하위 폴더로 재구성
+2. **2025-10-01**: Playwright E2E 테스트 설정 및 로그인 기능 테스트 완료 (4/4 통과)
+3. **2025-09-30**: 모든 컴포넌트에 glassmorphism 디자인 시스템 적용
+4. **2025-09-30**: 캐러셀을 3개 항목 표시, 한 번에 1개씩 슬라이드하도록 선택
+5. **2025-09-29**: 프론트엔드 개발 속도를 위해 Mock 데이터 사용 결정
 
-**Pending Decisions**:
-- Which charting library? (Chart.js vs Recharts vs D3.js)
-- WebSocket vs polling for real-time updates?
-- Deploy on AWS EC2 vs Vercel + Heroku?
-
----
-
-## 🔄 Version History
-
-### v1.0 - Frontend Foundation (2025-10-01)
-- Complete frontend UI with 20+ components
-- Kakao OAuth authentication
-- Mock data for all pages
-- Glassmorphism design system
-
-### v0.5 - Backend Foundation (2025-09-28)
-- Spring Boot 3.5.5 setup
-- PostgreSQL + Redis integration
-- User and Portfolio CRUD
-- JWT authentication
+**보류 중인 결정사항**:
+- 어떤 차트 라이브러리? (Chart.js vs Recharts vs D3.js)
+- 실시간 업데이트를 위한 WebSocket vs 폴링?
+- AWS EC2 vs Vercel + Heroku에 배포?
 
 ---
 
-**Remember**: This document is the source of truth for project planning. Update it regularly and reference it at the start of each session for continuity.
+## 🔄 버전 이력
 
-**Next Session Goal**: Complete market data backend implementation and connect to frontend homepage.
+### v1.0 - 프론트엔드 기초 (2025-10-01)
+- 20개 이상의 컴포넌트로 완전한 프론트엔드 UI
+- Kakao OAuth 인증
+- 모든 페이지용 Mock 데이터
+- Glassmorphism 디자인 시스템
+- Playwright E2E 테스트 프레임워크
+
+### v0.5 - 백엔드 기초 (2025-09-28)
+- Spring Boot 3.5.5 설정
+- PostgreSQL + Redis 통합
+- User 및 Portfolio CRUD
+- JWT 인증
+
+---
+
+## ⚠️ 주의사항
+
+1. **Redis 연결**: 개발 환경에서는 H2 DB만으로 작동하지만, 프로덕션 배포 전 Redis 설정 필요
+2. **API Rate Limiting**: AlphaVantage 무료 플랜은 분당 5회, 일일 100회 제한
+3. **에러 처리**: 외부 API 실패 시 Fallback 전략 필요 (Finnhub → Mock 데이터)
+4. **테스트 환경**: `.env.local`에 `NEXT_PUBLIC_DEV_MODE=true` 설정 유지
+5. **Backend 실행**: Redis가 없어도 H2 데이터베이스로 개발 가능
+6. **Playwright 테스트**: `cd frontend && npx playwright test`로 로그인 테스트 실행
+
+---
+
+**기억할 것**: 이 문서는 프로젝트 계획의 단일 진실 공급원입니다. 정기적으로 업데이트하고 연속성을 위해 각 세션 시작 시 참조하세요.
+
+**다음 세션 목표**: 시장 데이터 백엔드 구현을 완료하고 프론트엔드 홈페이지에 연결하기.
