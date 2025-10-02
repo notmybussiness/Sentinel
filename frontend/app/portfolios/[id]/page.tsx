@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from '@/components/ui/StatCard';
@@ -12,6 +13,7 @@ import { PercentageChange } from '@/components/ui/PercentageChange';
 import { MockDataBadge } from '@/components/common/MockDataBadge';
 import { RebalancingModal } from '@/components/portfolio/RebalancingModal';
 import { mockUserPortfolios, mockRebalancingRecommendations } from '@/lib/mockData';
+import { getBatchPrices, type StockPrice } from '@/lib/api/market';
 
 export default function PortfolioDetailPage() {
   const router = useRouter();
@@ -22,6 +24,35 @@ export default function PortfolioDetailPage() {
 
   // 포트폴리오 찾기
   const portfolio = mockUserPortfolios.find((p) => p.id === portfolioId);
+
+  // Holdings의 실시간 가격 조회 (배치 API 사용)
+  const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
+  const {
+    data: prices,
+    isLoading: isPricesLoading,
+    error: pricesError,
+  } = useQuery<StockPrice[]>({
+    queryKey: ['holdings-prices', portfolioId, symbols],
+    queryFn: () => getBatchPrices(symbols),
+    enabled: symbols.length > 0 && !!portfolio,
+    refetchInterval: 60000, // 1분마다 자동 갱신
+    staleTime: 30000, // 30초 동안은 캐시 사용
+  });
+
+  // 가격 맵 생성 (빠른 조회를 위해)
+  const priceMap = prices?.reduce((acc, price) => {
+    acc[price.symbol] = price.price;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  // Mock 차트 데이터
+  const chartData = portfolio ? Array.from({ length: 30 }, (_, i) => {
+    const progress = i / 30;
+    const trend =
+      portfolio.totalCost * (1 + (portfolio.totalGainLossPercent / 100) * progress);
+    const noise = (Math.random() - 0.5) * portfolio.totalValue * 0.02;
+    return trend + noise;
+  }) : [];
 
   if (!portfolio) {
     return (
@@ -41,15 +72,6 @@ export default function PortfolioDetailPage() {
       </div>
     );
   }
-
-  // Mock 차트 데이터
-  const chartData = Array.from({ length: 30 }, (_, i) => {
-    const progress = i / 30;
-    const trend =
-      portfolio.totalCost * (1 + (portfolio.totalGainLossPercent / 100) * progress);
-    const noise = (Math.random() - 0.5) * portfolio.totalValue * 0.02;
-    return trend + noise;
-  });
 
   return (
     <div className="min-h-screen bg-background-primary">
@@ -153,58 +175,73 @@ export default function PortfolioDetailPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {portfolio.holdings.map((holding) => (
-                <div
-                  key={holding.id}
-                  className="p-3 bg-background-secondary rounded-8 hover:bg-background-tertiary transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    {/* 종목 정보 */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-text-primary font-semibold text-sm">
-                          {holding.symbol}
-                        </h4>
-                        <span className="text-text-tertiary text-mini">
-                          {holding.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-mini">
-                        <span className="text-text-tertiary">
-                          보유: {holding.quantity}주
-                        </span>
-                        <span className="text-text-tertiary">
-                          평단: <PriceDisplay amount={holding.averageCost} currency="KRW" size="sm" />
-                        </span>
-                        <span className="text-text-tertiary">
-                          현재가: <PriceDisplay amount={holding.currentPrice} currency="KRW" size="sm" />
-                        </span>
-                      </div>
-                    </div>
+              {portfolio.holdings.map((holding) => {
+                // 실시간 가격 사용 (있으면 실시간 가격, 없으면 Mock 가격)
+                const realtimePrice = priceMap[holding.symbol] || holding.currentPrice;
+                const marketValue = realtimePrice * holding.quantity;
+                const gainLoss = marketValue - (holding.averageCost * holding.quantity);
+                const gainLossPercent = (gainLoss / (holding.averageCost * holding.quantity)) * 100;
+                const isRealtime = !!priceMap[holding.symbol];
 
-                    {/* 수익 정보 */}
-                    <div className="text-right">
-                      <PriceDisplay
-                        amount={holding.marketValue}
-                        currency="KRW"
-                        size="md"
-                      />
-                      <div className="flex items-center gap-1.5 justify-end mt-0.5">
+                return (
+                  <div
+                    key={holding.id}
+                    className="p-3 bg-background-secondary rounded-8 hover:bg-background-tertiary transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      {/* 종목 정보 */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-text-primary font-semibold text-sm">
+                            {holding.symbol}
+                          </h4>
+                          <span className="text-text-tertiary text-mini">
+                            {holding.name}
+                          </span>
+                          {isRealtime && (
+                            <span className="text-brand text-mini">● 실시간</span>
+                          )}
+                          {isPricesLoading && (
+                            <span className="text-text-tertiary text-mini animate-pulse">로딩중...</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-mini">
+                          <span className="text-text-tertiary">
+                            보유: {holding.quantity}주
+                          </span>
+                          <span className="text-text-tertiary">
+                            평단: <PriceDisplay amount={holding.averageCost} currency="KRW" size="sm" />
+                          </span>
+                          <span className="text-text-tertiary">
+                            현재가: <PriceDisplay amount={realtimePrice} currency="KRW" size="sm" />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 수익 정보 */}
+                      <div className="text-right">
                         <PriceDisplay
-                          amount={Math.abs(holding.gainLoss)}
+                          amount={marketValue}
                           currency="KRW"
-                          size="sm"
-                          color={holding.gainLoss >= 0 ? 'success' : 'error'}
+                          size="md"
                         />
-                        <PercentageChange
-                          value={holding.gainLossPercent}
-                          size="sm"
-                        />
+                        <div className="flex items-center gap-1.5 justify-end mt-0.5">
+                          <PriceDisplay
+                            amount={Math.abs(gainLoss)}
+                            currency="KRW"
+                            size="sm"
+                            color={gainLoss >= 0 ? 'success' : 'error'}
+                          />
+                          <PercentageChange
+                            value={gainLossPercent}
+                            size="sm"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>

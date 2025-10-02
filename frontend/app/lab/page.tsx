@@ -53,7 +53,7 @@ export default function LabPage() {
                 <h3 className="text-text-primary font-semibold">
                   백테스팅 설정
                 </h3>
-                <MockDataBadge show={true} size="sm" />
+                <MockDataBadge show={true} />
               </div>
 
               <div className="space-y-3">
