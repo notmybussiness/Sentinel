@@ -9,11 +9,31 @@ import { IndexCard } from '@/components/market/IndexCard';
 import { RecommendedPortfolioCard } from '@/components/portfolio/RecommendedPortfolioCard';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockRecommendedPortfolios, mockMarketIndices } from '@/lib/mockData';
+import { mockRecommendedPortfolios } from '@/lib/mockData';
+import { getMarketIndices } from '@/lib/api/market';
+import { useQuery } from '@tanstack/react-query';
 
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+
+  /**
+   * 시장 지수 데이터 조회
+   *
+   * - useQuery로 서버 상태 관리
+   * - queryKey: 캐시 식별자
+   * - queryFn: 실제 API 호출 함수
+   * - refetchInterval: 자동 갱신 주기 (1분)
+   */
+  const {
+    data: indices,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['market-indices'],
+    queryFn: getMarketIndices,
+    refetchInterval: 60000, // 1분마다 자동 갱신
+  });
 
   return (
     <div className="min-h-screen bg-background-primary">
@@ -46,11 +66,28 @@ export default function HomePage() {
           noPadding
           background="none"
         >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {mockMarketIndices.map((index) => (
-              <IndexCard key={index.symbol} index={index} />
-            ))}
-          </div>
+          {/* 로딩 상태 */}
+          {isLoading && (
+            <div className="text-center py-8 text-text-tertiary">
+              시장 데이터를 불러오는 중...
+            </div>
+          )}
+
+          {/* 에러 상태 */}
+          {error && (
+            <div className="text-center py-8 text-error">
+              시장 데이터를 불러올 수 없습니다.
+            </div>
+          )}
+
+          {/* 데이터 표시 */}
+          {!isLoading && !error && indices && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              {indices.map((index) => (
+                <IndexCard key={index.symbol} index={index} />
+              ))}
+            </div>
+          )}
         </Section>
 
         {/* 추천 포트폴리오 캐러셀 */}

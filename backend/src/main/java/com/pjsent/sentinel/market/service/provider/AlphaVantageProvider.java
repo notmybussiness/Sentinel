@@ -1,6 +1,8 @@
 package com.pjsent.sentinel.market.service.provider;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.pjsent.sentinel.market.dto.SearchResultDto;
 import com.pjsent.sentinel.market.dto.StockPriceDto;
 
 import lombok.RequiredArgsConstructor;
@@ -79,7 +82,39 @@ public class AlphaVantageProvider implements MarketDataProvider {
     public boolean supportsHistoricalData() {
         return true;
     }
-    
+
+    @Override
+    public boolean supportsSearch() {
+        return true;
+    }
+
+    @Override
+    public List<SearchResultDto> searchSymbol(String query) {
+        if (!isAvailable()) {
+            throw new IllegalStateException("AlphaVantage API가 사용 불가능합니다.");
+        }
+
+        log.info("AlphaVantage에서 종목 검색 중. 키워드: {}", query);
+
+        try {
+            String url = buildSearchUrl(query);
+            log.debug("AlphaVantage Symbol Search API 호출 URL: {}", url);
+
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return parseSearchResponse(response.getBody());
+            } else {
+                log.warn("AlphaVantage 검색 API 응답이 비정상입니다. 상태코드: {}", response.getStatusCode());
+                return List.of();
+            }
+
+        } catch (Exception e) {
+            log.error("AlphaVantage 검색 API 호출 중 오류 발생. 키워드: {}, 오류: {}", query, e.getMessage(), e);
+            return List.of();
+        }
+    }
+
     private String buildQuoteUrl(String symbol) {
         return String.format("%s?function=%s&symbol=%s&apikey=%s", 
                            baseUrl, QUOTE_FUNCTION, symbol, apiKey);
@@ -146,6 +181,49 @@ public class AlphaVantageProvider implements MarketDataProvider {
         } catch (NumberFormatException e) {
             log.warn("숫자 변환 실패: {}", value);
             return 0.0;
+        }
+    }
+
+    private String buildSearchUrl(String query) {
+        return String.format("%s?function=SYMBOL_SEARCH&keywords=%s&apikey=%s",
+                           baseUrl, query, apiKey);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<SearchResultDto> parseSearchResponse(Map<String, Object> response) {
+        try {
+            List<Map<String, String>> bestMatches = (List<Map<String, String>>) response.get("bestMatches");
+
+            if (bestMatches == null || bestMatches.isEmpty()) {
+                log.warn("AlphaVantage 검색 결과가 없습니다.");
+                return List.of();
+            }
+
+            List<SearchResultDto> results = new ArrayList<>();
+
+            for (Map<String, String> match : bestMatches) {
+                String symbol = match.get("1. symbol");
+                String name = match.get("2. name");
+                String type = match.get("3. type");
+                String region = match.get("4. region");
+
+                if (symbol != null && name != null) {
+                    results.add(new SearchResultDto(symbol, name, region, type));
+                }
+
+                // 최대 10개 결과만 반환
+                if (results.size() >= 10) {
+                    break;
+                }
+            }
+
+            log.info("AlphaVantage 검색 완료. 결과 수: {}", results.size());
+            return results;
+
+        } catch (Exception e) {
+            log.error("AlphaVantage 검색 응답 파싱 중 오류 발생. 응답: {}, 오류: {}",
+                     response, e.getMessage(), e);
+            return List.of();
         }
     }
 }

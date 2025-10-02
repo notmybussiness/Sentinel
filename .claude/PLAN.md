@@ -2,8 +2,8 @@
 
 > **목적**: 세션 간 연속성을 위한 프로젝트 목표, 진행 상황, 다음 단계 추적
 >
-> **최종 업데이트**: 2025-10-01
-> **현재 단계**: 프론트엔드 완료 → 백엔드 통합
+> **최종 업데이트**: 2025-10-02
+> **현재 단계**: Phase 2 - 시장 데이터 통합 (40% 완료)
 
 ---
 
@@ -21,8 +21,8 @@
 
 ### 완료 현황
 - **프론트엔드**: ✅ 100% 완료
-- **백엔드**: 🟡 60% 완료 (인증 + 포트폴리오 CRUD 완료)
-- **통합**: 🔴 10% (개발 모드만)
+- **백엔드**: 🟡 70% 완료 (인증 + 포트폴리오 + 시장 데이터 부분 완료)
+- **통합**: 🟡 30% (시장 지수 API 연동 완료)
 - **테스팅**: 🔴 5%
 - **배포**: 🔴 0%
 
@@ -33,13 +33,15 @@
 4. ✅ JWT 토큰 관리
 5. ✅ 프론트엔드 테스트를 위한 개발 모드
 6. ✅ Playwright E2E 테스트 (로그인 기능 4/4 통과)
+7. ✅ **시장 지수 API 연동** (S&P 500, NASDAQ, DOW, KOSPI)
+8. ✅ **홈페이지 실시간 시장 데이터 표시**
 
 ### 미완성 기능
-1. ❌ 시장 데이터 API 통합
+1. 🟡 시장 데이터 API (부분 완료 - 지수만 완료, 종목 검색 미완)
 2. ❌ 백테스팅 엔진
 3. ❌ 리밸런싱 알고리즘
-4. ❌ 프론트엔드-백엔드 연결 (인증 제외)
-5. ❌ 실시간 데이터 업데이트
+4. 🟡 프론트엔드-백엔드 연결 (인증 + 시장지수 완료, 포트폴리오 실시간 가격 미완)
+5. 🟡 실시간 데이터 업데이트 (시장 지수만 1분 자동 갱신)
 
 ---
 
@@ -64,36 +66,82 @@
 
 ### Phase 2: 시장 데이터 통합 (🚧 진행 중)
 **일정**: 3주차
-**상태**: 20% 완료
+**상태**: 40% 완료
 **우선순위**: 높음
+**완료일**: 2025-10-02 (부분 완료)
 
 #### 백엔드 작업
-- [ ] `MarketDataService` 구현 완료
+- [x] `MarketDataService` 구현 완료
   - [x] AlphaVantage provider
   - [x] Finnhub provider
+  - [x] getStockPrice() - 단일 종목 조회
+  - [x] getStockPrices() - 여러 종목 조회
+  - [x] **getMarketIndices()** - 주요 지수 조회 ⭐ 신규
   - [ ] Circuit breaker 구현
   - [ ] Redis 캐싱 레이어
-- [ ] 시장 데이터 엔드포인트 구현
-  - [ ] `GET /api/v1/market/price/{symbol}` - 개별 종목 가격
-  - [ ] `POST /api/v1/market/prices` - 배치 가격 조회
-  - [ ] `GET /api/v1/market/indices` - 주요 지수
+- [x] 시장 데이터 엔드포인트 구현 (부분)
+  - [x] `GET /api/v1/market/price/{symbol}` - 개별 종목 가격
+  - [x] `GET /api/v1/market/prices` - 여러 종목 가격 (쿼리 파라미터)
+  - [x] **`GET /api/v1/market/indices`** - 주요 지수 ⭐ 신규
+  - [ ] `POST /api/v1/market/prices` - 배치 가격 조회 (Body)
   - [ ] `GET /api/v1/market/search` - 종목 검색
 - [ ] Rate limiting 추가
-- [ ] 에러 처리 및 로깅
+- [x] 에러 처리 및 로깅
 
 #### 프론트엔드 작업
-- [ ] 시장 데이터 API 클라이언트 생성 (`lib/api/market.ts`)
-- [ ] Mock 데이터를 API 호출로 교체
-  - [ ] 홈페이지 시장 지수
+- [x] **시장 데이터 API 클라이언트 생성** (`lib/api/market.ts`) ⭐ 신규
+  - [x] getMarketIndices() - 지수 조회
+  - [x] getStockPrice() - 단일 종목
+  - [x] getStockPrices() - 여러 종목 (개별 호출)
+- [x] Mock 데이터를 API 호출로 교체 (부분)
+  - [x] **홈페이지 시장 지수** ⭐ 완료
   - [ ] 포트폴리오 Holdings 실시간 가격
   - [ ] Market 페이지 데이터
-- [ ] 로딩 상태 추가
-- [ ] 에러 처리 UI 추가
+- [x] **로딩 상태 추가** ⭐ 완료
+- [x] **에러 처리 UI 추가** ⭐ 완료
+- [x] **React Query 자동 갱신** (1분마다) ⭐ 완료
 
 #### 테스팅
 - [ ] Provider 유닛 테스트
 - [ ] 엔드포인트 통합 테스트
-- [ ] 실제 데이터로 프론트엔드 E2E 테스트
+- [x] 실제 데이터로 프론트엔드 동작 확인 ⭐ 완료
+
+---
+
+---
+
+## 🎉 2025년 10월 2일 완료 작업
+
+### ✅ 시장 지수 API 구현 및 연동 (Phase 2 - 40% 완료)
+
+**Backend 구현**:
+1. **MarketIndexDto.java** - 시장 지수 DTO 생성
+2. **MarketDataService.getMarketIndices()** - 지수 조회 로직
+   - 4개 지수 심볼 정의 (^GSPC, ^IXIC, ^DJI, ^KS11)
+   - 기존 getStockPrice() 재사용
+   - StockPriceDto → MarketIndexDto 변환
+3. **MarketDataController.getMarketIndices()** - GET /api/v1/market/indices
+   - 에러 처리 및 로깅 추가
+
+**Frontend 구현**:
+1. **lib/api/market.ts** - Market API Client 생성
+   - getMarketIndices() - 지수 조회
+   - getStockPrice() - 단일 종목
+   - getStockPrices() - 여러 종목
+2. **홈페이지 Mock → API 교체** (app/page.tsx)
+   - React Query useQuery 적용
+   - 로딩 상태 UI
+   - 에러 처리 UI
+   - 1분마다 자동 갱신 (refetchInterval: 60000)
+
+**테스트**:
+- ✅ curl로 API 응답 확인 (4개 지수 정상)
+- ✅ 브라우저 동작 확인 (http://localhost:3000)
+
+**다음 단계**:
+1. POST /api/v1/market/prices (배치 조회) 구현
+2. 포트폴리오 Holdings 실시간 가격 연동
+3. Market 페이지 Mock → API 교체
 
 ---
 

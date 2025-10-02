@@ -1,5 +1,6 @@
 package com.pjsent.sentinel.market.service.provider;
 import java.util.List;
+import com.pjsent.sentinel.market.dto.SearchResultDto;
 import com.pjsent.sentinel.market.dto.StockPriceDto;
 
 public interface MarketDataProvider {
@@ -25,6 +26,16 @@ public interface MarketDataProvider {
     }
 
     default boolean supportsHistoricalData() {
+        return false;
+    }
+
+    // 종목 검색 (기본값 제공)
+    default List<SearchResultDto> searchSymbol(String query) {
+        throw new UnsupportedOperationException("종목 검색을 지원하지 않습니다.");
+    }
+
+    // 검색 지원 여부 확인
+    default boolean supportsSearch() {
         return false;
     }
 
