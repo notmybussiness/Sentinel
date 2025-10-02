@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,21 +54,70 @@ public class MarketDataController {
     }
     
     /**
-     * 여러 주식의 현재 가격을 조회합니다.
-     * 
+     * 여러 주식의 현재 가격을 조회합니다. (Query Parameter 방식)
+     *
      * @param symbols 쉼표로 구분된 주식 심볼 목록 (예: AAPL,MSFT,GOOGL)
      * @return 주식 가격 데이터 목록
      */
     @GetMapping("/prices")
     public ResponseEntity<List<StockPriceDto>> getStockPrices(@RequestParam String symbols) {
-        log.info("여러 주식 가격 조회 요청. 심볼: {}", symbols);
-        
+        log.info("여러 주식 가격 조회 요청 (Query). 심볼: {}", symbols);
+
         try {
             List<String> symbolList = List.of(symbols.split(","));
             List<StockPriceDto> stockPrices = marketDataService.getStockPrices(symbolList);
             return ResponseEntity.ok(stockPrices);
         } catch (Exception e) {
-            log.error("여러 주식 가격 조회 실패. 심볼: {}, 오류: {}", symbols, e.getMessage(), e);
+            log.error("여러 주식 가격 조회 실패 (Query). 심볼: {}, 오류: {}", symbols, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 배치 주식 가격 조회 (Request Body 방식)
+     *
+     * Portfolio Holdings의 여러 종목 가격을 한 번에 조회합니다.
+     * Query Parameter보다 많은 심볼을 전송할 수 있습니다.
+     *
+     * 사용 사례:
+     * - Portfolio Holdings 실시간 가격 업데이트
+     * - 많은 종목을 한 번에 조회 (>20개)
+     *
+     * 예시 요청:
+     * POST /api/v1/market/prices
+     * Body: ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"]
+     *
+     * @param symbols 주식 심볼 목록 (JSON 배열)
+     * @return 주식 가격 데이터 목록
+     */
+    @PostMapping("/prices")
+    public ResponseEntity<List<StockPriceDto>> getBatchPrices(@RequestBody List<String> symbols) {
+        log.info("배치 주식 가격 조회 요청. 심볼 개수: {}, 목록: {}", symbols.size(), symbols);
+
+        try {
+            // 입력 검증
+            if (symbols == null || symbols.isEmpty()) {
+                log.warn("심볼 목록이 비어있습니다.");
+                return ResponseEntity.badRequest().build();
+            }
+
+            // 최대 개수 제한 (API Rate Limit 고려)
+            if (symbols.size() > 50) {
+                log.warn("심볼 개수가 너무 많습니다. 요청: {}, 최대: 50", symbols.size());
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Service Layer 호출
+            List<StockPriceDto> stockPrices = marketDataService.getStockPrices(symbols);
+
+            log.info("배치 가격 조회 완료. 성공: {}/{}", stockPrices.size(), symbols.size());
+            return ResponseEntity.ok(stockPrices);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("잘못된 요청 파라미터. 심볼: {}, 오류: {}", symbols, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("배치 가격 조회 실패. 심볼: {}, 오류: {}", symbols, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }
