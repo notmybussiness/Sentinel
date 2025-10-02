@@ -2,9 +2,9 @@
 
 > **목적**: 세션 간 연속성을 위한 프로젝트 목표, 진행 상황, 다음 단계 추적
 >
-> **최종 업데이트**: 2025-10-02 (17:00)
-> **현재 단계**: Phase 2 - 시장 데이터 통합 (50% 완료)
-> **현재 브랜치**: `feature/batch-price-api` (배치 API 구현 중)
+> **최종 업데이트**: 2025-10-03
+> **현재 단계**: Phase 2 - 시장 데이터 통합 (70% 완료)
+> **현재 브랜치**: `feature/batch-price-api` (배치 API + Portfolio Holdings 연동 완료, 테스트 대기)
 
 ---
 
@@ -22,9 +22,9 @@
 
 ### 완료 현황
 - **프론트엔드**: ✅ 100% 완료
-- **백엔드**: 🟡 75% 완료 (인증 + 포트폴리오 + 시장 데이터 50% 완료)
-- **통합**: 🟡 35% (시장 지수 API 연동 완료, 배치 API 구현 완료)
-- **테스팅**: 🔴 5%
+- **백엔드**: 🟡 80% 완료 (인증 + 포트폴리오 + 시장 데이터 70% 완료)
+- **통합**: 🟡 65% (시장 지수, 배치 API, Portfolio Holdings 연동 완료)
+- **테스팅**: 🟡 15% (Playwright E2E + 배치 API 성능 테스트 완료)
 - **배포**: 🔴 0%
 
 ### 현재 작동하는 기능
@@ -37,13 +37,14 @@
 7. ✅ **시장 지수 API 연동** (S&P 500, NASDAQ, DOW, KOSPI)
 8. ✅ **홈페이지 실시간 시장 데이터 표시**
 9. ✅ **배치 가격 조회 API** (POST /api/v1/market/prices) ⭐ 신규
+10. ✅ **Portfolio Holdings 실시간 가격 연동** (1분 자동 갱신) ⭐ 신규
 
 ### 미완성 기능
-1. 🟡 시장 데이터 API (50% 완료 - 지수/배치조회 완료, 종목검색 미완)
+1. 🟡 시장 데이터 API (70% 완료 - 지수/배치조회 완료, 종목검색 미완)
 2. ❌ 백테스팅 엔진
 3. ❌ 리밸런싱 알고리즘
-4. 🟡 프론트엔드-백엔드 연결 (인증 + 시장지수 완료, 포트폴리오 실시간 가격 미완)
-5. 🟡 실시간 데이터 업데이트 (시장 지수만 1분 자동 갱신)
+4. 🟡 프론트엔드-백엔드 연결 (60% 완료 - 인증/시장지수/Portfolio 완료, Market 페이지 미완)
+5. ✅ 실시간 데이터 업데이트 (시장 지수 + Portfolio Holdings 1분 자동 갱신)
 
 ---
 
@@ -68,9 +69,9 @@
 
 ### Phase 2: 시장 데이터 통합 (🚧 진행 중)
 **일정**: 3주차
-**상태**: 50% 완료 (+10% 진행)
+**상태**: 70% 완료 (+20% 진행)
 **우선순위**: 높음
-**완료일**: 2025-10-02 (부분 완료)
+**완료일**: 2025-10-02 (주요 기능 완료)
 
 #### 백엔드 작업
 - [x] `MarketDataService` 구현 완료
@@ -99,7 +100,7 @@
   - [x] **searchSymbol()** - 종목 검색 함수 ⭐ 신규 (2025-10-02)
 - [x] Mock 데이터를 API 호출로 교체 (부분)
   - [x] **홈페이지 시장 지수** ⭐ 완료
-  - [ ] 포트폴리오 Holdings 실시간 가격 (다음 작업)
+  - [x] **포트폴리오 Holdings 실시간 가격** ⭐ 완료 (2025-10-02)
   - [ ] Market 페이지 데이터
 - [x] **로딩 상태 추가** ⭐ 완료
 - [x] **에러 처리 UI 추가** ⭐ 완료
@@ -109,7 +110,9 @@
 - [ ] Provider 유닛 테스트 (Phase 6으로 연기)
 - [ ] 엔드포인트 통합 테스트 (Phase 6으로 연기)
 - [x] 실제 데이터로 프론트엔드 동작 확인 ⭐ 완료
-- [ ] 배치 API 성능 테스트 (다음 작업)
+- [x] **배치 API 성능 테스트** ⭐ 완료 (2025-10-02)
+  - **결과**: 배치 API가 7% 빠름 (2.38s vs 2.57s, 5개 종목)
+  - **장점**: 단일 HTTP 요청, 일관된 timestamp
 
 ---
 
@@ -149,7 +152,7 @@
 
 ---
 
-### ✅ 오후: 배치 가격 조회 API 구현 (Phase 2 - 50% 완료)
+### ✅ 오후: 배치 가격 조회 API 구현 및 Portfolio 연동 (Phase 2 - 70% 완료)
 
 **Branch 전략**:
 - ✅ `feature/batch-price-api` 브랜치 생성
@@ -171,13 +174,70 @@
    - 사용 사례 및 예시 코드
    - 성능 장점 설명 (단일 HTTP 요청, API Rate Limit 유리)
 
+**성능 테스트 결과**:
+- ✅ 배치 API: 2.38초 (1 HTTP 요청)
+- ✅ 개별 API: 2.57초 (5 HTTP 요청)
+- **결과**: 배치 API가 7% 빠르고 네트워크 효율적
+
+**Portfolio Holdings 연동**:
+- ✅ React Query로 배치 API 사용
+- ✅ 1분 자동 갱신 (refetchInterval: 60000)
+- ✅ 실시간/Mock 구분 표시 ("● 실시간" 라벨)
+- ✅ 수익률 자동 재계산
+- ✅ 로딩 상태 UI ("로딩중..." 표시)
+
 **빌드 검증**:
 - ✅ Backend 빌드 성공 (gradle build -x test)
+- ✅ Frontend dev 모드 실행 성공
+
+**Git 작업**:
+- ✅ Commit: 4afa0f99 "feat: add batch price API endpoint and frontend client"
+- ✅ Commit: 77c5e6fa "feat: integrate batch price API with Portfolio Holdings"
 
 **다음 단계**:
-1. 배치 API 테스트 및 성능 비교
-2. 포트폴리오 Holdings 실시간 가격 연동
-3. Market 페이지 Mock → API 교체
+1. Market 페이지 검색 기능 연동
+2. 브랜치 테스트 완료 후 dev에 merge
+
+---
+
+## 🎉 2025년 10월 3일 현재 상태
+
+### ✅ 완료된 작업 (Phase 2 - 70% 완료)
+
+**현재 브랜치**: `feature/batch-price-api`
+
+**주요 성과**:
+1. **배치 가격 조회 API 구현 완료**
+   - `POST /api/v1/market/prices` 엔드포인트
+   - 최대 50개 종목 동시 조회
+   - 성능 테스트 완료: 개별 API 대비 7% 빠름
+   - 단일 HTTP 요청으로 네트워크 효율 개선
+   - 일관된 timestamp 제공
+
+2. **Portfolio Holdings 실시간 가격 연동 완료**
+   - React Query로 배치 API 통합
+   - 1분 자동 갱신 (refetchInterval: 60000)
+   - 실시간/Mock 구분 UI ("● 실시간" 라벨)
+   - 수익률 자동 재계산
+   - 로딩 상태 처리
+
+3. **Git 작업**
+   - 2개 commits pushed to `feature/batch-price-api`
+   - Commit 4afa0f99: "feat: add batch price API endpoint and frontend client"
+   - Commit 77c5e6fa: "feat: integrate batch price API with Portfolio Holdings"
+
+### 🚧 다음 작업 우선순위
+
+1. **Market 페이지 검색 기능** (1시간)
+   - `searchSymbol()` 함수 Backend 구현
+   - Frontend Mock 데이터 교체
+   - Debounce 적용
+
+2. **Git Merge** (15분)
+   - `feature/batch-price-api` → `dev` merge
+   - Branch 정리
+
+3. **Phase 2 완료** (Phase 2 종목 검색 완료 후 80%)
 
 ---
 
@@ -187,55 +247,20 @@
 
 ### 🎯 즉시 해야 할 작업 (우선순위순)
 
-#### 1. 배치 API 테스트 및 성능 비교 (30분)
-**목적**: 개별 호출 vs 배치 API 성능 비교
+#### 1. ✅ 배치 API 테스트 및 성능 비교 (완료)
+**결과**: 배치 API가 7% 빠름 (2.38s vs 2.57s, 5개 종목)
 
-**테스트 시나리오**:
-```bash
-# 시나리오 1: 개별 호출 (5개 종목, 5번 요청)
-GET /api/v1/market/price/AAPL
-GET /api/v1/market/price/MSFT
-GET /api/v1/market/price/GOOGL
-GET /api/v1/market/price/TSLA
-GET /api/v1/market/price/AMZN
+#### 2. ✅ Portfolio Holdings 실시간 가격 연동 (완료)
+**완료 내용**:
+- React Query로 배치 API 사용
+- 1분 자동 갱신 (refetchInterval: 60000)
+- 실시간/Mock 구분 표시 ("● 실시간" 라벨)
+- 수익률 자동 재계산
+- 로딩 상태 UI
 
-# 시나리오 2: 배치 호출 (5개 종목, 1번 요청)
-POST /api/v1/market/prices
-Body: ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"]
+#### 3. Market 페이지 검색 기능 연동 (미완) - 다음 작업
 
-# 측정 항목:
-- 총 응답 시간
-- API Rate Limit 소모량
-- 네트워크 요청 수
-- 데이터 일관성 (timestamp 동일 여부)
-```
-
-**측정 도구**:
-- curl + time 명령어
-- Browser DevTools Network 탭
-- Backend 로그 분석
-
-#### 2. Portfolio Holdings 실시간 가격 연동 (1-2시간)
-**파일**: `frontend/app/portfolios/[id]/page.tsx`
-
-**작업 내용**:
-```typescript
-// Mock 데이터 대신 배치 API 사용
-const symbols = portfolio.holdings.map(h => h.symbol);
-const { data: prices, isLoading, error } = useQuery({
-  queryKey: ['holdings-prices', portfolioId, symbols],
-  queryFn: () => getBatchPrices(symbols),
-  refetchInterval: 60000, // 1분마다
-  enabled: symbols.length > 0,
-});
-
-// Holdings 테이블에 실시간 가격 표시
-// - 현재가 업데이트
-// - 수익률 계산 (현재가 vs 매입가)
-// - 평가금액 계산 (현재가 × 수량)
-```
-
-#### 3. Market 페이지 검색 기능 연동 (1시간)
+#### 4. Market 페이지 검색 기능 연동 (1시간) - 다음 우선순위
 **파일**: `frontend/app/market/page.tsx`
 
 **작업 내용**:
@@ -243,19 +268,22 @@ const { data: prices, isLoading, error } = useQuery({
 - 검색 입력 debounce 적용 (300ms)
 - 로딩 상태 및 빈 결과 처리
 
-#### 4. Git 정리 및 Merge (15분)
+#### 5. Git 정리 및 Merge (15분) - 다음 작업
 ```bash
-# feature/batch-price-api 브랜치 commit
-git add .
-git commit -m "feat: implement batch price API with performance optimization"
+# 현재 상태: feature/batch-price-api 브랜치
+# - 배치 API 엔드포인트 구현 완료
+# - Portfolio Holdings 연동 완료
+# - 2 commits pushed
 
-# 테스트 완료 후 dev에 merge
+# 다음 단계:
+# 1. Market 페이지 검색 기능 완료
+# 2. dev 브랜치로 merge
+# 3. feature 브랜치 삭제
+
 git checkout dev
 git merge feature/batch-price-api
+git branch -d feature/batch-price-api
 git push origin dev
-
-# 성능 비교 결과 문서화
-# - progress/ 폴더에 테스트 결과 기록
 ```
 
 ---
