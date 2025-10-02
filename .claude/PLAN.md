@@ -2,8 +2,9 @@
 
 > **목적**: 세션 간 연속성을 위한 프로젝트 목표, 진행 상황, 다음 단계 추적
 >
-> **최종 업데이트**: 2025-10-02
-> **현재 단계**: Phase 2 - 시장 데이터 통합 (40% 완료)
+> **최종 업데이트**: 2025-10-02 (17:00)
+> **현재 단계**: Phase 2 - 시장 데이터 통합 (50% 완료)
+> **현재 브랜치**: `feature/batch-price-api` (배치 API 구현 중)
 
 ---
 
@@ -21,8 +22,8 @@
 
 ### 완료 현황
 - **프론트엔드**: ✅ 100% 완료
-- **백엔드**: 🟡 70% 완료 (인증 + 포트폴리오 + 시장 데이터 부분 완료)
-- **통합**: 🟡 30% (시장 지수 API 연동 완료)
+- **백엔드**: 🟡 75% 완료 (인증 + 포트폴리오 + 시장 데이터 50% 완료)
+- **통합**: 🟡 35% (시장 지수 API 연동 완료, 배치 API 구현 완료)
 - **테스팅**: 🔴 5%
 - **배포**: 🔴 0%
 
@@ -35,9 +36,10 @@
 6. ✅ Playwright E2E 테스트 (로그인 기능 4/4 통과)
 7. ✅ **시장 지수 API 연동** (S&P 500, NASDAQ, DOW, KOSPI)
 8. ✅ **홈페이지 실시간 시장 데이터 표시**
+9. ✅ **배치 가격 조회 API** (POST /api/v1/market/prices) ⭐ 신규
 
 ### 미완성 기능
-1. 🟡 시장 데이터 API (부분 완료 - 지수만 완료, 종목 검색 미완)
+1. 🟡 시장 데이터 API (50% 완료 - 지수/배치조회 완료, 종목검색 미완)
 2. ❌ 백테스팅 엔진
 3. ❌ 리밸런싱 알고리즘
 4. 🟡 프론트엔드-백엔드 연결 (인증 + 시장지수 완료, 포트폴리오 실시간 가격 미완)
@@ -66,7 +68,7 @@
 
 ### Phase 2: 시장 데이터 통합 (🚧 진행 중)
 **일정**: 3주차
-**상태**: 40% 완료
+**상태**: 50% 완료 (+10% 진행)
 **우선순위**: 높음
 **완료일**: 2025-10-02 (부분 완료)
 
@@ -77,15 +79,15 @@
   - [x] getStockPrice() - 단일 종목 조회
   - [x] getStockPrices() - 여러 종목 조회
   - [x] **getMarketIndices()** - 주요 지수 조회 ⭐ 신규
-  - [ ] Circuit breaker 구현
-  - [ ] Redis 캐싱 레이어
+  - [ ] Circuit breaker 구현 (Phase 6으로 연기)
+  - [ ] Redis 캐싱 레이어 (Phase 6으로 연기)
 - [x] 시장 데이터 엔드포인트 구현 (부분)
   - [x] `GET /api/v1/market/price/{symbol}` - 개별 종목 가격
   - [x] `GET /api/v1/market/prices` - 여러 종목 가격 (쿼리 파라미터)
   - [x] **`GET /api/v1/market/indices`** - 주요 지수 ⭐ 신규
-  - [ ] `POST /api/v1/market/prices` - 배치 가격 조회 (Body)
+  - [x] **`POST /api/v1/market/prices`** - 배치 가격 조회 (Body) ⭐ 신규 (2025-10-02)
   - [ ] `GET /api/v1/market/search` - 종목 검색
-- [ ] Rate limiting 추가
+- [ ] Rate limiting 추가 (Phase 6으로 연기)
 - [x] 에러 처리 및 로깅
 
 #### 프론트엔드 작업
@@ -93,18 +95,21 @@
   - [x] getMarketIndices() - 지수 조회
   - [x] getStockPrice() - 단일 종목
   - [x] getStockPrices() - 여러 종목 (개별 호출)
+  - [x] **getBatchPrices()** - 배치 가격 조회 (POST) ⭐ 신규 (2025-10-02)
+  - [x] **searchSymbol()** - 종목 검색 함수 ⭐ 신규 (2025-10-02)
 - [x] Mock 데이터를 API 호출로 교체 (부분)
   - [x] **홈페이지 시장 지수** ⭐ 완료
-  - [ ] 포트폴리오 Holdings 실시간 가격
+  - [ ] 포트폴리오 Holdings 실시간 가격 (다음 작업)
   - [ ] Market 페이지 데이터
 - [x] **로딩 상태 추가** ⭐ 완료
 - [x] **에러 처리 UI 추가** ⭐ 완료
 - [x] **React Query 자동 갱신** (1분마다) ⭐ 완료
 
 #### 테스팅
-- [ ] Provider 유닛 테스트
-- [ ] 엔드포인트 통합 테스트
+- [ ] Provider 유닛 테스트 (Phase 6으로 연기)
+- [ ] 엔드포인트 통합 테스트 (Phase 6으로 연기)
 - [x] 실제 데이터로 프론트엔드 동작 확인 ⭐ 완료
+- [ ] 배치 API 성능 테스트 (다음 작업)
 
 ---
 
@@ -112,7 +117,7 @@
 
 ## 🎉 2025년 10월 2일 완료 작업
 
-### ✅ 시장 지수 API 구현 및 연동 (Phase 2 - 40% 완료)
+### ✅ 오전: 시장 지수 API 구현 및 연동 (Phase 2 - 40% 완료)
 
 **Backend 구현**:
 1. **MarketIndexDto.java** - 시장 지수 DTO 생성
@@ -138,14 +143,124 @@
 - ✅ curl로 API 응답 확인 (4개 지수 정상)
 - ✅ 브라우저 동작 확인 (http://localhost:3000)
 
+**Git 작업**:
+- ✅ `dev` 브랜치에 commit 및 push
+- ✅ Commit: c71df7ca "feat: implement market indices API and integrate with frontend"
+
+---
+
+### ✅ 오후: 배치 가격 조회 API 구현 (Phase 2 - 50% 완료)
+
+**Branch 전략**:
+- ✅ `feature/batch-price-api` 브랜치 생성
+- 목적: 개별 호출 vs 배치 API 성능 비교 테스트
+
+**Backend 구현**:
+1. **MarketDataController.getBatchPrices()** - POST /api/v1/market/prices
+   - Request Body로 심볼 배열 수신 (최대 50개)
+   - 입력 검증 및 에러 처리
+   - 기존 getStockPrices() 재사용
+   - 로깅 강화 (성공/실패 개수 추적)
+
+**Frontend 구현**:
+1. **lib/api/market.ts** - API 함수 추가
+   - getBatchPrices() - POST 방식 배치 조회
+   - searchSymbol() - 종목 검색 함수
+   - getStockPrices()에 @deprecated 태그 추가
+2. **상세한 JSDoc 문서화**
+   - 사용 사례 및 예시 코드
+   - 성능 장점 설명 (단일 HTTP 요청, API Rate Limit 유리)
+
+**빌드 검증**:
+- ✅ Backend 빌드 성공 (gradle build -x test)
+
 **다음 단계**:
-1. POST /api/v1/market/prices (배치 조회) 구현
+1. 배치 API 테스트 및 성능 비교
 2. 포트폴리오 Holdings 실시간 가격 연동
 3. Market 페이지 Mock → API 교체
 
 ---
 
-## 📅 2025년 10월 1일 작업 계획
+---
+
+## 📅 다음 세션 작업 계획
+
+### 🎯 즉시 해야 할 작업 (우선순위순)
+
+#### 1. 배치 API 테스트 및 성능 비교 (30분)
+**목적**: 개별 호출 vs 배치 API 성능 비교
+
+**테스트 시나리오**:
+```bash
+# 시나리오 1: 개별 호출 (5개 종목, 5번 요청)
+GET /api/v1/market/price/AAPL
+GET /api/v1/market/price/MSFT
+GET /api/v1/market/price/GOOGL
+GET /api/v1/market/price/TSLA
+GET /api/v1/market/price/AMZN
+
+# 시나리오 2: 배치 호출 (5개 종목, 1번 요청)
+POST /api/v1/market/prices
+Body: ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"]
+
+# 측정 항목:
+- 총 응답 시간
+- API Rate Limit 소모량
+- 네트워크 요청 수
+- 데이터 일관성 (timestamp 동일 여부)
+```
+
+**측정 도구**:
+- curl + time 명령어
+- Browser DevTools Network 탭
+- Backend 로그 분석
+
+#### 2. Portfolio Holdings 실시간 가격 연동 (1-2시간)
+**파일**: `frontend/app/portfolios/[id]/page.tsx`
+
+**작업 내용**:
+```typescript
+// Mock 데이터 대신 배치 API 사용
+const symbols = portfolio.holdings.map(h => h.symbol);
+const { data: prices, isLoading, error } = useQuery({
+  queryKey: ['holdings-prices', portfolioId, symbols],
+  queryFn: () => getBatchPrices(symbols),
+  refetchInterval: 60000, // 1분마다
+  enabled: symbols.length > 0,
+});
+
+// Holdings 테이블에 실시간 가격 표시
+// - 현재가 업데이트
+// - 수익률 계산 (현재가 vs 매입가)
+// - 평가금액 계산 (현재가 × 수량)
+```
+
+#### 3. Market 페이지 검색 기능 연동 (1시간)
+**파일**: `frontend/app/market/page.tsx`
+
+**작업 내용**:
+- Mock `mockAssetSearchResults` → `searchSymbol()` 교체
+- 검색 입력 debounce 적용 (300ms)
+- 로딩 상태 및 빈 결과 처리
+
+#### 4. Git 정리 및 Merge (15분)
+```bash
+# feature/batch-price-api 브랜치 commit
+git add .
+git commit -m "feat: implement batch price API with performance optimization"
+
+# 테스트 완료 후 dev에 merge
+git checkout dev
+git merge feature/batch-price-api
+git push origin dev
+
+# 성능 비교 결과 문서화
+# - progress/ 폴더에 테스트 결과 기록
+```
+
+---
+
+## 📅 2025년 10월 1일 작업 계획 (참고용 - 완료됨)
 
 ### 🔴 Priority 1: MarketDataController 구현 (2-3일)
 
