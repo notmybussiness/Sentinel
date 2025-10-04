@@ -1,35 +1,61 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Input } from '../ui/Input'
 
 interface StockSearchBarProps {
   onSearch: (query: string) => void
   placeholder?: string
+  debounceMs?: number
 }
 
 /**
  * StockSearchBar 컴포넌트
  *
- * 주식/자산 검색 바
+ * 주식/자산 검색 바 (Debounce 지원)
  *
  * @example
  * ```tsx
  * <StockSearchBar
  *   onSearch={(query) => handleSearch(query)}
  *   placeholder="종목명 또는 심볼 검색"
+ *   debounceMs={300}
  * />
  * ```
  */
 export function StockSearchBar({
   onSearch,
   placeholder = '종목명 또는 심볼 검색 (예: AAPL, Apple)',
+  debounceMs = 300,
 }: StockSearchBarProps) {
   const [query, setQuery] = useState('')
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Debounce 효과: 입력 후 300ms 뒤에 검색 실행
+  useEffect(() => {
+    // 이전 타이머 취소
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    // 새 타이머 설정
+    debounceTimerRef.current = setTimeout(() => {
+      onSearch(query)
+    }, debounceMs)
+
+    // Cleanup: 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [query, onSearch, debounceMs])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (query.trim()) {
-      onSearch(query.trim())
+    // Enter 키 입력 시 즉시 검색 (debounce 무시)
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
     }
+    onSearch(query.trim())
   }
 
   return (
