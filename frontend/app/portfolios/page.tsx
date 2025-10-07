@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tabs, Tab } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
@@ -9,15 +10,25 @@ import { Card } from '@/components/ui/Card';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { PercentageChange } from '@/components/ui/PercentageChange';
 import { SimpleChart } from '@/components/ui/SimpleChart';
-import { MockDataBadge } from '@/components/common/MockDataBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockUserPortfolios } from '@/lib/mockData';
+import { getPortfolios, type Portfolio } from '@/lib/api/portfolio';
 
 export default function PortfoliosPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const [portfolios] = useState(mockUserPortfolios);
+
+  // Fetch portfolios from API
+  const {
+    data: portfolios = [],
+    isLoading,
+    error,
+  } = useQuery<Portfolio[]>({
+    queryKey: ['portfolios'],
+    queryFn: getPortfolios,
+    enabled: isAuthenticated,
+    refetchInterval: 60000, // Refresh every minute
+  });
 
   // Mock 차트 데이터 생성
   const generateChartData = (gainPercent: number) => {
