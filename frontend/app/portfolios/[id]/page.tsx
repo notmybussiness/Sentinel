@@ -12,9 +12,10 @@ import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { PercentageChange } from '@/components/ui/PercentageChange';
 import { RebalancingModal } from '@/components/portfolio/RebalancingModal';
 import { AddHoldingModal } from '@/components/portfolio/AddHoldingModal';
+import { EditHoldingModal } from '@/components/portfolio/EditHoldingModal';
 import { mockRebalancingRecommendations } from '@/lib/mockData';
 import { getBatchPrices, type StockPrice } from '@/lib/api/market';
-import { getPortfolio, type Portfolio } from '@/lib/api/portfolio';
+import { getPortfolio, deleteHolding, type Portfolio, type PortfolioHolding } from '@/lib/api/portfolio';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function PortfolioDetailPage() {
@@ -26,6 +27,8 @@ export default function PortfolioDetailPage() {
 
   const [showRebalancing, setShowRebalancing] = useState(false);
   const [showAddHolding, setShowAddHolding] = useState(false);
+  const [showEditHolding, setShowEditHolding] = useState(false);
+  const [selectedHolding, setSelectedHolding] = useState<PortfolioHolding | null>(null);
 
   // Fetch portfolio from API
   const {
@@ -58,6 +61,26 @@ export default function PortfolioDetailPage() {
     acc[price.symbol] = price.price;
     return acc;
   }, {} as Record<string, number>) || {};
+
+  // Handle edit holding
+  const handleEditHolding = (holding: PortfolioHolding) => {
+    setSelectedHolding(holding);
+    setShowEditHolding(true);
+  };
+
+  // Handle delete holding
+  const handleDeleteHolding = async (holding: PortfolioHolding) => {
+    if (!confirm(`${holding.symbol} 종목을 삭제하시겠습니까?`)) return;
+
+    try {
+      await deleteHolding(portfolioId, holding.id);
+      // Refresh portfolio data
+      queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
+      queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+    } catch (error: any) {
+      alert(error.response?.data?.message || '종목 삭제에 실패했습니다');
+    }
+  };
 
   // Mock 차트 데이터
   const chartData = portfolio ? Array.from({ length: 30 }, (_, i) => {
@@ -210,7 +233,7 @@ export default function PortfolioDetailPage() {
                     key={holding.id}
                     className="p-3 bg-background-secondary rounded-8 hover:bg-background-tertiary transition-colors"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       {/* 종목 정보 */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -257,6 +280,24 @@ export default function PortfolioDetailPage() {
                           />
                         </div>
                       </div>
+
+                      {/* 액션 버튼 */}
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditHolding(holding)}
+                        >
+                          수정
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteHolding(holding)}
+                        >
+                          삭제
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -284,6 +325,22 @@ export default function PortfolioDetailPage() {
         portfolioId={portfolioId}
         onSuccess={() => {
           // Refresh portfolio data after adding holding
+          queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
+          queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+        }}
+      />
+
+      {/* 종목 수정 모달 */}
+      <EditHoldingModal
+        isOpen={showEditHolding}
+        onClose={() => {
+          setShowEditHolding(false);
+          setSelectedHolding(null);
+        }}
+        portfolioId={portfolioId}
+        holding={selectedHolding}
+        onSuccess={() => {
+          // Refresh portfolio data after editing holding
           queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
           queryClient.invalidateQueries({ queryKey: ['portfolios'] });
         }}
