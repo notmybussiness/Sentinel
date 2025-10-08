@@ -2,7 +2,25 @@
   "permissions": {
     "allow": [
       "Bash(mv:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(for i in {1..15})",
+      "Bash(do sleep:*)",
+      "Bash(if curl -s http://localhost:3000)",
+      "Bash(/dev/null)",
+      "Bash(then echo \"Frontend ready!\")",
+      "Bash(exit 0)",
+      "Bash(fi)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(curl -s \"https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=1d\")",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "WebSearch",
+      "WebFetch(domain:algotrading101.com)",
+      "WebFetch(domain:site.financialmodelingprep.com)"
     ],
     "deny": [],
     "ask": []

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from '@/components/ui/StatCard';
@@ -10,20 +10,34 @@ import { SimpleChart } from '@/components/ui/SimpleChart';
 import { Card } from '@/components/ui/Card';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { PercentageChange } from '@/components/ui/PercentageChange';
-import { MockDataBadge } from '@/components/common/MockDataBadge';
 import { RebalancingModal } from '@/components/portfolio/RebalancingModal';
-import { mockUserPortfolios, mockRebalancingRecommendations } from '@/lib/mockData';
+import { AddHoldingModal } from '@/components/portfolio/AddHoldingModal';
+import { mockRebalancingRecommendations } from '@/lib/mockData';
 import { getBatchPrices, type StockPrice } from '@/lib/api/market';
+import { getPortfolio, type Portfolio } from '@/lib/api/portfolio';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function PortfolioDetailPage() {
   const router = useRouter();
   const params = useParams();
   const portfolioId = Number(params.id);
+  const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   const [showRebalancing, setShowRebalancing] = useState(false);
+  const [showAddHolding, setShowAddHolding] = useState(false);
 
-  // 포트폴리오 찾기
-  const portfolio = mockUserPortfolios.find((p) => p.id === portfolioId);
+  // Fetch portfolio from API
+  const {
+    data: portfolio,
+    isLoading,
+    error,
+  } = useQuery<Portfolio>({
+    queryKey: ['portfolio', portfolioId],
+    queryFn: () => getPortfolio(portfolioId),
+    enabled: isAuthenticated && !!portfolioId,
+    refetchInterval: 60000, // Refresh every minute
+  });
 
   // Holdings의 실시간 가격 조회 (배치 API 사용)
   const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
@@ -54,7 +68,20 @@ export default function PortfolioDetailPage() {
     return trend + noise;
   }) : [];
 
-  if (!portfolio) {
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-pulse">📊</div>
+          <h2 className="text-text-primary text-xl">포트폴리오 불러오는 중...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error || !portfolio) {
     return (
       <div className="min-h-screen bg-background-primary flex items-center justify-center">
         <div className="text-center">
@@ -104,12 +131,10 @@ export default function PortfolioDetailPage() {
           <StatCard
             label="총 자산"
             value={<PriceDisplay amount={portfolio.totalValue} currency="KRW" />}
-            isMock={portfolio.isMock}
           />
           <StatCard
             label="투자 원금"
             value={<PriceDisplay amount={portfolio.totalCost} currency="KRW" />}
-            isMock={portfolio.isMock}
           />
           <StatCard
             label="총 수익"
@@ -121,14 +146,12 @@ export default function PortfolioDetailPage() {
               />
             }
             change={portfolio.totalGainLossPercent}
-            isMock={portfolio.isMock}
           />
           <StatCard
             label="수익률"
             value={`${portfolio.totalGainLossPercent.toFixed(2)}%`}
             change={portfolio.totalGainLossPercent}
             changePeriod="누적"
-            isMock={portfolio.isMock}
           />
         </div>
 
@@ -138,7 +161,6 @@ export default function PortfolioDetailPage() {
             <h3 className="text-text-primary font-semibold">
               포트폴리오 가치 추이
             </h3>
-            {portfolio.isMock && <MockDataBadge show={true} size="sm" />}
           </div>
           <SimpleChart data={chartData} height={160} />
         </Card>
@@ -152,7 +174,7 @@ export default function PortfolioDetailPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => alert('종목 추가 (준비 중)')}
+              onClick={() => setShowAddHolding(true)}
             >
               + 종목 추가
             </Button>
@@ -168,7 +190,7 @@ export default function PortfolioDetailPage() {
                 variant="primary"
                 size="sm"
                 className="mt-4"
-                onClick={() => alert('종목 추가 (준비 중)')}
+                onClick={() => setShowAddHolding(true)}
               >
                 종목 추가하기
               </Button>
@@ -195,9 +217,6 @@ export default function PortfolioDetailPage() {
                           <h4 className="text-text-primary font-semibold text-sm">
                             {holding.symbol}
                           </h4>
-                          <span className="text-text-tertiary text-mini">
-                            {holding.name}
-                          </span>
                           {isRealtime && (
                             <span className="text-brand text-mini">● 실시간</span>
                           )}
@@ -255,6 +274,18 @@ export default function PortfolioDetailPage() {
         onExecute={() => {
           alert('리밸런싱 실행! (준비 중)');
           setShowRebalancing(false);
+        }}
+      />
+
+      {/* 종목 추가 모달 */}
+      <AddHoldingModal
+        isOpen={showAddHolding}
+        onClose={() => setShowAddHolding(false)}
+        portfolioId={portfolioId}
+        onSuccess={() => {
+          // Refresh portfolio data after adding holding
+          queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
+          queryClient.invalidateQueries({ queryKey: ['portfolios'] });
         }}
       />
     </div>
