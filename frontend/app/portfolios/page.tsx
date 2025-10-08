@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tabs, Tab } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
@@ -11,12 +11,16 @@ import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { PercentageChange } from '@/components/ui/PercentageChange';
 import { SimpleChart } from '@/components/ui/SimpleChart';
 import { EmptyState } from '@/components/common/EmptyState';
+import { CreatePortfolioModal } from '@/components/portfolio/CreatePortfolioModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPortfolios, type Portfolio } from '@/lib/api/portfolio';
 
 export default function PortfoliosPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+
+  const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
 
   // Fetch portfolios from API
   const {
@@ -76,7 +80,7 @@ export default function PortfoliosPage() {
               title="포트폴리오가 없습니다"
               description="첫 번째 포트폴리오를 만들어 투자를 시작하세요"
               actionLabel="포트폴리오 생성"
-              onAction={() => alert('포트폴리오 생성 기능 (준비 중)')}
+              onAction={() => setShowCreatePortfolio(true)}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -94,15 +98,6 @@ export default function PortfoliosPage() {
                     padding="sm"
                     className="cursor-pointer hover:shadow-glow transition-shadow relative"
                   >
-                    {/* Mock 배지 */}
-                    {portfolio.isMock && (
-                      <MockDataBadge
-                        show={true}
-                        className="absolute top-2 right-2"
-                        size="sm"
-                      />
-                    )}
-
                     {/* 포트폴리오 이름 */}
                     <div className="mb-3">
                       <h3 className="text-text-primary text-lg font-semibold mb-0.5">
@@ -208,7 +203,7 @@ export default function PortfoliosPage() {
           <Button
             variant="primary"
             size="md"
-            onClick={() => alert('포트폴리오 생성 기능 (준비 중)')}
+            onClick={() => setShowCreatePortfolio(true)}
           >
             + 새 포트폴리오
           </Button>
@@ -218,6 +213,16 @@ export default function PortfoliosPage() {
       <div className="max-w-6xl mx-auto px-8 py-8">
         <Tabs tabs={tabs} defaultTab="my" />
       </div>
+
+      {/* 포트폴리오 생성 모달 */}
+      <CreatePortfolioModal
+        isOpen={showCreatePortfolio}
+        onClose={() => setShowCreatePortfolio(false)}
+        onSuccess={() => {
+          // Refresh portfolios list after creating
+          queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+        }}
+      />
     </div>
   );
 }
