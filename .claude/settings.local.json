@@ -20,7 +20,10 @@
       "Bash(python:*)",
       "WebSearch",
       "WebFetch(domain:algotrading101.com)",
-      "WebFetch(domain:site.financialmodelingprep.com)"
+      "WebFetch(domain:site.financialmodelingprep.com)",
+      "Bash(git push:*)",
+      "Bash(./gradlew.bat clean:*)",
+      "Bash(npm run dev)"
     ],
     "deny": [],
     "ask": []

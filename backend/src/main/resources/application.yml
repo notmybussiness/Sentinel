@@ -76,3 +76,17 @@ stock:
     gemini:
       enabled: ${GEMINI_ENABLED:true}
       api-key: ${GEMINI_API_KEY}
+
+# Crypto Market API 설정
+crypto:
+  market:
+    upbit:
+      enabled: ${UPBIT_ENABLED:true}
+      base-url: https://api.upbit.com/v1
+      websocket-url: wss://api.upbit.com/websocket/v1
+      timeout: 10000
+
+    binance:
+      enabled: ${BINANCE_ENABLED:true}
+      base-url: https://api.binance.com/api/v3
+      timeout: 10000

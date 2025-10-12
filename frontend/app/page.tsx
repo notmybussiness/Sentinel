@@ -6,11 +6,13 @@ import { Section } from '@/components/ui/Section';
 import { Carousel } from '@/components/ui/Carousel';
 import { StatCard } from '@/components/ui/StatCard';
 import { IndexCard } from '@/components/market/IndexCard';
+import { TrendingCryptoCard } from '@/components/crypto/TrendingCryptoCard';
 import { RecommendedPortfolioCard } from '@/components/portfolio/RecommendedPortfolioCard';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockRecommendedPortfolios } from '@/lib/mockData';
 import { getMarketIndices } from '@/lib/api/market';
+import { getTrendingCoins } from '@/lib/api/crypto';
 import { useQuery } from '@tanstack/react-query';
 
 export default function HomePage() {
@@ -32,6 +34,19 @@ export default function HomePage() {
   } = useQuery({
     queryKey: ['market-indices'],
     queryFn: getMarketIndices,
+    refetchInterval: 60000, // 1분마다 자동 갱신
+  });
+
+  /**
+   * 트렌딩 암호화폐 데이터 조회
+   */
+  const {
+    data: trendingCoins,
+    isLoading: isCryptoLoading,
+    error: cryptoError,
+  } = useQuery({
+    queryKey: ['trending-coins'],
+    queryFn: () => getTrendingCoins('KRW', 5),
     refetchInterval: 60000, // 1분마다 자동 갱신
   });
 
@@ -85,6 +100,46 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {indices.map((index) => (
                 <IndexCard key={index.symbol} index={index} />
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* 트렌딩 암호화폐 */}
+        <Section
+          title="트렌딩 암호화폐"
+          subtitle="실시간 거래대금 상위 코인 (Upbit)"
+          action={
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/market')}
+            >
+              전체 보기 →
+            </Button>
+          }
+          noPadding
+          background="none"
+        >
+          {/* 로딩 상태 */}
+          {isCryptoLoading && (
+            <div className="text-center py-8 text-text-tertiary">
+              암호화폐 데이터를 불러오는 중...
+            </div>
+          )}
+
+          {/* 에러 상태 */}
+          {cryptoError && (
+            <div className="text-center py-8 text-error">
+              암호화폐 데이터를 불러올 수 없습니다.
+            </div>
+          )}
+
+          {/* 데이터 표시 */}
+          {!isCryptoLoading && !cryptoError && trendingCoins && (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {trendingCoins.map((coin) => (
+                <TrendingCryptoCard key={coin.marketCode} coin={coin} />
               ))}
             </div>
           )}

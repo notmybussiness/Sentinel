@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tantml:query';
+import { useMutation } from '@tanstack/react-query';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
