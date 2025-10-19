@@ -83,7 +83,7 @@ ai:
     enabled: ${GEMINI_ENABLED:true}
     api-key: ${GEMINI_API_KEY}
     base-url: https://generativelanguage.googleapis.com/v1beta/models
-    model: gemini-1.5-pro
+    model: gemini-2.5-pro-latest
     timeout: 30000
     max-tokens: 2048
     temperature: 0.7
