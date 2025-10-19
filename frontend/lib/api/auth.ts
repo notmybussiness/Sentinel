@@ -4,7 +4,7 @@
  * Kakao OAuth 로그인 및 토큰 관리
  */
 
-import { post, setTokens, clearTokens, getAccessToken } from './client';
+import { get, post, setTokens, clearTokens, getAccessToken } from './client';
 
 export interface User {
   id: number;
@@ -47,7 +47,7 @@ export function getKakaoLoginUrl(): string {
  */
 export async function handleKakaoCallback(code: string): Promise<LoginResponse> {
   try {
-    const response = await post<LoginResponse>('/api/v1/auth/kakao', { code });
+    const response = await get<LoginResponse>(`/api/v1/auth/kakao/callback?code=${code}`, false);
 
     // 토큰 저장
     setTokens(response.accessToken, response.refreshToken);
