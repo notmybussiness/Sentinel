@@ -77,6 +77,17 @@ stock:
       enabled: ${GEMINI_ENABLED:true}
       api-key: ${GEMINI_API_KEY}
 
+# AI 설정 (Gemini)
+ai:
+  gemini:
+    enabled: ${GEMINI_ENABLED:true}
+    api-key: ${GEMINI_API_KEY}
+    base-url: https://generativelanguage.googleapis.com/v1beta/models
+    model: gemini-1.5-pro
+    timeout: 30000
+    max-tokens: 2048
+    temperature: 0.7
+
 # Crypto Market API 설정
 crypto:
   market:
@@ -90,3 +101,8 @@ crypto:
       enabled: ${BINANCE_ENABLED:true}
       base-url: https://api.binance.com/api/v3
       timeout: 10000
+
+  # 실시간 스트리밍 설정
+  streaming:
+    websocket:
+      enabled: ${CRYPTO_WEBSOCKET_ENABLED:false}  # WebSocket 기능 (Phase 2에서 활성화)
