@@ -115,30 +115,21 @@ export async function devLogin(): Promise<LoginResponse> {
     throw new Error('개발 모드가 아닙니다.');
   }
 
-  // Mock 사용자 데이터
-  const mockUser: User = {
-    id: 1,
-    email: 'dev@sentinel.com',
-    name: '개발자',
-    nickname: 'Developer',
-    profileImageUrl: '',
-    provider: 'KAKAO',
-    createdAt: new Date().toISOString(),
-  };
+  try {
+    // 백엔드 API 호출
+    const response = await post<LoginResponse>('/api/v1/auth/dev-login');
 
-  const mockResponse: LoginResponse = {
-    accessToken: 'dev-access-token-' + Date.now(),
-    refreshToken: 'dev-refresh-token-' + Date.now(),
-    user: mockUser,
-  };
+    // 토큰 저장
+    setTokens(response.accessToken, response.refreshToken);
 
-  // 토큰 저장
-  setTokens(mockResponse.accessToken, mockResponse.refreshToken);
+    // 사용자 정보 저장
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
 
-  // 사용자 정보 저장
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('user', JSON.stringify(mockResponse.user));
+    return response;
+  } catch (error) {
+    console.error('[Dev Login Error]:', error);
+    throw error;
   }
-
-  return mockResponse;
 }

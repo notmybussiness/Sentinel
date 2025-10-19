@@ -13,8 +13,9 @@ import { PercentageChange } from '@/components/ui/PercentageChange';
 import { RebalancingModal } from '@/components/portfolio/RebalancingModal';
 import { AddHoldingModal } from '@/components/portfolio/AddHoldingModal';
 import { EditHoldingModal } from '@/components/portfolio/EditHoldingModal';
-import { mockRebalancingRecommendations } from '@/lib/mockData';
-import { getBatchPrices, type StockPrice } from '@/lib/api/market';
+import { PortfolioAnalysisModal } from '@/components/portfolio/PortfolioAnalysisModal';
+// STOCK API 주석처리 (API 한도 문제로 Crypto 중심 전환)
+// import { getBatchPrices, type StockPrice } from '@/lib/api/market';
 import { getPortfolio, deleteHolding, type Portfolio, type PortfolioHolding } from '@/lib/api/portfolio';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -28,6 +29,7 @@ export default function PortfolioDetailPage() {
   const [showRebalancing, setShowRebalancing] = useState(false);
   const [showAddHolding, setShowAddHolding] = useState(false);
   const [showEditHolding, setShowEditHolding] = useState(false);
+  const [showAiAnalysis, setShowAiAnalysis] = useState(false);
   const [selectedHolding, setSelectedHolding] = useState<PortfolioHolding | null>(null);
 
   // Fetch portfolio from API
@@ -42,25 +44,29 @@ export default function PortfolioDetailPage() {
     refetchInterval: 60000, // Refresh every minute
   });
 
-  // Holdings의 실시간 가격 조회 (배치 API 사용)
-  const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
-  const {
-    data: prices,
-    isLoading: isPricesLoading,
-    error: pricesError,
-  } = useQuery<StockPrice[]>({
-    queryKey: ['holdings-prices', portfolioId, symbols],
-    queryFn: () => getBatchPrices(symbols),
-    enabled: symbols.length > 0 && !!portfolio,
-    refetchInterval: 60000, // 1분마다 자동 갱신
-    staleTime: 30000, // 30초 동안은 캐시 사용
-  });
+  // Holdings의 실시간 가격 조회 (배치 API 사용) - 주석처리 (API 한도 문제)
+  // const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
+  // const {
+  //   data: prices,
+  //   isLoading: isPricesLoading,
+  //   error: pricesError,
+  // } = useQuery<StockPrice[]>({
+  //   queryKey: ['holdings-prices', portfolioId, symbols],
+  //   queryFn: () => getBatchPrices(symbols),
+  //   enabled: symbols.length > 0 && !!portfolio,
+  //   refetchInterval: 60000, // 1분마다 자동 갱신
+  //   staleTime: 30000, // 30초 동안은 캐시 사용
+  // });
 
-  // 가격 맵 생성 (빠른 조회를 위해)
-  const priceMap = prices?.reduce((acc, price) => {
-    acc[price.symbol] = price.price;
-    return acc;
-  }, {} as Record<string, number>) || {};
+  // // 가격 맵 생성 (빠른 조회를 위해)
+  // const priceMap = prices?.reduce((acc, price) => {
+  //   acc[price.symbol] = price.price;
+  //   return acc;
+  // }, {} as Record<string, number>) || {};
+
+  // 주식 API 비활성화로 인한 더미 값
+  const isPricesLoading = false;
+  const priceMap: Record<string, number> = {};
 
   // Handle edit holding
   const handleEditHolding = (holding: PortfolioHolding) => {
@@ -138,6 +144,13 @@ export default function PortfolioDetailPage() {
               편집
             </Button>
             <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setShowAiAnalysis(true)}
+            >
+              🤖 AI 분석
+            </Button>
+            <Button
               variant="primary"
               size="md"
               onClick={() => setShowRebalancing(true)}
@@ -147,6 +160,7 @@ export default function PortfolioDetailPage() {
           </>
         }
       />
+
 
       <div className="max-w-6xl mx-auto px-8 py-8 space-y-6">
         {/* 통계 카드 */}
@@ -308,15 +322,13 @@ export default function PortfolioDetailPage() {
       </div>
 
       {/* 리밸런싱 모달 */}
-      <RebalancingModal
-        isOpen={showRebalancing}
-        onClose={() => setShowRebalancing(false)}
-        recommendations={mockRebalancingRecommendations}
-        onExecute={() => {
-          alert('리밸런싱 실행! (준비 중)');
-          setShowRebalancing(false);
-        }}
-      />
+      {showRebalancing && (
+        <RebalancingModal
+          portfolioId={portfolioId}
+          portfolioName={portfolio.name}
+          onClose={() => setShowRebalancing(false)}
+        />
+      )}
 
       {/* 종목 추가 모달 */}
       <AddHoldingModal
@@ -344,6 +356,13 @@ export default function PortfolioDetailPage() {
           queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
           queryClient.invalidateQueries({ queryKey: ['portfolios'] });
         }}
+      />
+
+      {/* AI 분석 모달 */}
+      <PortfolioAnalysisModal
+        isOpen={showAiAnalysis}
+        onClose={() => setShowAiAnalysis(false)}
+        portfolioId={portfolioId}
       />
     </div>
   );

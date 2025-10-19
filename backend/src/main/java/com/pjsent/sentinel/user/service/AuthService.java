@@ -235,6 +235,51 @@ public class AuthService {
     }
 
     /**
+     * 개발 모드 로그인 (테스트 전용)
+     */
+    @Transactional
+    public LoginResponseDto devLogin() {
+        log.info("개발 모드 로그인 처리 시작");
+
+        try {
+            // 개발 사용자 조회 또는 생성
+            User devUser = userRepository.findByEmail("dev@sentinel.com")
+                    .orElseGet(() -> {
+                        User newUser = User.builder()
+                                .kakaoId("dev-user")
+                                .email("dev@sentinel.com")
+                                .name("개발자")
+                                .profileImageUrl(null)
+                                .build();
+                        return userRepository.save(newUser);
+                    });
+
+            // JWT 토큰 생성
+            String accessToken = jwtService.generateAccessToken(devUser.getId(), devUser.getEmail());
+            String refreshToken = jwtService.generateRefreshToken(devUser.getId(), devUser.getEmail());
+
+            // 사용자 세션 저장
+            saveUserSession(devUser, accessToken, refreshToken, 900L); // 15분
+
+            // 응답 DTO 생성
+            UserDto userDto = convertToUserDto(devUser);
+
+            log.info("개발 모드 로그인 성공. 사용자 ID: {}, 이메일: {}", devUser.getId(), devUser.getEmail());
+
+            return LoginResponseDto.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .expiresIn(900L)
+                    .user(userDto)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("개발 모드 로그인 실패. 오류: {}", e.getMessage());
+            throw new RuntimeException("개발 모드 로그인 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    /**
      * User 엔티티를 UserDto로 변환
      */
     private UserDto convertToUserDto(User user) {

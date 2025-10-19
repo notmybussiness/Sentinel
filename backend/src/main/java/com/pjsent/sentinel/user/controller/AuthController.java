@@ -88,7 +88,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser(@RequestHeader("Authorization") String authorization) {
         log.info("현재 사용자 정보 조회 요청");
-        
+
         try {
             String accessToken = authorization.replace("Bearer ", "");
             UserDto user = authService.getCurrentUser(accessToken);
@@ -96,6 +96,22 @@ public class AuthController {
         } catch (Exception e) {
             log.error("현재 사용자 정보 조회 실패. 오류: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    /**
+     * 개발 모드 로그인 (테스트 전용)
+     */
+    @PostMapping("/dev-login")
+    public ResponseEntity<LoginResponseDto> devLogin() {
+        log.info("개발 모드 로그인 요청");
+
+        try {
+            LoginResponseDto response = authService.devLogin();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("개발 모드 로그인 실패. 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

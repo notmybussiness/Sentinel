@@ -27,12 +27,11 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await devLogin();
-      router.push('/');
-      router.refresh();
+      // 페이지 새로고침으로 즉시 인증 상태 반영
+      window.location.href = '/';
     } catch (error) {
       console.error('개발 모드 로그인 오류:', error);
       alert('개발 모드 로그인에 실패했습니다.');
-    } finally {
       setIsLoading(false);
     }
   };

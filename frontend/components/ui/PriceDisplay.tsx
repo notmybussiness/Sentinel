@@ -4,7 +4,7 @@ import React from "react";
 
 interface PriceDisplayProps {
   /** 가격 */
-  amount: number;
+  amount: number | null;
   /** 통화 */
   currency?: "KRW" | "USD" | "BTC" | "ETH";
   /** 텍스트 크기 */
@@ -37,7 +37,12 @@ export function PriceDisplay({
     error: "text-accent-red",
   }[color];
 
-  const formatPrice = (value: number): string => {
+  const formatPrice = (value: number | null): string => {
+    // null 또는 undefined 체크
+    if (value === null || value === undefined || isNaN(value)) {
+      return "-";
+    }
+
     const decimalPlaces = decimals ?? (currency === "KRW" ? 0 : 2);
 
     switch (currency) {
