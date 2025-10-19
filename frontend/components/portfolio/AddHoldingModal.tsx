@@ -377,17 +377,22 @@ export function AddHoldingModal({
         {/* Average Cost Input */}
         <div>
           <label className="block text-sm font-medium text-text-primary mb-2">
-            평균 매수가 {assetType === 'CRYPTO' ? `(${baseCurrency})` : '(KRW)'}
+            평균 매수가 {assetType === 'CRYPTO' ? `(${baseCurrency})` : '(USD)'}
           </label>
           <Input
             type="number"
-            placeholder="평균 매수가를 입력하세요"
+            placeholder={assetType === 'STOCK' ? '평균 매수가를 입력하세요 (예: 150.50)' : '평균 매수가를 입력하세요'}
             value={averageCost}
             onChange={(e) => setAverageCost(e.target.value)}
             error={errors.averageCost}
             min="0"
-            step={assetType === 'CRYPTO' && baseCurrency === 'KRW' ? '100' : assetType === 'STOCK' ? '100' : '0.01'}
+            step={assetType === 'CRYPTO' && baseCurrency === 'KRW' ? '100' : '0.01'}
           />
+          {assetType === 'STOCK' && (
+            <p className="mt-1 text-mini text-text-tertiary">
+              💡 주식 가격은 USD(달러)로 입력해주세요
+            </p>
+          )}
         </div>
 
         {/* Submit Error */}
