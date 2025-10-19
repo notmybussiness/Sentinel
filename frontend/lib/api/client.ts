@@ -215,3 +215,27 @@ export async function del<T>(
 ): Promise<T> {
   return apiRequest<T>(endpoint, { method: 'DELETE', requiresAuth });
 }
+
+/**
+ * Axios-style API client
+ */
+const apiClient = {
+  get: async <T>(url: string): Promise<{ data: T }> => {
+    const data = await get<T>(url, true);
+    return { data };
+  },
+  post: async <T>(url: string, body?: any): Promise<{ data: T }> => {
+    const data = await post<T>(url, body, true);
+    return { data };
+  },
+  put: async <T>(url: string, body?: any): Promise<{ data: T }> => {
+    const data = await put<T>(url, body, true);
+    return { data };
+  },
+  delete: async <T = void>(url: string): Promise<{ data: T }> => {
+    const data = await del<T>(url, true);
+    return { data };
+  },
+};
+
+export default apiClient;

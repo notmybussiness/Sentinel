@@ -3,7 +3,7 @@
  * 암호화폐 데이터 API 호출 함수 모음
  */
 
-import client from './client';
+import { get, post } from './client';
 
 // ==================== Types ====================
 
@@ -61,11 +61,7 @@ export const getCryptoPrice = async (
   symbol: string,
   baseCurrency: string = 'KRW'
 ): Promise<CryptoPrice> => {
-  const response = await client.get<CryptoPrice>(
-    `/crypto/price/${symbol}`,
-    { params: { baseCurrency } }
-  );
-  return response.data;
+  return get<CryptoPrice>(`/api/v1/crypto/price/${symbol}?baseCurrency=${baseCurrency}`);
 };
 
 /**
@@ -76,11 +72,10 @@ export const getBatchCryptoPrices = async (
   symbols: string[],
   baseCurrency: string = 'KRW'
 ): Promise<CryptoPrice[]> => {
-  const response = await client.post<CryptoPrice[]>('/crypto/prices', {
+  return post<CryptoPrice[]>('/api/v1/crypto/prices', {
     symbols,
     baseCurrency,
   });
-  return response.data;
 };
 
 /**
@@ -91,10 +86,7 @@ export const getTrendingCoins = async (
   baseCurrency: string = 'KRW',
   limit: number = 10
 ): Promise<TrendingCoin[]> => {
-  const response = await client.get<TrendingCoin[]>('/crypto/trending', {
-    params: { baseCurrency, limit },
-  });
-  return response.data;
+  return get<TrendingCoin[]>(`/api/v1/crypto/trending?baseCurrency=${baseCurrency}&limit=${limit}`);
 };
 
 /**
@@ -104,10 +96,7 @@ export const getTrendingCoins = async (
 export const searchCrypto = async (
   query: string
 ): Promise<CryptoSearchResult[]> => {
-  const response = await client.get<CryptoSearchResult[]>('/crypto/search', {
-    params: { query },
-  });
-  return response.data;
+  return get<CryptoSearchResult[]>(`/api/v1/crypto/search?query=${query}`);
 };
 
 /**
@@ -119,11 +108,7 @@ export const getHistoricalData = async (
   baseCurrency: string = 'KRW',
   days: number = 30
 ): Promise<CryptoPrice[]> => {
-  const response = await client.get<CryptoPrice[]>(
-    `/crypto/historical/${symbol}`,
-    { params: { baseCurrency, days } }
-  );
-  return response.data;
+  return get<CryptoPrice[]>(`/api/v1/crypto/historical/${symbol}?baseCurrency=${baseCurrency}&days=${days}`);
 };
 
 /**
@@ -134,10 +119,7 @@ export const getCryptoServiceStatus = async (): Promise<{
   available: boolean;
   message: string;
 }> => {
-  const response = await client.get<{ available: boolean; message: string }>(
-    '/crypto/status'
-  );
-  return response.data;
+  return get<{ available: boolean; message: string }>('/api/v1/crypto/status');
 };
 
 // ==================== Utility Functions ====================

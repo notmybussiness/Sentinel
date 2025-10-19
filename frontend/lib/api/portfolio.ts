@@ -28,6 +28,8 @@ export interface PortfolioHolding {
   totalCost: number;
   gainLoss: number;
   gainLossPercent: number;
+  assetType: 'STOCK' | 'CRYPTO';
+  baseCurrency?: string;  // 'USD' or 'KRW' (crypto only)
   createdAt: string;
   updatedAt: string;
 }
@@ -46,11 +48,14 @@ export interface AddHoldingRequest {
   symbol: string;
   quantity: number;
   averageCost: number;
+  assetType?: 'STOCK' | 'CRYPTO';  // Defaults to 'STOCK' if not provided
+  baseCurrency?: string;  // Required for CRYPTO, optional for STOCK
 }
 
 export interface UpdateHoldingRequest {
   quantity: number;
   averageCost: number;
+  baseCurrency?: string;  // Optional: update base currency for crypto
 }
 
 /**
