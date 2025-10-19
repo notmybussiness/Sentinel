@@ -68,11 +68,16 @@ export async function handleKakaoCallback(code: string): Promise<LoginResponse> 
  * 로그아웃
  */
 export async function logout(): Promise<void> {
+  const token = getAccessToken();
+
   try {
-    // 백엔드에 로그아웃 요청 (선택사항)
-    await post('/api/v1/auth/logout', {}, true);
+    // 토큰이 있는 경우에만 백엔드에 로그아웃 요청
+    if (token) {
+      await post('/api/v1/auth/logout', {}, true);
+    }
   } catch (error) {
     console.error('[Logout Error]:', error);
+    // 백엔드 로그아웃 실패해도 계속 진행
   } finally {
     // 로컬 토큰 삭제
     clearTokens();

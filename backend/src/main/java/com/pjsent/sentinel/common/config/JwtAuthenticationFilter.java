@@ -47,7 +47,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // JWT 토큰 추출
             jwt = authHeader.substring(7);
-            
+
+            // 토큰이 비어있으면 다음 필터로
+            if (jwt == null || jwt.trim().isEmpty()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             // 토큰에서 이메일 추출
             userEmail = jwtService.getEmailFromToken(jwt);
             
