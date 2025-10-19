@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -21,6 +21,13 @@ export default function PortfoliosPage() {
   const { isAuthenticated } = useAuth();
 
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
+
+  // Redirect to login if not authenticated (client-side only)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, router]);
 
   // Fetch portfolios from API
   const {
@@ -50,8 +57,8 @@ export default function PortfoliosPage() {
     return data;
   };
 
+  // Early return while redirecting
   if (!isAuthenticated) {
-    router.push('/login');
     return null;
   }
 
