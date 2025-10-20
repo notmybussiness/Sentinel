@@ -83,8 +83,9 @@ export default function PortfolioDetailPage() {
       // Refresh portfolio data
       queryClient.invalidateQueries({ queryKey: ['portfolio', portfolioId] });
       queryClient.invalidateQueries({ queryKey: ['portfolios'] });
-    } catch (error: any) {
-      alert(error.response?.data?.message || '종목 삭제에 실패했습니다');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      alert(err.response?.data?.message || '종목 삭제에 실패했습니다');
     }
   };
 

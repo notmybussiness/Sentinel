@@ -23,7 +23,8 @@
       "WebFetch(domain:site.financialmodelingprep.com)",
       "Bash(git push:*)",
       "Bash(./gradlew.bat clean:*)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(./gradlew.bat bootRun)"
     ],
     "deny": [],
     "ask": []

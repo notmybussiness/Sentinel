@@ -150,12 +150,24 @@ Content-Type: application/json
 ### 6. Add Holding
 **Endpoint**: `POST /api/v1/portfolios/{id}/holdings`
 
-**Request**:
+**Request (Stock)**:
 ```json
 {
   "symbol": "TSLA",
   "quantity": 50,
-  "averageCost": 200000
+  "averageCost": 200000,
+  "assetType": "STOCK"
+}
+```
+
+**Request (Crypto)**:
+```json
+{
+  "symbol": "BTC",
+  "quantity": 1.5,
+  "averageCost": 50000000,
+  "assetType": "CRYPTO",
+  "baseCurrency": "KRW"
 }
 ```
 
@@ -170,7 +182,9 @@ Content-Type: application/json
   "currentPrice": 220000,
   "totalValue": 11000000,
   "gainLoss": 1000000,
-  "gainLossPercentage": 10.0
+  "gainLossPercentage": 10.0,
+  "assetType": "STOCK",
+  "baseCurrency": null
 }
 ```
 
@@ -183,9 +197,12 @@ Content-Type: application/json
 ```json
 {
   "quantity": 60,
-  "averageCost": 195000
+  "averageCost": 195000,
+  "baseCurrency": "USD"
 }
 ```
+
+**Note**: `baseCurrency` can be updated for CRYPTO assets only
 
 **Response**: `200 OK`
 
@@ -220,9 +237,12 @@ Content-Type: application/json
 
 ### ✅ Implemented
 - Full CRUD for portfolios
-- Holdings management
+- Holdings management (Stock + Crypto)
 - Real-time value calculation
 - User authorization checks
+- **Multi-asset support** (STOCK, CRYPTO)
+- **Multi-currency support** (KRW, USD for crypto)
+- Asset type discrimination in price lookup
 
 ### 🚧 Pending
 - Portfolio history tracking
@@ -244,4 +264,5 @@ Content-Type: application/json
 
 ---
 
-**Last Updated**: 2025-10-01
+**Last Updated**: 2025-10-17
+**Phase 4 Week 3**: Added Crypto Holdings support (assetType, baseCurrency)

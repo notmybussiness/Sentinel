@@ -55,6 +55,13 @@ public class PortfolioHolding {
     @Column(name = "gain_loss_percent", precision = 8, scale = 4)
     private BigDecimal gainLossPercent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "asset_type", nullable = false, length = 20)
+    private AssetType assetType = AssetType.STOCK;
+
+    @Column(name = "base_currency", length = 10)
+    private String baseCurrency = "USD";
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -64,11 +71,14 @@ public class PortfolioHolding {
     private LocalDateTime updatedAt;
 
     @Builder
-    public PortfolioHolding(Portfolio portfolio, String symbol, BigDecimal quantity, BigDecimal averageCost) {
+    public PortfolioHolding(Portfolio portfolio, String symbol, BigDecimal quantity, BigDecimal averageCost,
+                           AssetType assetType, String baseCurrency) {
         this.portfolio = portfolio;
         this.symbol = symbol;
         this.quantity = quantity;
         this.averageCost = averageCost;
+        this.assetType = assetType != null ? assetType : AssetType.STOCK;
+        this.baseCurrency = baseCurrency != null ? baseCurrency : "USD";
         this.totalCost = quantity.multiply(averageCost);
     }
 
@@ -141,5 +151,21 @@ public class PortfolioHolding {
             this.marketValue = quantity.multiply(currentPrice);
             calculateGainLoss();
         }
+    }
+
+    /**
+     * Base Currency 업데이트 (Crypto용)
+     */
+    public void updateBaseCurrency(String newBaseCurrency) {
+        if (this.assetType == AssetType.CRYPTO && newBaseCurrency != null) {
+            this.baseCurrency = newBaseCurrency;
+        }
+    }
+
+    /**
+     * 자산 타입 Enum
+     */
+    public enum AssetType {
+        STOCK, CRYPTO
     }
 }

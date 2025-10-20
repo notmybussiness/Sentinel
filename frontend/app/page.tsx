@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Carousel } from '@/components/ui/Carousel';
 import { StatCard } from '@/components/ui/StatCard';
-import { IndexCard } from '@/components/market/IndexCard';
 import { TrendingCryptoCard } from '@/components/crypto/TrendingCryptoCard';
 import { RecommendedPortfolioCard } from '@/components/portfolio/RecommendedPortfolioCard';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockRecommendedPortfolios } from '@/lib/mockData';
-import { getMarketIndices } from '@/lib/api/market';
+import { mockRecommendedPortfolios, mockMarketIndices } from '@/lib/mockData';
+// STOCK API 주석처리 (API 한도 문제로 Crypto 중심 전환) - Mock 데이터 사용
+// import { getMarketIndices } from '@/lib/api/market';
 import { getTrendingCoins } from '@/lib/api/crypto';
 import { useQuery } from '@tanstack/react-query';
 
@@ -20,22 +20,24 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth();
 
   /**
-   * 시장 지수 데이터 조회
+   * 시장 지수 데이터 - Mock 데이터 사용 (API 한도 문제로 비활성화)
    *
-   * - useQuery로 서버 상태 관리
-   * - queryKey: 캐시 식별자
-   * - queryFn: 실제 API 호출 함수
-   * - refetchInterval: 자동 갱신 주기 (1분)
+   * S&P 500, NASDAQ, Dow Jones, Bitcoin 지수 표시
    */
-  const {
-    data: indices,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['market-indices'],
-    queryFn: getMarketIndices,
-    refetchInterval: 60000, // 1분마다 자동 갱신
-  });
+  const indices = mockMarketIndices;
+  const isLoading = false;
+  const error = null;
+
+  // Bitcoin 실시간 API 주석처리 - Mock 데이터로 대체
+  // const {
+  //   data: bitcoinPrice,
+  //   isLoading: isBitcoinLoading,
+  //   error: bitcoinError,
+  // } = useQuery({
+  //   queryKey: ['bitcoin-price'],
+  //   queryFn: () => getCryptoPrice('BTC', 'KRW'),
+  //   refetchInterval: 60000, // 1분마다 자동 갱신
+  // });
 
   /**
    * 트렌딩 암호화폐 데이터 조회
@@ -74,7 +76,7 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-8 pb-6 space-y-6">
-        {/* 시장 인덱스 */}
+        {/* 시장 지수 - Mock 데이터 */}
         <Section
           title="시장 현황"
           subtitle="주요 지수 실시간 업데이트"
@@ -95,11 +97,53 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* 데이터 표시 */}
+          {/* 데이터 표시 - 4개 지수 (Mock) */}
           {!isLoading && !error && indices && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {indices.map((index) => (
-                <IndexCard key={index.symbol} index={index} />
+                <div
+                  key={index.symbol}
+                  className="glass-card p-4 rounded-12 hover:bg-background-secondary transition-all cursor-pointer relative"
+                >
+                  {/* Mock 태그 */}
+                  <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-micro rounded-4">
+                    MOCK
+                  </span>
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="text-text-primary font-semibold text-sm">
+                        {index.name}
+                      </h3>
+                      <p className="text-text-tertiary text-xs">{index.symbol}</p>
+                    </div>
+                    <div className="text-xl">
+                      {index.symbol === 'BTC' ? '₿' : '📊'}
+                    </div>
+                  </div>
+                  <div className="text-text-primary text-xl font-bold mb-1">
+                    {index.symbol === 'BTC'
+                      ? `₩${index.value.toLocaleString()}`
+                      : index.value.toLocaleString()}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`text-sm font-semibold ${
+                        index.changePercent >= 0
+                          ? 'text-success'
+                          : 'text-error'
+                      }`}
+                    >
+                      {index.changePercent >= 0 ? '+' : ''}
+                      {index.changePercent.toFixed(2)}%
+                    </span>
+                    <span className="text-text-tertiary text-xs">
+                      ({index.changePercent >= 0 ? '+' : ''}
+                      {index.symbol === 'BTC'
+                        ? `₩${index.change.toLocaleString()}`
+                        : index.change.toLocaleString()})
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           )}

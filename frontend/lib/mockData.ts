@@ -82,7 +82,7 @@ export const mockRecommendedPortfolios = [
   },
 ];
 
-// 시장 인덱스
+// 시장 지수 (Mock 데이터)
 export const mockMarketIndices = [
   {
     name: 'S&P 500',
@@ -103,20 +103,20 @@ export const mockMarketIndices = [
     isMock: true,
   },
   {
-    name: 'DOW',
+    name: 'Dow Jones',
     symbol: 'DJI',
     value: 34567.89,
-    change: 0,
-    changePercent: 0,
+    change: 123.45,
+    changePercent: 0.36,
     timestamp: new Date().toISOString(),
     isMock: true,
   },
   {
-    name: 'KOSPI',
-    symbol: 'KOSPI',
-    value: 2567.89,
-    change: 12.34,
-    changePercent: 0.48,
+    name: 'Bitcoin',
+    symbol: 'BTC',
+    value: 95234567, // ₩95,234,567
+    change: 1234567,
+    changePercent: 1.31,
     timestamp: new Date().toISOString(),
     isMock: true,
   },
@@ -222,11 +222,221 @@ export const mockRebalancingRecommendations = [
   },
 ];
 
-// 자산 검색 결과
+// 암호화폐 Mock 데이터
+export const mockCryptoAssets = [
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    price: 95234567,
+    change: 1234567,
+    changePercent: 1.31,
+    marketCap: '1.8조 KRW',
+    volume24h: '32.5조 KRW',
+    isMock: true,
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    price: 5123456,
+    change: -123456,
+    changePercent: -2.35,
+    marketCap: '615조 KRW',
+    volume24h: '18.2조 KRW',
+    isMock: true,
+  },
+  {
+    symbol: 'XRP',
+    name: 'Ripple',
+    price: 3456,
+    change: 123,
+    changePercent: 3.69,
+    marketCap: '193조 KRW',
+    volume24h: '12.8조 KRW',
+    isMock: true,
+  },
+  {
+    symbol: 'ADA',
+    name: 'Cardano',
+    price: 1234,
+    change: 45,
+    changePercent: 3.78,
+    marketCap: '43.2조 KRW',
+    volume24h: '5.1조 KRW',
+    isMock: true,
+  },
+  {
+    symbol: 'SOL',
+    name: 'Solana',
+    price: 234567,
+    change: 12345,
+    changePercent: 5.56,
+    marketCap: '97.8조 KRW',
+    volume24h: '8.9조 KRW',
+    isMock: true,
+  },
+];
+
+// 주식 Mock 데이터
+export const mockStockAssets = [
+  {
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    price: 180000,
+    change: 4500,
+    changePercent: 2.56,
+    marketCap: '3.2조 USD',
+    volume: '5천만주',
+    isMock: true,
+  },
+  {
+    symbol: 'MSFT',
+    name: 'Microsoft Corp.',
+    price: 330000,
+    change: -3960,
+    changePercent: -1.18,
+    marketCap: '2.8조 USD',
+    volume: '3천만주',
+    isMock: true,
+  },
+  {
+    symbol: 'GOOGL',
+    name: 'Alphabet Inc.',
+    price: 145000,
+    change: 2900,
+    changePercent: 2.04,
+    marketCap: '1.8조 USD',
+    volume: '2.5천만주',
+    isMock: true,
+  },
+  {
+    symbol: 'TSLA',
+    name: 'Tesla Inc.',
+    price: 250000,
+    change: -12500,
+    changePercent: -4.76,
+    marketCap: '795조 USD',
+    volume: '1.2억주',
+    isMock: true,
+  },
+  {
+    symbol: 'NVDA',
+    name: 'NVIDIA Corp.',
+    price: 520000,
+    change: 15600,
+    changePercent: 3.09,
+    marketCap: '1.3조 USD',
+    volume: '4천만주',
+    isMock: true,
+  },
+];
+
+// 채권 Mock 데이터
+export const mockBondAssets = [
+  {
+    symbol: 'AGG',
+    name: 'iShares Core U.S. Aggregate Bond ETF',
+    price: 98.45,
+    change: -0.23,
+    changePercent: -0.23,
+    yield: '4.25%',
+    duration: '6.2년',
+    isMock: true,
+  },
+  {
+    symbol: 'BND',
+    name: 'Vanguard Total Bond Market ETF',
+    price: 72.80,
+    change: 0.15,
+    changePercent: 0.21,
+    yield: '4.50%',
+    duration: '6.5년',
+    isMock: true,
+  },
+  {
+    symbol: 'TLT',
+    name: 'iShares 20+ Year Treasury Bond ETF',
+    price: 89.23,
+    change: -1.45,
+    changePercent: -1.60,
+    yield: '4.85%',
+    duration: '17.8년',
+    isMock: true,
+  },
+  {
+    symbol: 'SHY',
+    name: 'iShares 1-3 Year Treasury Bond ETF',
+    price: 82.15,
+    change: 0.05,
+    changePercent: 0.06,
+    yield: '4.95%',
+    duration: '1.9년',
+    isMock: true,
+  },
+];
+
+// 금/원자재 Mock 데이터
+export const mockCommodityAssets = [
+  {
+    symbol: 'GLD',
+    name: 'SPDR Gold Shares',
+    price: 185.50,
+    change: 2.30,
+    changePercent: 1.26,
+    underlying: '금 1온스',
+    volume: '850만주',
+    isMock: true,
+  },
+  {
+    symbol: 'SLV',
+    name: 'iShares Silver Trust',
+    price: 23.45,
+    change: -0.45,
+    changePercent: -1.88,
+    underlying: '은 1온스',
+    volume: '2천만주',
+    isMock: true,
+  },
+  {
+    symbol: 'USO',
+    name: 'United States Oil Fund',
+    price: 78.90,
+    change: 3.20,
+    changePercent: 4.23,
+    underlying: 'WTI 원유',
+    volume: '1.5천만주',
+    isMock: true,
+  },
+  {
+    symbol: 'DBA',
+    name: 'Invesco DB Agriculture Fund',
+    price: 19.85,
+    change: 0.15,
+    changePercent: 0.76,
+    underlying: '농산물 선물',
+    volume: '50만주',
+    isMock: true,
+  },
+];
+
+// 자산 검색 결과 (통합)
 export const mockAssetSearchResults = [
-  { symbol: 'AAPL', name: '애플', type: 'STOCK', price: 180000, change: 2.5 },
-  { symbol: 'MSFT', name: '마이크로소프트', type: 'STOCK', price: 330000, change: 1.2 },
-  { symbol: 'BTC', name: '비트코인', type: 'CRYPTO', price: 60000000, change: -3.5 },
-  { symbol: 'ETH', name: '이더리움', type: 'CRYPTO', price: 3000000, change: 4.2 },
-  { symbol: 'GLD', name: '금 ETF', type: 'COMMODITY', price: 180, change: 0.5 },
+  // 주식
+  { symbol: 'AAPL', name: 'Apple Inc.', type: 'STOCK', price: 180000, change: 4500, changePercent: 2.56 },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'STOCK', price: 330000, change: -3960, changePercent: -1.18 },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'STOCK', price: 145000, change: 2900, changePercent: 2.04 },
+  { symbol: 'TSLA', name: 'Tesla Inc.', type: 'STOCK', price: 250000, change: -12500, changePercent: -4.76 },
+  { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'STOCK', price: 520000, change: 15600, changePercent: 3.09 },
+
+  // 암호화폐
+  { symbol: 'BTC', name: 'Bitcoin', type: 'CRYPTO', price: 95234567, change: 1234567, changePercent: 1.31 },
+  { symbol: 'ETH', name: 'Ethereum', type: 'CRYPTO', price: 5123456, change: -123456, changePercent: -2.35 },
+  { symbol: 'XRP', name: 'Ripple', type: 'CRYPTO', price: 3456, change: 123, changePercent: 3.69 },
+
+  // 채권
+  { symbol: 'AGG', name: 'U.S. Aggregate Bond ETF', type: 'BOND', price: 98.45, change: -0.23, changePercent: -0.23 },
+  { symbol: 'BND', name: 'Total Bond Market ETF', type: 'BOND', price: 72.80, change: 0.15, changePercent: 0.21 },
+
+  // 금/원자재
+  { symbol: 'GLD', name: 'Gold Shares', type: 'COMMODITY', price: 185.50, change: 2.30, changePercent: 1.26 },
+  { symbol: 'SLV', name: 'Silver Trust', type: 'COMMODITY', price: 23.45, change: -0.45, changePercent: -1.88 },
 ];

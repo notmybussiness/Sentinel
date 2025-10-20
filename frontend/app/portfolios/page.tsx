@@ -32,8 +32,6 @@ export default function PortfoliosPage() {
   // Fetch portfolios from API
   const {
     data: portfolios = [],
-    isLoading,
-    error,
   } = useQuery<Portfolio[]>({
     queryKey: ['portfolios'],
     queryFn: getPortfolios,

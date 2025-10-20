@@ -21,4 +21,6 @@ public class UpdateHoldingRequest {
     @NotNull(message = "평균 단가는 필수입니다")
     @DecimalMin(value = "0.0001", message = "평균 단가는 0보다 커야 합니다")
     private BigDecimal averageCost;
+
+    private String baseCurrency;  // Optional: "USD" or "KRW"
 }

@@ -9,9 +9,13 @@ import { AssetFilter } from '@/components/market/AssetFilter';
 import { StockSearchBar } from '@/components/market/StockSearchBar';
 import { Card } from '@/components/ui/Card';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
-import { PercentageChange } from '@/components/ui/PercentageChange';
-import { mockMarketIndices } from '@/lib/mockData';
-import { searchSymbol } from '@/lib/api/market';
+import {
+  mockMarketIndices,
+  mockCryptoAssets,
+  mockAssetSearchResults,
+} from '@/lib/mockData';
+// STOCK API 주석처리 (API 한도 문제로 Crypto 중심 전환) - Mock 데이터 사용
+// import { searchSymbol } from '@/lib/api/market';
 import type { AssetClass, AssetSearchResult } from '@/types';
 
 export default function MarketPage() {
@@ -20,6 +24,7 @@ export default function MarketPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  // Mock 데이터 기반 검색 기능
   const handleSearch = async (query: string) => {
     // 검색어가 비어있으면 결과 초기화
     if (!query || query.trim().length === 0) {
@@ -36,29 +41,69 @@ export default function MarketPage() {
     setIsSearching(true);
     setSearchError(null);
 
+    // Mock 데이터에서 검색 (시뮬레이션 딜레이)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     try {
-      // 실제 API 호출
-      const results = await searchSymbol(query.trim());
+      const lowerQuery = query.toLowerCase();
+      const filtered = mockAssetSearchResults.filter(
+        (asset) =>
+          asset.symbol.toLowerCase().includes(lowerQuery) ||
+          asset.name.toLowerCase().includes(lowerQuery)
+      );
 
-      // API 응답을 AssetSearchResult 타입으로 변환
-      const formattedResults: AssetSearchResult[] = results.map(result => ({
-        symbol: result.symbol,
-        name: result.name,
-        exchange: result.exchange,
-        type: 'STOCK' as AssetClass, // AlphaVantage는 주로 주식 데이터
-        price: 0, // 검색 결과에는 가격 없음
-        change: 0,
-        changePercent: 0,
-      }));
+      if (filtered.length === 0) {
+        setSearchError('검색 결과가 없습니다. 다른 키워드로 시도해보세요.');
+      }
 
-      setSearchResults(formattedResults);
+      setSearchResults(filtered);
     } catch (error) {
-      console.error('종목 검색 실패:', error);
-      setSearchError('종목 검색에 실패했습니다. 다시 시도해주세요.');
+      console.error('검색 실패:', error);
+      setSearchError('검색 중 오류가 발생했습니다.');
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
+    return;
+
+    // // 검색어가 비어있으면 결과 초기화
+    // if (!query || query.trim().length === 0) {
+    //   setSearchResults([]);
+    //   setSearchError(null);
+    //   return;
+    // }
+
+    // // 최소 2글자 이상 입력 시 검색
+    // if (query.trim().length < 2) {
+    //   return;
+    // }
+
+    // setIsSearching(true);
+    // setSearchError(null);
+
+    // try {
+    //   // 실제 API 호출
+    //   const results = await searchSymbol(query.trim());
+
+    //   // API 응답을 AssetSearchResult 타입으로 변환
+    //   const formattedResults: AssetSearchResult[] = results.map(result => ({
+    //     symbol: result.symbol,
+    //     name: result.name,
+    //     exchange: result.exchange,
+    //     type: 'STOCK' as AssetClass, // AlphaVantage는 주로 주식 데이터
+    //     price: 0, // 검색 결과에는 가격 없음
+    //     change: 0,
+    //     changePercent: 0,
+    //   }));
+
+    //   setSearchResults(formattedResults);
+    // } catch (error) {
+    //   console.error('종목 검색 실패:', error);
+    //   setSearchError('종목 검색에 실패했습니다. 다시 시도해주세요.');
+    //   setSearchResults([]);
+    // } finally {
+    //   setIsSearching(false);
+    // }
   };
 
   const filteredResults =
@@ -97,14 +142,59 @@ export default function MarketPage() {
       key: 'crypto',
       label: '암호화폐',
       content: (
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">₿</div>
-          <h3 className="text-text-primary text-xl font-semibold mb-2">
-            준비 중입니다
-          </h3>
-          <p className="text-text-tertiary">
-            암호화폐 시세가 곧 제공될 예정입니다
-          </p>
+        <div className="space-y-3">
+          {mockCryptoAssets.map((crypto) => (
+            <Card
+              key={crypto.symbol}
+              onClick={() => alert(`${crypto.name} 상세 보기 (준비 중)`)}
+              padding="sm"
+              className="cursor-pointer hover:bg-background-tertiary transition-colors relative"
+            >
+              {/* Mock 태그 */}
+              <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-micro rounded-4">
+                MOCK
+              </span>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-text-primary font-semibold text-md">
+                      {crypto.symbol}
+                    </h4>
+                    <span className="text-text-tertiary text-sm">
+                      {crypto.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-mini text-text-tertiary">
+                    <span>시가총액: {crypto.marketCap}</span>
+                    <span>24h 거래량: {crypto.volume24h}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <PriceDisplay
+                    amount={crypto.price}
+                    currency="KRW"
+                    size="md"
+                  />
+                  <div className="flex items-center gap-1 justify-end mt-1">
+                    <span
+                      className={`text-sm font-semibold ${
+                        crypto.changePercent >= 0
+                          ? 'text-success'
+                          : 'text-error'
+                      }`}
+                    >
+                      {crypto.changePercent >= 0 ? '+' : ''}
+                      {crypto.changePercent.toFixed(2)}%
+                    </span>
+                    <span className="text-text-tertiary text-xs">
+                      ({crypto.changePercent >= 0 ? '+' : ''}
+                      ₩{crypto.change.toLocaleString()})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       ),
     },
@@ -173,12 +263,18 @@ export default function MarketPage() {
                     padding="sm"
                     className="cursor-pointer hover:bg-background-tertiary transition-colors relative"
                   >
-                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-micro rounded-4">
-                      ● 실시간
+                    {/* Mock 태그 */}
+                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-micro rounded-4">
+                      MOCK
                     </span>
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-xl">
+                            {asset.type === 'CRYPTO' ? '₿' :
+                             asset.type === 'BOND' ? '📜' :
+                             asset.type === 'COMMODITY' ? '🥇' : '📊'}
+                          </span>
                           <h4 className="text-text-primary font-semibold text-sm">
                             {asset.symbol}
                           </h4>
@@ -186,7 +282,9 @@ export default function MarketPage() {
                             {asset.name}
                           </span>
                           <span className="px-1.5 py-0.5 bg-background-tertiary text-text-tertiary text-micro rounded-4">
-                            {asset.type}
+                            {asset.type === 'CRYPTO' ? '암호화폐' :
+                             asset.type === 'BOND' ? '채권' :
+                             asset.type === 'COMMODITY' ? '금/원자재' : '주식'}
                           </span>
                         </div>
                       </div>
@@ -194,14 +292,22 @@ export default function MarketPage() {
                         <PriceDisplay
                           amount={asset.price}
                           currency={
-                            asset.type === 'CRYPTO' ? 'KRW' : 'KRW'
+                            asset.type === 'CRYPTO' ? 'KRW' : 'USD'
                           }
                           size="md"
                         />
-                        <PercentageChange
-                          value={asset.change}
-                          size="sm"
-                        />
+                        <div className="flex items-center gap-1 justify-end mt-0.5">
+                          <span
+                            className={`text-sm font-semibold ${
+                              asset.changePercent >= 0
+                                ? 'text-success'
+                                : 'text-error'
+                            }`}
+                          >
+                            {asset.changePercent >= 0 ? '+' : ''}
+                            {asset.changePercent.toFixed(2)}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Card>

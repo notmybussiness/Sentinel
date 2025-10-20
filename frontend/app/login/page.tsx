@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getKakaoLoginUrl, devLogin } from '@/lib/api/auth';
 import { Spinner } from '@/components/ui/Spinner';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   // Kakao 로그인

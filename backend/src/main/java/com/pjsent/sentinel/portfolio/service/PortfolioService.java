@@ -1,10 +1,13 @@
 package com.pjsent.sentinel.portfolio.service;
 
 import com.pjsent.sentinel.common.exception.ResourceNotFoundException;
+import com.pjsent.sentinel.crypto.dto.CryptoPriceDto;
+import com.pjsent.sentinel.crypto.service.CryptoDataService;
 import com.pjsent.sentinel.market.service.MarketDataService;
 import com.pjsent.sentinel.portfolio.dto.*;
 import com.pjsent.sentinel.portfolio.entity.Portfolio;
 import com.pjsent.sentinel.portfolio.entity.PortfolioHolding;
+import com.pjsent.sentinel.portfolio.entity.PortfolioHolding.AssetType;
 import com.pjsent.sentinel.portfolio.repository.PortfolioHoldingRepository;
 import com.pjsent.sentinel.portfolio.repository.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +32,7 @@ public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final PortfolioHoldingRepository holdingRepository;
     private final MarketDataService marketDataService;
+    private final CryptoDataService cryptoDataService;
 
     /**
      * 사용자의 모든 포트폴리오 조회
@@ -137,14 +141,25 @@ public class PortfolioService {
                 .symbol(request.getSymbol())
                 .quantity(request.getQuantity())
                 .averageCost(request.getAverageCost())
+                .assetType(AssetType.valueOf(request.getAssetType()))
+                .baseCurrency(request.getBaseCurrency())
                 .build();
-        
-        // 현재 가격 조회 및 설정
+
+        // 현재 가격 조회 및 설정 (자산 타입에 따라 다른 API 사용)
         try {
-            var stockPrice = marketDataService.getStockPrice(request.getSymbol());
-            holding.updateCurrentPrice(BigDecimal.valueOf(stockPrice.getPrice()));
+            if (holding.getAssetType() == AssetType.CRYPTO) {
+                CryptoPriceDto cryptoPrice = cryptoDataService.getCryptoPrice(
+                    request.getSymbol(),
+                    request.getBaseCurrency()
+                );
+                holding.updateCurrentPrice(BigDecimal.valueOf(cryptoPrice.getPrice()));
+            } else {
+                var stockPrice = marketDataService.getStockPrice(request.getSymbol());
+                holding.updateCurrentPrice(BigDecimal.valueOf(stockPrice.getPrice()));
+            }
         } catch (Exception e) {
-            log.warn("현재 가격 조회 실패. 심볼: {}, 오류: {}", request.getSymbol(), e.getMessage());
+            log.warn("현재 가격 조회 실패. 심볼: {}, 타입: {}, 오류: {}",
+                request.getSymbol(), request.getAssetType(), e.getMessage());
             // 현재 가격 조회 실패해도 보유 종목은 생성
         }
         
@@ -176,8 +191,14 @@ public class PortfolioService {
         }
         
         holding.updateHolding(request.getQuantity(), request.getAverageCost());
+
+        // 암호화폐인 경우 baseCurrency 업데이트
+        if (request.getBaseCurrency() != null) {
+            holding.updateBaseCurrency(request.getBaseCurrency());
+        }
+
         PortfolioHolding savedHolding = holdingRepository.save(holding);
-        
+
         portfolio.recalculate();
         portfolioRepository.save(portfolio);
         
@@ -220,13 +241,22 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
         
-        // 모든 보유 종목의 현재 가격 업데이트
+        // 모든 보유 종목의 현재 가격 업데이트 (자산 타입에 따라 다른 API 사용)
         for (PortfolioHolding holding : portfolio.getHoldings()) {
             try {
-                var stockPrice = marketDataService.getStockPrice(holding.getSymbol());
-                holding.updateCurrentPrice(BigDecimal.valueOf(stockPrice.getPrice()));
+                if (holding.getAssetType() == AssetType.CRYPTO) {
+                    CryptoPriceDto cryptoPrice = cryptoDataService.getCryptoPrice(
+                        holding.getSymbol(),
+                        holding.getBaseCurrency()
+                    );
+                    holding.updateCurrentPrice(BigDecimal.valueOf(cryptoPrice.getPrice()));
+                } else {
+                    var stockPrice = marketDataService.getStockPrice(holding.getSymbol());
+                    holding.updateCurrentPrice(BigDecimal.valueOf(stockPrice.getPrice()));
+                }
             } catch (Exception e) {
-                log.warn("현재 가격 조회 실패. 심볼: {}, 오류: {}", holding.getSymbol(), e.getMessage());
+                log.warn("현재 가격 조회 실패. 심볼: {}, 타입: {}, 오류: {}",
+                    holding.getSymbol(), holding.getAssetType(), e.getMessage());
             }
         }
         
@@ -277,6 +307,8 @@ public class PortfolioService {
                 .totalCost(holding.getTotalCost())
                 .gainLoss(holding.getGainLoss())
                 .gainLossPercent(holding.getGainLossPercent())
+                .assetType(holding.getAssetType().name())
+                .baseCurrency(holding.getBaseCurrency())
                 .createdAt(holding.getCreatedAt())
                 .updatedAt(holding.getUpdatedAt())
                 .build();

@@ -27,4 +27,10 @@ public class AddHoldingRequest {
     @NotNull(message = "평균 단가는 필수입니다")
     @DecimalMin(value = "0.0001", message = "평균 단가는 0보다 커야 합니다")
     private BigDecimal averageCost;
+
+    @NotBlank(message = "자산 타입은 필수입니다")
+    private String assetType = "STOCK";  // "STOCK" or "CRYPTO"
+
+    @Size(max = 10, message = "기준 통화는 10자를 초과할 수 없습니다")
+    private String baseCurrency = "USD";  // "USD" or "KRW"
 }

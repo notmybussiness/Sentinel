@@ -23,6 +23,8 @@ public class PortfolioHoldingDto {
     private BigDecimal totalCost;
     private BigDecimal gainLoss;
     private BigDecimal gainLossPercent;
+    private String assetType;      // "STOCK" or "CRYPTO"
+    private String baseCurrency;   // "USD" or "KRW"
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
