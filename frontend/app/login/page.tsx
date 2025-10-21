@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getKakaoLoginUrl, devLogin } from '@/lib/api/auth';
@@ -8,6 +9,15 @@ import { Spinner } from '@/components/ui/Spinner';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  // 이미 로그인된 경우 메인 페이지로 리다이렉트
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      router.replace('/');
+    }
+  }, [router]);
 
   // Kakao 로그인
   const handleKakaoLogin = () => {
