@@ -23,18 +23,24 @@ export interface CryptoPrice {
   provider: string;
 }
 
-export interface TrendingCoin {
+/**
+ * Backend TrendingCoinDto와 일치하는 타입 정의
+ */
+export interface TrendingCoinDto {
   symbol: string;
-  name: string;
-  koreanName: string;
+  name: string;           // 영문명
+  koreanName: string;     // 한글명
   marketCode: string;
-  price: number;
-  changePercent: number;
-  volume: number;
+  price: number;          // ⚠️ currentPrice 아님!
+  changePercent: number;  // ⚠️ changePercent24h 아님!
+  volume: number;         // ⚠️ volume24h 아님!
   tradeValue: number;
   rank: number;
   baseCurrency: string;
 }
+
+// Deprecated: TrendingCoin → TrendingCoinDto 사용
+export type TrendingCoin = TrendingCoinDto;
 
 export interface CryptoSearchResult {
   symbol: string;
@@ -85,8 +91,8 @@ export const getBatchCryptoPrices = async (
 export const getTrendingCoins = async (
   baseCurrency: string = 'KRW',
   limit: number = 10
-): Promise<TrendingCoin[]> => {
-  return get<TrendingCoin[]>(`/api/v1/crypto/trending?baseCurrency=${baseCurrency}&limit=${limit}`);
+): Promise<TrendingCoinDto[]> => {
+  return get<TrendingCoinDto[]>(`/api/v1/crypto/trending?baseCurrency=${baseCurrency}&limit=${limit}`);
 };
 
 /**

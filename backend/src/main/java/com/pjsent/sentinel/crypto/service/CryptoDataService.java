@@ -7,6 +7,7 @@ import com.pjsent.sentinel.crypto.service.factory.CryptoDataProviderFactory;
 import com.pjsent.sentinel.crypto.service.provider.CryptoDataProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,10 +27,14 @@ public class CryptoDataService {
 
     /**
      * 단일 암호화폐 가격 조회
+     *
+     * 캐싱: cryptoPrice 캐시에 1분간 저장 (실시간성 중요)
+     *
      * @param symbol 암호화폐 심볼 (예: BTC, ETH)
      * @param baseCurrency 기준 통화 (예: KRW, USDT)
      * @return 가격 정보
      */
+    @Cacheable(value = "cryptoPrice", key = "#symbol + '_' + #baseCurrency")
     public CryptoPriceDto getCryptoPrice(String symbol, String baseCurrency) {
         log.info("암호화폐 가격 조회 요청. 심볼: {}, 기준 통화: {}", symbol, baseCurrency);
 
@@ -122,9 +127,13 @@ public class CryptoDataService {
 
     /**
      * 암호화폐 검색
+     *
+     * 캐싱: cryptoSearch 캐시에 3분간 저장
+     *
      * @param query 검색어 (심볼 또는 이름)
      * @return 검색 결과 목록
      */
+    @Cacheable(value = "cryptoSearch", key = "#query")
     public List<CryptoSearchResultDto> searchCrypto(String query) {
         log.info("암호화폐 검색 요청. 키워드: {}", query);
 
@@ -149,10 +158,14 @@ public class CryptoDataService {
 
     /**
      * 트렌딩 암호화폐 조회 (거래대금 상위)
+     *
+     * 캐싱: trendingCoins 캐시에 3분간 저장
+     *
      * @param baseCurrency 기준 통화
      * @param limit 조회 개수
      * @return 트렌딩 암호화폐 목록
      */
+    @Cacheable(value = "trendingCoins", key = "#baseCurrency + '_' + #limit")
     public List<TrendingCoinDto> getTrendingCoins(String baseCurrency, int limit) {
         log.info("트렌딩 암호화폐 조회 요청. 기준 통화: {}, 개수: {}", baseCurrency, limit);
 

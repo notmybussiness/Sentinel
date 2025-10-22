@@ -21,7 +21,6 @@ export function PercentageChange({
 }: PercentageChangeProps) {
   const isPositive = value > 0;
   const isNegative = value < 0;
-  const isNeutral = value === 0;
 
   const colorClass = isPositive
     ? "text-accent-green"
@@ -37,12 +36,15 @@ export function PercentageChange({
 
   const arrow = isPositive ? "▲" : isNegative ? "▼" : "━";
 
+  // Null safety: undefined/null 값 처리
+  const safeValue = value ?? 0;
+
   return (
     <span className={`inline-flex items-center gap-1 font-medium ${colorClass} ${sizeClass}`}>
       {showArrow && <span>{arrow}</span>}
       <span>
         {isPositive && "+"}
-        {value.toFixed(2)}%
+        {safeValue.toFixed(2)}%
       </span>
       {period && (
         <span className="text-text-quaternary font-normal">({period})</span>

@@ -98,11 +98,16 @@ public class Portfolio {
 
     /**
      * 보유 종목 기반으로 총 가치 자동 계산
+     * 가격 정보가 없는 경우 투자금으로 대체
      */
     public void calculateTotalValueFromHoldings() {
         BigDecimal calculatedTotalValue = holdings.stream()
-                .filter(holding -> holding.getMarketValue() != null)
-                .map(PortfolioHolding::getMarketValue)
+                .map(holding -> {
+                    BigDecimal value = holding.getMarketValue();
+                    // 시장 가치가 null이면 투자금으로 대체 (최소한 원금은 반영)
+                    return value != null ? value : holding.getTotalCost();
+                })
+                .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal calculatedTotalCost = holdings.stream()
@@ -148,15 +153,22 @@ public class Portfolio {
 
     /**
      * 포트폴리오 재계산
+     * 가격 정보가 없는 경우 투자금으로 대체
      */
     public void recalculate() {
         BigDecimal totalValue = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
 
         for (PortfolioHolding holding : holdings) {
-            if (holding.getMarketValue() != null) {
-                totalValue = totalValue.add(holding.getMarketValue());
+            BigDecimal holdingValue = holding.getMarketValue();
+            // 시장 가치가 null이면 투자금으로 대체 (최소한 원금은 반영)
+            if (holdingValue == null) {
+                holdingValue = holding.getTotalCost();
             }
+            if (holdingValue != null) {
+                totalValue = totalValue.add(holdingValue);
+            }
+
             if (holding.getTotalCost() != null) {
                 totalCost = totalCost.add(holding.getTotalCost());
             }

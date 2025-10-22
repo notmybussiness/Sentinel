@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.pjsent.sentinel.market.dto.MarketIndexDto;
@@ -31,11 +32,14 @@ public class MarketDataService {
     /**
      * 주식 가격 데이터를 가져옵니다.
      * Fallback 전략을 사용하여 여러 프로바이더를 순차적으로 시도합니다.
-     * 
+     *
+     * 캐싱: stockPrice 캐시에 5분간 저장 (API 호출 제한 대응)
+     *
      * @param symbol 주식 심볼 (예: AAPL, MSFT)
      * @return 주식 가격 데이터
      * @throws RuntimeException 모든 프로바이더가 실패한 경우
      */
+    @Cacheable(value = "stockPrice", key = "#symbol")
     public StockPriceDto getStockPrice(String symbol) {
         log.info("주식 가격 데이터 요청. 심볼: {}", symbol);
         
@@ -121,8 +125,11 @@ public class MarketDataService {
      * 3. StockPriceDto → MarketIndexDto 변환
      * 4. 조회 실패한 지수는 null 반환 후 필터링
      *
+     * 캐싱: marketIndices 캐시에 5분간 저장
+     *
      * @return 시장 지수 목록 (성공한 것만)
      */
+    @Cacheable(value = "marketIndices")
     public List<MarketIndexDto> getMarketIndices() {
         log.info("시장 지수 조회 요청");
 
@@ -198,9 +205,12 @@ public class MarketDataService {
      * 참고: 현재는 AlphaVantage만 검색 기능 제공
      * Finnhub는 검색 API가 제한적이므로 fallback 미구현
      *
+     * 캐싱: stockSearch 캐시에 3분간 저장 (검색 결과는 자주 변하지 않음)
+     *
      * @param query 검색 키워드 (심볼 또는 회사명)
      * @return 검색 결과 목록 (최대 10개)
      */
+    @Cacheable(value = "stockSearch", key = "#query")
     public List<SearchResultDto> searchSymbol(String query) {
         log.info("종목 검색 요청. 키워드: {}", query);
 

@@ -40,8 +40,9 @@ export function RebalancingModal({ portfolioId, portfolioName, onClose }: Rebala
     onSuccess: (data) => {
       setResults(data);
     },
-    onError: (error: any) => {
-      alert(error.response?.data?.message || '리밸런싱 추천 생성에 실패했습니다');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      alert(err.response?.data?.message || '리밸런싱 추천 생성에 실패했습니다');
     },
   });
 

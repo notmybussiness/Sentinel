@@ -1,56 +1,68 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Section } from '@/components/ui/Section';
 import { Carousel } from '@/components/ui/Carousel';
 import { StatCard } from '@/components/ui/StatCard';
-import { TrendingCryptoCard } from '@/components/crypto/TrendingCryptoCard';
+import { MarketCoinCard } from '@/components/market/MarketCoinCard';
+import { CategoryTabs, type MarketCategory } from '@/components/market/CategoryTabs';
 import { RecommendedPortfolioCard } from '@/components/portfolio/RecommendedPortfolioCard';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockRecommendedPortfolios, mockMarketIndices } from '@/lib/mockData';
-// STOCK API 주석처리 (API 한도 문제로 Crypto 중심 전환) - Mock 데이터 사용
-// import { getMarketIndices } from '@/lib/api/market';
+import { mockRecommendedPortfolios } from '@/lib/mockData';
 import { getTrendingCoins } from '@/lib/api/crypto';
 import { useQuery } from '@tanstack/react-query';
+import type { TrendingCoinDto } from '@/lib/api/crypto';
+import { getBatchPrices } from '@/lib/api/market';
+import type { StockPrice } from '@/lib/api/market';
+import { PercentageChange } from '@/components/ui/PercentageChange';
+
 
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const [activeCategory, setActiveCategory] = useState<MarketCategory>('hot');
 
   /**
-   * 시장 지수 데이터 - Mock 데이터 사용 (API 한도 문제로 비활성화)
-   *
-   * S&P 500, NASDAQ, Dow Jones, Bitcoin 지수 표시
-   */
-  const indices = mockMarketIndices;
-  const isLoading = false;
-  const error = null;
-
-  // Bitcoin 실시간 API 주석처리 - Mock 데이터로 대체
-  // const {
-  //   data: bitcoinPrice,
-  //   isLoading: isBitcoinLoading,
-  //   error: bitcoinError,
-  // } = useQuery({
-  //   queryKey: ['bitcoin-price'],
-  //   queryFn: () => getCryptoPrice('BTC', 'KRW'),
-  //   refetchInterval: 60000, // 1분마다 자동 갱신
-  // });
-
-  /**
-   * 트렌딩 암호화폐 데이터 조회
+   * 트렌딩 암호화폐 데이터 조회 (Hot 카테고리)
    */
   const {
-    data: trendingCoins,
-    isLoading: isCryptoLoading,
-    error: cryptoError,
+    data: hotCoins,
+    isLoading: isHotLoading,
   } = useQuery({
-    queryKey: ['trending-coins'],
-    queryFn: () => getTrendingCoins('KRW', 5),
+    queryKey: ['hot-coins'],
+    queryFn: () => getTrendingCoins('KRW', 10),
     refetchInterval: 60000, // 1분마다 자동 갱신
   });
+  const popularEtfs = ['SPY', 'QQQ', 'SCHD', 'VTI', 'IWM', 'AGG'];
+  const {
+    data: etfPrices,
+    isLoading: isEtfLoading,
+  } = useQuery({
+    queryKey: ['etf-prices'],
+    queryFn: () => getBatchPrices(popularEtfs),
+    refetchInterval: 60000,
+  });
+
+  const etfNames: Record<string, string> = {
+    'SPY': 'S&P 500',
+    'QQQ': 'NASDAQ-100',
+    'SCHD': 'SCHD',
+    'VTI': 'Total Market',
+    'IWM': 'Russell 2000',
+    'AGG': 'US Bond',
+  };
+
+  /**
+   * TODO: 카테고리별 API 엔드포인트 구현 필요
+   * - New: 최근 상장 코인
+   * - Top Gainer: 24시간 상승률 상위
+   * - Top Volume: 거래량 상위
+   *
+   * 현재는 Hot 데이터를 재사용
+   */
+  const displayCoins = hotCoins || [];
 
   return (
     <div className="min-h-screen bg-background-primary">
@@ -76,83 +88,68 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-8 pb-6 space-y-6">
-        {/* 시장 지수 - Mock 데이터 */}
+        {/* 시장 현황 - Binance 스타일 */}
         <Section
           title="시장 현황"
-          subtitle="주요 지수 실시간 업데이트"
+          subtitle="실시간 암호화폐 시장 (Upbit)"
+          action={
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/market')}
+            >
+              전체 보기 →
+            </Button>
+          }
           noPadding
           background="none"
         >
+          {/* 카테고리 탭 */}
+          <div className="mb-4">
+            <CategoryTabs
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+            />
+          </div>
+
           {/* 로딩 상태 */}
-          {isLoading && (
+          {isHotLoading && (
             <div className="text-center py-8 text-text-tertiary">
-              시장 데이터를 불러오는 중...
+              데이터를 불러오는 중...
             </div>
           )}
 
-          {/* 에러 상태 */}
-          {error && (
-            <div className="text-center py-8 text-error">
-              시장 데이터를 불러올 수 없습니다.
-            </div>
-          )}
-
-          {/* 데이터 표시 - 4개 지수 (Mock) */}
-          {!isLoading && !error && indices && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {indices.map((index) => (
-                <div
-                  key={index.symbol}
-                  className="glass-card p-4 rounded-12 hover:bg-background-secondary transition-all cursor-pointer relative"
-                >
-                  {/* Mock 태그 */}
-                  <span className="absolute top-2 right-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-micro rounded-4">
-                    MOCK
-                  </span>
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-text-primary font-semibold text-sm">
-                        {index.name}
-                      </h3>
-                      <p className="text-text-tertiary text-xs">{index.symbol}</p>
-                    </div>
-                    <div className="text-xl">
-                      {index.symbol === 'BTC' ? '₿' : '📊'}
-                    </div>
-                  </div>
-                  <div className="text-text-primary text-xl font-bold mb-1">
-                    {index.symbol === 'BTC'
-                      ? `₩${index.value.toLocaleString()}`
-                      : index.value.toLocaleString()}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span
-                      className={`text-sm font-semibold ${
-                        index.changePercent >= 0
-                          ? 'text-success'
-                          : 'text-error'
-                      }`}
-                    >
-                      {index.changePercent >= 0 ? '+' : ''}
-                      {index.changePercent.toFixed(2)}%
-                    </span>
-                    <span className="text-text-tertiary text-xs">
-                      ({index.changePercent >= 0 ? '+' : ''}
-                      {index.symbol === 'BTC'
-                        ? `₩${index.change.toLocaleString()}`
-                        : index.change.toLocaleString()})
-                    </span>
-                  </div>
-                </div>
+          {/* 코인 그리드 */}
+          {!isHotLoading && displayCoins.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {displayCoins.map((coin: TrendingCoinDto) => (
+                <MarketCoinCard
+                  key={coin.marketCode}
+                  coin={{
+                    symbol: coin.symbol,
+                    name: coin.koreanName || coin.name,  // ✅ 수정
+                    price: coin.price,                   // ✅ 수정
+                    changePercent: coin.changePercent,   // ✅ 수정
+                    volume24h: coin.volume,              // ✅ 수정
+                  }}
+                  onClick={() => console.log('Coin clicked:', coin.symbol)}
+                />
               ))}
+            </div>
+          )}
+
+          {/* 빈 상태 */}
+          {!isHotLoading && displayCoins.length === 0 && (
+            <div className="text-center py-8 text-text-tertiary">
+              데이터가 없습니다.
             </div>
           )}
         </Section>
 
-        {/* 트렌딩 암호화폐 */}
+        {/* 주요 ETF & 인덱스 */}
         <Section
-          title="트렌딩 암호화폐"
-          subtitle="실시간 거래대금 상위 코인 (Upbit)"
+          title="주요 ETF & 인덱스"
+          subtitle="미국 시장 주요 지수 및 ETF"
           action={
             <Button
               variant="ghost"
@@ -166,25 +163,76 @@ export default function HomePage() {
           background="none"
         >
           {/* 로딩 상태 */}
-          {isCryptoLoading && (
+          {isEtfLoading && (
             <div className="text-center py-8 text-text-tertiary">
-              암호화폐 데이터를 불러오는 중...
+              데이터를 불러오는 중...
             </div>
           )}
 
-          {/* 에러 상태 */}
-          {cryptoError && (
-            <div className="text-center py-8 text-error">
-              암호화폐 데이터를 불러올 수 없습니다.
+          {/* ETF 그리드 */}
+          {!isEtfLoading && etfPrices && etfPrices.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {etfPrices.map((etf: StockPrice) => {
+                // Safe calculation - previousClose가 없거나 0일 경우 처리
+                const previousClose = etf.previousClose || etf.price;
+                const changeAmount = etf.price - previousClose;
+                const changePercent = previousClose !== 0
+                  ? (changeAmount / previousClose) * 100
+                  : 0;
+                const isPositive = changePercent >= 0;
+
+                return (
+                  <div
+                    key={etf.symbol}
+                    className="bg-background-secondary hover:bg-background-tertiary rounded-8 p-4 cursor-pointer transition-colors border border-background-tertiary"
+                    onClick={() => console.log('ETF clicked:', etf.symbol)}
+                  >
+                    {/* 심볼 & 이름 */}
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-text-primary font-medium text-sm">
+                          {etf.symbol}
+                        </span>
+                      </div>
+                      <span className="text-text-tertiary text-xs">
+                        {etfNames[etf.symbol] || etf.symbol}
+                      </span>
+                    </div>
+
+                    {/* 가격 */}
+                    <div className="mb-2">
+                      <div className="text-text-primary font-bold text-lg">
+                        ${etf.price?.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) || '0.00'}
+                      </div>
+                    </div>
+
+                    {/* 변동률 */}
+                    <div className="flex items-center justify-between">
+                      <PercentageChange value={changePercent} size="sm" />
+                      {previousClose !== etf.price && (
+                        <span
+                          className={`text-xs font-medium ${
+                            isPositive ? 'text-success' : 'text-error'
+                          }`}
+                        >
+                          {isPositive ? '+' : ''}
+                          {changeAmount.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {/* 데이터 표시 */}
-          {!isCryptoLoading && !cryptoError && trendingCoins && (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {trendingCoins.map((coin) => (
-                <TrendingCryptoCard key={coin.marketCode} coin={coin} />
-              ))}
+          {/* 빈 상태 */}
+          {!isEtfLoading && (!etfPrices || etfPrices.length === 0) && (
+            <div className="text-center py-8 text-text-tertiary">
+              데이터가 없습니다.
             </div>
           )}
         </Section>

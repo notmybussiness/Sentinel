@@ -37,8 +37,9 @@ export function PortfolioAnalysisModal({
     onSuccess: (data) => {
       setAnalysisResult(data);
     },
-    onError: (error: any) => {
-      alert(error.response?.data?.message || 'AI 분석에 실패했습니다');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      alert(err.response?.data?.message || 'AI 분석에 실패했습니다');
     },
   });
 

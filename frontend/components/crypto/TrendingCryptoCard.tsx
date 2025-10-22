@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '../ui/Card';
-import { formatNumber, formatPercent, getChangeColorClass } from '@/lib/utils';
+import { formatPercent, getChangeColorClass } from '@/lib/utils';
 import { formatKRW, formatTradeValue } from '@/lib/api/crypto';
 import type { TrendingCoin } from '@/lib/api/crypto';
 

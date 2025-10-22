@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from '@/components/ui/StatCard';
-import { SimpleChart } from '@/components/ui/SimpleChart';
+import { TradingChart } from '@/components/ui/TradingChart';
 import { Card } from '@/components/ui/Card';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { PercentageChange } from '@/components/ui/PercentageChange';
@@ -14,9 +14,8 @@ import { RebalancingModal } from '@/components/portfolio/RebalancingModal';
 import { AddHoldingModal } from '@/components/portfolio/AddHoldingModal';
 import { EditHoldingModal } from '@/components/portfolio/EditHoldingModal';
 import { PortfolioAnalysisModal } from '@/components/portfolio/PortfolioAnalysisModal';
-// STOCK API 주석처리 (API 한도 문제로 Crypto 중심 전환)
-// import { getBatchPrices, type StockPrice } from '@/lib/api/market';
 import { getPortfolio, deleteHolding, type Portfolio, type PortfolioHolding } from '@/lib/api/portfolio';
+import { getBatchCryptoPrices, type CryptoPrice } from '@/lib/api/crypto';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function PortfolioDetailPage() {
@@ -44,29 +43,26 @@ export default function PortfolioDetailPage() {
     refetchInterval: 60000, // Refresh every minute
   });
 
-  // Holdings의 실시간 가격 조회 (배치 API 사용) - 주석처리 (API 한도 문제)
-  // const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
-  // const {
-  //   data: prices,
-  //   isLoading: isPricesLoading,
-  //   error: pricesError,
-  // } = useQuery<StockPrice[]>({
-  //   queryKey: ['holdings-prices', portfolioId, symbols],
-  //   queryFn: () => getBatchPrices(symbols),
-  //   enabled: symbols.length > 0 && !!portfolio,
-  //   refetchInterval: 60000, // 1분마다 자동 갱신
-  //   staleTime: 30000, // 30초 동안은 캐시 사용
-  // });
+  // Holdings의 실시간 가격 조회 (암호화폐 배치 API 사용)
+  const symbols = portfolio?.holdings.map((h) => h.symbol) || [];
+  const baseCurrency = portfolio?.holdings[0]?.baseCurrency || 'KRW';
 
-  // // 가격 맵 생성 (빠른 조회를 위해)
-  // const priceMap = prices?.reduce((acc, price) => {
-  //   acc[price.symbol] = price.price;
-  //   return acc;
-  // }, {} as Record<string, number>) || {};
+  const {
+    data: prices,
+    isLoading: isPricesLoading,
+  } = useQuery<CryptoPrice[]>({
+    queryKey: ['crypto-prices', portfolioId, symbols, baseCurrency],
+    queryFn: () => getBatchCryptoPrices(symbols, baseCurrency),
+    enabled: symbols.length > 0 && !!portfolio,
+    refetchInterval: 60000, // 1분마다 자동 갱신
+    staleTime: 30000, // 30초 동안은 캐시 사용
+  });
 
-  // 주식 API 비활성화로 인한 더미 값
-  const isPricesLoading = false;
-  const priceMap: Record<string, number> = {};
+  // 가격 맵 생성 (빠른 조회를 위해)
+  const priceMap = prices?.reduce((acc, price) => {
+    acc[price.symbol] = price.price;
+    return acc;
+  }, {} as Record<string, number>) || {};
 
   // Handle edit holding
   const handleEditHolding = (holding: PortfolioHolding) => {
@@ -89,13 +85,23 @@ export default function PortfolioDetailPage() {
     }
   };
 
-  // Mock 차트 데이터
+  // 차트 데이터 생성 (30일 추이)
   const chartData = portfolio ? Array.from({ length: 30 }, (_, i) => {
+    // 30일 전부터 현재까지
+    const daysAgo = 30 - i;
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const time = date.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // 가치 계산 (선형 증가 + 노이즈)
     const progress = i / 30;
-    const trend =
-      portfolio.totalCost * (1 + (portfolio.totalGainLossPercent / 100) * progress);
-    const noise = (Math.random() - 0.5) * portfolio.totalValue * 0.02;
-    return trend + noise;
+    const startValue = portfolio.totalCost;
+    const endValue = portfolio.totalValue;
+    const trend = startValue + (endValue - startValue) * progress;
+    const noise = (Math.random() - 0.5) * Math.abs(endValue - startValue) * 0.05;
+    const value = Math.max(0, trend + noise);
+
+    return { time, value };
   }) : [];
 
   // Handle loading state
@@ -199,8 +205,9 @@ export default function PortfolioDetailPage() {
             <h3 className="text-text-primary font-semibold">
               포트폴리오 가치 추이
             </h3>
+            <span className="text-text-tertiary text-mini">30일</span>
           </div>
-          <SimpleChart data={chartData} height={160} />
+          <TradingChart data={chartData} height={300} type="area" />
         </Card>
 
         {/* 보유 종목 */}
@@ -236,12 +243,13 @@ export default function PortfolioDetailPage() {
           ) : (
             <div className="space-y-2">
               {portfolio.holdings.map((holding) => {
-                // 실시간 가격 사용 (있으면 실시간 가격, 없으면 Mock 가격)
-                const realtimePrice = priceMap[holding.symbol] || holding.currentPrice;
+                // 실시간 가격 사용 (실시간 > DB 가격 > 평단가)
+                const realtimePrice = priceMap[holding.symbol] || holding.currentPrice || holding.averageCost;
                 const marketValue = realtimePrice * holding.quantity;
                 const gainLoss = marketValue - (holding.averageCost * holding.quantity);
                 const gainLossPercent = (gainLoss / (holding.averageCost * holding.quantity)) * 100;
                 const isRealtime = !!priceMap[holding.symbol];
+                const isPriceAvailable = !!(priceMap[holding.symbol] || holding.currentPrice);
 
                 return (
                   <div
@@ -257,6 +265,9 @@ export default function PortfolioDetailPage() {
                           </h4>
                           {isRealtime && (
                             <span className="text-brand text-mini">● 실시간</span>
+                          )}
+                          {!isPriceAvailable && (
+                            <span className="text-yellow-500 text-mini">● 평단가</span>
                           )}
                           {isPricesLoading && (
                             <span className="text-text-tertiary text-mini animate-pulse">로딩중...</span>

@@ -72,7 +72,7 @@ export function AddCryptoHoldingModal({
       try {
         const results = await searchCrypto(searchQuery);
         setSearchResults(results);
-      } catch (error) {
+      } catch {
         setSearchError('검색 중 오류가 발생했습니다');
         setSearchResults([]);
       } finally {
@@ -90,9 +90,10 @@ export function AddCryptoHoldingModal({
       onSuccess();
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
       setErrors({
-        submit: error.response?.data?.message || '암호화폐 추가에 실패했습니다',
+        submit: err.response?.data?.message || '암호화폐 추가에 실패했습니다',
       });
     },
   });

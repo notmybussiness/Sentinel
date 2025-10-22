@@ -48,9 +48,10 @@ export function CreatePortfolioModal({
       onSuccess();
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
       setErrors({
-        submit: error.response?.data?.message || '포트폴리오 생성에 실패했습니다',
+        submit: err.response?.data?.message || '포트폴리오 생성에 실패했습니다',
       });
     },
   });

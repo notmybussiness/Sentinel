@@ -1,628 +1,556 @@
-# Sentinel 프로젝트 - 현재 상태 요약
+# Sentinel Investment Dashboard - 프로젝트 현황 분석
 
-> **Last Updated**: 2025-10-18
-> **Overall Progress**: Phase 1-7 완료 (100%)
-> **Next Phase**: Phase 8 - 테스팅 & 배포
-
----
-
-## 📋 1. 완료된 Phase (Phase 1-7)
-
-### ✅ Phase 1: 기초 구축 (100%)
-- Spring Boot 3.5.5 백엔드 설정
-- Next.js 14 프론트엔드 설정
-- Kakao OAuth + JWT 인증
-- 20+ UI 컴포넌트 라이브러리
-- Glassmorphism 디자인 시스템
-
-### ✅ Phase 2: 시장 데이터 통합 (80%)
-- AlphaVantage API 통합 (주식 데이터)
-- Finnhub API Fallback
-- 4개 주요 지수 실시간 조회
-- 종목 검색 기능
-- ⏳ Circuit Breaker (Phase 8로 연기)
-- ⏳ Redis 캐싱 (Phase 8로 연기)
-
-### ✅ Phase 3: 포트폴리오 통합 (100%)
-- 포트폴리오 CRUD 완전 구현
-- Holdings 추가/수정/삭제
-- 실시간 가격 업데이트 (1분 간격)
-- Stock + Crypto 자산 지원
-
-### ✅ Phase 4: Crypto 통합 (100%)
-- Upbit REST API 통합
-- Binance API Fallback
-- Provider Pattern 구현
-- Adapter Pattern 실시간 스트리밍
-  - SSE (권장, 1초 간격)
-  - WebSocket (고성능, 500ms)
-  - Long Polling (Fallback, 2초)
-- 자동 Fallback 지원
-
-### ✅ Phase 5: Gemini AI 통합 (100%)
-- Gemini API 통합
-- 5가지 분석 타입
-  - OVERVIEW (전체 개요)
-  - DIVERSIFICATION (다각화 분석)
-  - RISK (리스크 평가)
-  - PERFORMANCE (성과 분석)
-  - RECOMMENDATION (투자 제안)
-- 리스크 수준 평가 (LOW/MEDIUM/HIGH)
-- 다각화 점수 (0-100)
-
-### ✅ Phase 6: Backtesting Engine (100%)
-- AlphaVantage 과거 데이터 통합
-- 7가지 성과 지표
-  - Total Return (총 수익률)
-  - CAGR (연평균 성장률)
-  - Sharpe Ratio (샤프 비율)
-  - Sortino Ratio (소르티노 비율)
-  - Max Drawdown (최대 낙폭)
-  - Volatility (변동성)
-  - Win Rate (승률)
-- 4가지 리밸런싱 빈도 (NONE, MONTHLY, QUARTERLY, YEARLY)
-- Equity Curve 시각화
-- Lab 페이지 완성
-
-### ✅ Phase 7: Rebalancing Algorithm (100%)
-- Equal Weight 전략 구현
-- BUY/SELL/HOLD 추천 생성
-- 거래 비용 계산 (0.1%, $1-$10)
-- 세금 효율성 고려 (20% 양도소득세)
-- 임계값 설정 (기본 5%)
-- RebalancingModal 완전 구현
+> **분석 일시**: 2025-10-22
+> **현재 Phase**: Phase 7 완료 (Rebalancing Algorithm)
+> **다음 Phase**: Phase 8 (Testing & Deployment)
 
 ---
 
-## 🎯 2. 남은 할일 (Phase 8)
+## 📊 전체 아키텍처 현황
 
-### 우선순위 1: 테스팅 (예상 1주)
+### Backend Architecture
 ```
-1. Backend 유닛 테스트
-   - RebalancingService 테스트
-   - BacktestEngine 테스트
-   - PortfolioService 테스트
-   - 목표: >80% 커버리지
-
-2. Frontend 컴포넌트 테스트
-   - Modal 컴포넌트 테스트
-   - API 클라이언트 테스트
-   - 목표: >70% 커버리지
-
-3. E2E 테스트 확장
-   - Portfolio 생성 → Holdings 추가 → Rebalancing
-   - AI 분석 플로우
-   - Backtesting 플로우
+Spring Boot 3.5.5
+├── 인증 (Authentication)
+│   ├── ✅ Kakao OAuth 2.0
+│   ├── ✅ JWT Token (Access + Refresh)
+│   └── ✅ 개발자 모드 로그인
+│
+├── 시장 데이터 (Market Data)
+│   ├── ✅ Provider Factory 패턴
+│   ├── ✅ KoreaInvestmentProvider (Primary)
+│   ├── ✅ AlphaVantageProvider (Fallback)
+│   ├── ✅ FinnhubProvider (Fallback)
+│   └── ✅ YahooFinanceProvider (Final Fallback)
+│
+├── 암호화폐 (Crypto)
+│   ├── ✅ UpbitProvider (KRW)
+│   ├── ✅ BinanceProvider (USD)
+│   └── ✅ 실시간 스트리밍 (SSE, WebSocket, LongPolling)
+│
+├── 포트폴리오 (Portfolio)
+│   ├── ✅ CRUD Operations
+│   ├── ✅ Stock + Crypto Holdings
+│   ├── ✅ 실시간 가격 업데이트
+│   └── ✅ 자동 시드 데이터 (DataInitializer)
+│
+├── AI 분석 (AI Analysis)
+│   ├── ✅ Gemini 2.5 Pro
+│   ├── ✅ 5가지 분석 타입
+│   └── ✅ 포트폴리오 인사이트
+│
+├── 백테스팅 (Backtesting)
+│   ├── ✅ BacktestEngine
+│   ├── ✅ PerformanceCalculator
+│   ├── ✅ 7가지 성과 지표
+│   └── ✅ HistoricalDataService (AlphaVantage)
+│
+└── 리밸런싱 (Rebalancing)
+    ├── ✅ RebalancingService
+    ├── ✅ Equal Weight 전략
+    ├── ✅ BUY/SELL/HOLD 추천
+    └── ✅ 거래 비용/세금 계산
 ```
 
-### 우선순위 2: 배포 준비 (예상 1주)
+### Frontend Architecture
 ```
-1. Docker 설정
-   - Dockerfile 작성 (Backend, Frontend)
-   - docker-compose.yml 작성
-   - 로컬 Docker 테스트
-
-2. AWS 인프라 설정
-   - EC2 인스턴스 설정
-   - RDS PostgreSQL 설정
-   - S3 정적 파일 호스팅
-   - CloudWatch 로깅
-
-3. CI/CD 파이프라인
-   - GitHub Actions 설정
-   - 자동 빌드 & 테스트
-   - 자동 배포 워크플로우
-```
-
-### 우선순위 3: 최적화 (선택 사항)
-```
-1. Redis 캐싱 구현
-   - 시장 데이터 캐싱
-   - API 응답 캐싱
-
-2. Circuit Breaker 패턴
-   - 외부 API 실패 대응
-   - Resilience4j 통합
-
-3. Rate Limiting
-   - API 요청 제한
-   - 사용자별 쿼터 관리
+Next.js 14 (App Router)
+├── ✅ 인증 플로우 (Kakao + Dev Mode)
+├── ✅ 포트폴리오 대시보드
+├── ✅ 시장 데이터 뷰어
+├── ✅ 암호화폐 트렌딩
+├── ✅ AI 분석 모달
+├── ✅ 백테스팅 Lab
+└── ✅ 리밸런싱 추천
 ```
 
 ---
 
-## 🚫 3. Mock 데이터 현황
+## 🔌 API 엔드포인트 현황
 
-### ✅ 완전히 제거된 Mock (실제 API 사용 중)
-- ~~시장 지수~~ → `GET /api/v1/market/indices`
-- ~~포트폴리오 목록/상세~~ → `GET /api/v1/portfolios`
-- ~~Holdings CRUD~~ → Portfolio API
-- ~~암호화폐 가격~~ → `GET /api/v1/crypto/price/{symbol}`
-- ~~리밸런싱 추천~~ → `POST /api/v1/rebalancing/recommend`
-- ~~AI 분석~~ → `POST /api/v1/ai/analyze`
-- ~~백테스팅~~ → `POST /api/v1/backtest/run`
+### 1️⃣ Authentication API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| GET | `/api/v1/auth/kakao/callback` | ✅ | ✅ | Kakao OAuth |
+| POST | `/api/v1/auth/dev-login` | ✅ | ✅ | 개발자 모드 |
+| POST | `/api/v1/auth/refresh` | ✅ | ✅ | 토큰 갱신 |
+| POST | `/api/v1/auth/logout` | ✅ | ✅ | 로그아웃 |
 
-### 📦 남아있는 Mock (사용 안 함 - 삭제 가능)
-**`frontend/lib/mockData.ts`**:
-- `mockRecommendedPortfolios` - 추천 포트폴리오 (홈페이지 미사용)
-- `mockUserPortfolios` - 사용자 포트폴리오 (API 사용 중)
-- `mockCryptoAssets` - 암호화폐 자산 (API 사용 중)
-- `mockStockAssets` - 주식 자산 (API 사용 중)
-- `mockBondAssets` - 채권 자산 (미구현 기능)
-- `mockCommodityAssets` - 원자재 자산 (미구현 기능)
+### 2️⃣ Market Data API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| GET | `/api/v1/market/price/{symbol}` | ✅ | ✅ | 단일 종목 가격 |
+| GET | `/api/v1/market/prices?symbols=` | ✅ | ⚠️ | Query 방식 (사용 안함) |
+| POST | `/api/v1/market/prices` | ✅ | ✅ | 배치 가격 조회 |
+| GET | `/api/v1/market/indices` | ✅ | ✅ | 주요 지수 (S&P, NASDAQ 등) |
+| GET | `/api/v1/market/search?query=` | ✅ | ✅ | 종목 검색 |
+| GET | `/api/v1/market/status` | ✅ | ❌ | 서비스 상태 |
 
-**결론**: 모든 핵심 기능은 실제 API로 전환 완료. mockData.ts는 향후 삭제 가능.
+**Provider 우선순위**:
+1. KoreaInvestmentProvider (한국투자증권 API)
+2. AlphaVantageProvider (Fallback)
+3. FinnhubProvider (Fallback)
+4. YahooFinanceProvider (최종 Fallback)
 
----
+**⚠️ 현재 상태**:
+- KIS API 키 설정 필요 (`application-secret.yml`)
+- 설정 전까지 Yahoo Finance Fallback 사용 중
 
-## 🔍 4. API 구현 현황
+### 3️⃣ Crypto API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| GET | `/api/v1/crypto/price/{symbol}` | ✅ | ✅ | 단일 암호화폐 가격 |
+| POST | `/api/v1/crypto/prices` | ✅ | ✅ | 배치 가격 조회 |
+| GET | `/api/v1/crypto/trending` | ✅ | ✅ | 거래대금 상위 10개 |
+| GET | `/api/v1/crypto/search?query=` | ✅ | ✅ | 암호화폐 검색 |
+| GET | `/api/v1/crypto/historical/{symbol}` | ✅ | ❌ | 과거 데이터 |
+| GET | `/api/v1/crypto/status` | ✅ | ❌ | 서비스 상태 |
 
-### ✅ 100% 구현 완료
+**실시간 스트리밍**:
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| GET | `/api/v1/crypto/stream/prices?method=SSE` | ✅ | ❌ | Server-Sent Events |
+| GET | `/api/v1/crypto/stream/prices?method=WEBSOCKET` | ✅ | ❌ | WebSocket |
+| GET | `/api/v1/crypto/stream/prices?method=LONGPOLLING` | ✅ | ❌ | Long Polling |
 
-#### 인증 API (3개)
-```
-POST /api/v1/auth/kakao/callback  ✅ Kakao OAuth
-POST /api/v1/auth/refresh          ✅ 토큰 갱신
-POST /api/v1/auth/logout           ✅ 로그아웃
-```
+**Provider 현황**:
+- ✅ UpbitProvider: KRW 거래 (Primary)
+- ✅ BinanceProvider: USD 거래 (Secondary)
 
-#### 포트폴리오 API (9개)
-```
-GET    /api/v1/portfolios                      ✅ 목록
-GET    /api/v1/portfolios/{id}                 ✅ 상세
-POST   /api/v1/portfolios                      ✅ 생성
-PUT    /api/v1/portfolios/{id}                 ✅ 수정
-DELETE /api/v1/portfolios/{id}                 ✅ 삭제
-POST   /api/v1/portfolios/{id}/holdings        ✅ Holding 추가
-PUT    /api/v1/portfolios/{id}/holdings/{id}   ✅ Holding 수정
-DELETE /api/v1/portfolios/{id}/holdings/{id}   ✅ Holding 삭제
-POST   /api/v1/portfolios/{id}/recalculate     ✅ 재계산
-```
+### 4️⃣ Portfolio API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| GET | `/api/v1/portfolios` | ✅ | ✅ | 포트폴리오 목록 |
+| GET | `/api/v1/portfolios/{id}` | ✅ | ✅ | 포트폴리오 상세 |
+| POST | `/api/v1/portfolios` | ✅ | ✅ | 포트폴리오 생성 |
+| PUT | `/api/v1/portfolios/{id}` | ✅ | ✅ | 포트폴리오 수정 |
+| DELETE | `/api/v1/portfolios/{id}` | ✅ | ✅ | 포트폴리오 삭제 |
+| POST | `/api/v1/portfolios/{id}/holdings` | ✅ | ✅ | Holding 추가 |
+| PUT | `/api/v1/portfolios/{id}/holdings/{hid}` | ✅ | ✅ | Holding 수정 |
+| DELETE | `/api/v1/portfolios/{id}/holdings/{hid}` | ✅ | ✅ | Holding 삭제 |
+| POST | `/api/v1/portfolios/{id}/recalculate` | ✅ | ✅ | 실시간 재계산 |
 
-#### 시장 데이터 API (4개)
-```
-GET  /api/v1/market/indices             ✅ 주요 지수 (4개)
-GET  /api/v1/market/price/{symbol}      ✅ 개별 가격
-POST /api/v1/market/prices              ✅ 배치 가격
-GET  /api/v1/market/search?query={}     ✅ 종목 검색
-```
+**자동 시드 데이터** (DataInitializer):
+- 개발자 계정 자동 생성 (`dev@sentinel.com`)
+- 샘플 포트폴리오 5개 자동 생성
+- BTC, ETH, SOL, XRP, BNB 자동 추가
 
-#### 암호화폐 API (8개)
-```
-GET  /api/v1/crypto/price/{symbol}?baseCurrency=KRW      ✅ 가격
-POST /api/v1/crypto/prices                                ✅ 배치
-GET  /api/v1/crypto/search?query={}                       ✅ 검색
-GET  /api/v1/crypto/trending?baseCurrency=KRW&limit=10    ✅ 트렌딩
-GET  /api/v1/crypto/historical/{symbol}                   ✅ 과거 데이터
-GET  /api/v1/crypto/stream/prices?symbols=BTC&method=SSE  ✅ 실시간 스트리밍
-GET  /api/v1/crypto/stream/methods                        ✅ 방식 조회
-GET  /api/v1/crypto/stream/status                         ✅ 상태
-```
+### 5️⃣ AI Analysis API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| POST | `/api/v1/ai/analyze` | ✅ | ✅ | Gemini 2.5 Pro 분석 |
+| GET | `/api/v1/ai/status` | ✅ | ❌ | 서비스 상태 |
 
-#### AI 분석 API (3개)
-```
-POST /api/v1/ai/analyze  ✅ AI 분석
-GET  /api/v1/ai/status   ✅ 상태
-POST /api/v1/ai/test     ✅ 테스트 (개발용)
-```
+**분석 타입**:
+- OVERVIEW: 포트폴리오 전체 개요
+- RISK: 리스크 분석 및 진단
+- DIVERSIFICATION: 분산 투자 평가
+- OPTIMIZATION: 최적화 제안
+- CUSTOM: 커스텀 질문
 
-#### 백테스팅 API (2개)
-```
-POST /api/v1/backtest/run     ✅ 실행
-GET  /api/v1/backtest/status  ✅ 상태
-```
+### 6️⃣ Backtesting API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| POST | `/api/v1/backtest/run` | ✅ | ✅ | 백테스팅 실행 |
+| GET | `/api/v1/backtest/status` | ✅ | ❌ | 서비스 상태 |
 
-#### 리밸런싱 API (3개)
-```
-POST /api/v1/rebalancing/recommend   ✅ 추천
-POST /api/v1/rebalancing/simulate    ✅ 시뮬레이션
-GET  /api/v1/rebalancing/strategies  ✅ 전략 목록
-```
+**성과 지표** (7가지):
+1. Total Return (누적 수익률)
+2. Annualized Return (연평균 수익률)
+3. Sharpe Ratio (샤프 비율)
+4. Max Drawdown (최대 낙폭)
+5. Volatility (변동성)
+6. Win Rate (승률)
+7. CAGR (연평균 성장률)
 
-**총 API 엔드포인트**: 35개 ✅
+### 7️⃣ Rebalancing API
+| Method | Endpoint | Status | FE 연동 | 비고 |
+|--------|----------|--------|---------|------|
+| POST | `/api/v1/rebalancing/recommend` | ✅ | ✅ | 리밸런싱 추천 |
+| POST | `/api/v1/rebalancing/simulate` | ✅ | ❌ | 시뮬레이션 |
+| GET | `/api/v1/rebalancing/strategies` | ✅ | ✅ | 전략 목록 |
 
-### ⏳ 미구현 API (Phase 8 이후)
-- Health Check 고급 기능
-- Webhook 알림 시스템
-- Portfolio 공유 기능
-- 사용자 설정 API
-
----
-
-## 🏗️ 5. 시스템 아키텍처
-
-### 전체 구조
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Sentinel Platform                       │
-│                                                             │
-│  ┌──────────────┐        ┌──────────────┐                 │
-│  │   Frontend   │────────│   Backend    │                 │
-│  │  Next.js 14  │  HTTP  │ Spring Boot  │                 │
-│  │  TypeScript  │        │     3.5.5    │                 │
-│  └──────────────┘        └──────────────┘                 │
-│         │                       │                          │
-│         │                       ├──────────┐              │
-│         │                       │          │              │
-│    ┌────▼────┐            ┌────▼────┐ ┌──▼──────┐        │
-│    │ React   │            │PostgreSQL│ │ Redis   │        │
-│    │ Query   │            │  (Main)  │ │(Optional)│       │
-│    └─────────┘            └──────────┘ └─────────┘        │
-└─────────────────────────────────────────────────────────────┘
-
-External APIs:
-┌────────────────┬──────────────────────────────────┐
-│ Kakao OAuth    │ 사용자 인증                      │
-│ AlphaVantage   │ 주식 데이터 (Primary)            │
-│ Finnhub        │ 주식 데이터 (Fallback)           │
-│ Upbit          │ 암호화폐 데이터 (Primary)        │
-│ Binance        │ 암호화폐 데이터 (Fallback)       │
-│ Gemini AI      │ 포트폴리오 AI 분석               │
-└────────────────┴──────────────────────────────────┘
-```
-
-### Backend 모듈 구조
-```
-backend/src/main/java/com/pjsent/sentinel/
-│
-├── user/                    # 인증 & 사용자 관리
-│   ├── controller/          # UserController, AuthController
-│   ├── service/             # UserService, AuthService
-│   ├── repository/          # UserRepository
-│   └── dto/                 # UserDto, AuthResponse
-│
-├── portfolio/               # 포트폴리오 CRUD
-│   ├── controller/          # PortfolioController
-│   ├── service/             # PortfolioService
-│   ├── repository/          # PortfolioRepository, HoldingRepository
-│   └── dto/                 # PortfolioDto, HoldingDto
-│
-├── market/                  # 주식 시장 데이터
-│   ├── controller/          # MarketDataController
-│   ├── service/             # MarketDataService
-│   │   ├── provider/        # AlphaVantageProvider, FinnhubProvider
-│   │   └── factory/         # MarketDataProviderFactory
-│   └── dto/                 # StockPriceDto, MarketIndexDto
-│
-├── crypto/                  # 암호화폐 데이터
-│   ├── controller/          # CryptoDataController, CryptoStreamController
-│   ├── service/             # CryptoDataService
-│   │   ├── provider/        # UpbitProvider, BinanceProvider
-│   │   ├── streaming/       # SSEStreamingService, WebSocketStreamingService
-│   │   └── factory/         # CryptoDataProviderFactory
-│   └── dto/                 # CryptoPriceDto, CryptoSearchResultDto
-│
-├── ai/                      # Gemini AI 통합
-│   ├── controller/          # AiController
-│   ├── service/             # GeminiService, PortfolioAnalysisService
-│   └── dto/                 # AnalysisRequest, AnalysisResponse
-│
-├── backtest/                # 백테스팅 엔진
-│   ├── controller/          # BacktestController
-│   ├── service/             # BacktestService, HistoricalDataService
-│   │   ├── engine/          # BacktestEngine
-│   │   └── calculator/      # PerformanceCalculator
-│   └── dto/                 # BacktestRequest, BacktestResponse, PerformanceMetrics
-│
-├── rebalancing/             # 리밸런싱 알고리즘
-│   ├── controller/          # RebalancingController
-│   ├── service/             # RebalancingService
-│   └── dto/                 # RebalancingRequest, RebalancingResponse, RebalancingRecommendation
-│
-└── common/                  # 공통 설정
-    ├── config/              # WebConfig, SecurityConfig, JwtConfig
-    ├── exception/           # GlobalExceptionHandler
-    └── util/                # JwtUtil, DateUtil
-```
-
-### Frontend 페이지 구조
-```
-frontend/app/
-│
-├── page.tsx                        # 🏠 홈 (시장 지수 + 암호화폐)
-│
-├── login/
-│   └── page.tsx                    # 🔐 로그인
-│
-├── auth/
-│   └── callback/
-│       └── page.tsx                # 🔄 OAuth Callback
-│
-├── portfolios/
-│   ├── page.tsx                    # 📊 포트폴리오 목록
-│   └── [id]/
-│       └── page.tsx                # 📈 포트폴리오 상세
-│                                   #   - Holdings 관리
-│                                   #   - 실시간 가격
-│                                   #   - AI 분석
-│                                   #   - 리밸런싱
-│
-├── market/
-│   └── page.tsx                    # 📉 시장 데이터
-│
-├── lab/
-│   └── page.tsx                    # 🧪 백테스팅 Lab
-│
-└── test-streaming/
-    └── page.tsx                    # 🔴 스트리밍 테스트 (개발용)
-```
-
-### Frontend 컴포넌트 구조
-```
-frontend/components/
-│
-├── ui/                             # 기본 UI 컴포넌트 (10개)
-│   ├── Button.tsx
-│   ├── Card.tsx
-│   ├── Modal.tsx
-│   ├── StatCard.tsx
-│   ├── SimpleChart.tsx
-│   ├── PriceDisplay.tsx
-│   ├── PercentageChange.tsx
-│   ├── PageHeader.tsx
-│   ├── Badge.tsx
-│   └── LoadingSpinner.tsx
-│
-├── portfolio/                      # 포트폴리오 관련 (5개)
-│   ├── CreatePortfolioModal.tsx
-│   ├── AddHoldingModal.tsx
-│   ├── AddCryptoHoldingModal.tsx
-│   ├── EditHoldingModal.tsx
-│   ├── RebalancingModal.tsx         # ⭐ Phase 7
-│   └── PortfolioAnalysisModal.tsx   # 🤖 Phase 5
-│
-├── crypto/                         # 암호화폐 관련 (2개)
-│   ├── TrendingCryptoCard.tsx
-│   └── CryptoStreamingCard.tsx
-│
-├── backtest/                       # 백테스팅 관련 (1개)
-│   └── BacktestResults.tsx
-│
-├── layout/                         # 레이아웃 (1개)
-│   └── Header.tsx
-│
-└── common/                         # 공통 (1개)
-    └── EmptyState.tsx
-
-총 컴포넌트: 25+
-```
+**전략**:
+- EQUAL_WEIGHT: 동일 비중 (현재 구현됨)
+- MARKET_CAP_WEIGHTED: 시가총액 가중 (예정)
+- RISK_PARITY: 리스크 패리티 (예정)
 
 ---
 
-## 🎨 6. 핵심 디자인 패턴
+## 📱 Frontend 연동 현황
 
-### 1. Provider Pattern (Market, Crypto)
-```
-MarketDataProviderFactory
-├── AlphaVantageProvider (Primary)
-└── FinnhubProvider (Fallback)
+### ✅ 완전 연동 (Real API)
+| 페이지/기능 | API | Mock 여부 | 비고 |
+|------------|-----|-----------|------|
+| 로그인 | `/auth/kakao/callback` | ❌ | OAuth + Dev Mode |
+| 포트폴리오 목록 | `/portfolios` | ❌ | 실시간 데이터 |
+| 포트폴리오 상세 | `/portfolios/{id}` | ❌ | Holdings 포함 |
+| 종목 추가 | `/portfolios/{id}/holdings` | ❌ | Stock + Crypto |
+| 종목 검색 | `/market/search`, `/crypto/search` | ❌ | 실시간 검색 |
+| 시장 지수 | `/market/indices` | ❌ | S&P, NASDAQ 등 |
+| 트렌딩 코인 | `/crypto/trending` | ❌ | 거래대금 상위 |
+| AI 분석 | `/ai/analyze` | ❌ | Gemini 2.5 Pro |
+| 백테스팅 | `/backtest/run` | ❌ | 7가지 지표 |
+| 리밸런싱 | `/rebalancing/recommend` | ❌ | Equal Weight |
 
-CryptoDataProviderFactory
-├── UpbitProvider (Primary)
-└── BinanceProvider (Fallback)
+### ⚠️ Mock 데이터 사용 (프론트엔드)
+| 컴포넌트 | 파일 | Mock 사용 이유 |
+|----------|------|---------------|
+| 추천 포트폴리오 | `RecommendedPortfolioCard.tsx` | Backend 구현 예정 |
+| 시장 개요 (일부) | `page.tsx` | 일부 지표 Mock |
 
-특징:
-- 다중 API 제공자 지원
-- Fallback 전략 자동화
-- Factory로 Provider 선택
-```
+**Mock 데이터 위치**:
+- `frontend/lib/mockData.ts` (442줄)
+- `MockDataBadge` 컴포넌트로 시각적 구분
 
-### 2. Adapter Pattern (Crypto Streaming)
-```
-StreamingAdapter Interface
-├── SSEAdapter (권장, 1초 간격)
-├── WebSocketAdapter (고성능, 500ms)
-└── LongPollingAdapter (Fallback, 2초)
+---
 
-특징:
-- 런타임 방식 전환
-- 자동 Fallback 지원
-- 통일된 인터페이스
-```
+## 💡 발전 방향 제안
 
-### 3. Strategy Pattern (Rebalancing)
-```
-RebalancingStrategy Enum
-├── EQUAL_WEIGHT (구현 완료)
-├── TARGET_ALLOCATION (준비 중)
-└── RISK_PARITY (준비 중)
+### 🎯 Phase 8: Testing & Deployment (Next)
+**우선순위: 높음 | 기간: 2주**
 
-특징:
-- 전략 확장 가능
-- 런타임 전략 선택
-- 독립적인 알고리즘
-```
+#### 8.1 테스팅
+- [ ] Unit Test (JUnit 5) - 목표: >80% 커버리지
+  - Service Layer: PortfolioService, MarketDataService
+  - Provider Layer: KoreaInvestmentProvider, UpbitProvider
+- [ ] Integration Test (MockMvc)
+  - Controller 통합 테스트
+  - JWT 인증 플로우
+- [ ] E2E Test (Playwright)
+  - 포트폴리오 생성 → Holdings 추가 → AI 분석
 
-### 4. Builder Pattern (DTOs)
+#### 8.2 배포 준비
+- [ ] AWS 인프라 설정 (EC2, RDS PostgreSQL)
+- [ ] CI/CD 파이프라인 (GitHub Actions)
+- [ ] 환경 변수 관리 (AWS Secrets Manager)
+
+---
+
+### 🚀 Phase 9-11: 고급 기능 (3개월)
+
+## 1️⃣ 거래 기능 (Trading) ⭐⭐⭐
+**우선순위: 최고 | 포트폴리오 완성도: 매우 높음**
+
+### Backend 설계
 ```java
-RebalancingRequest request = RebalancingRequest.builder()
-    .portfolioId(1L)
-    .strategy(RebalancingStrategy.EQUAL_WEIGHT)
-    .thresholdPercent(5.0)
-    .considerTaxes(false)
-    .build();
-
-특징:
-- Lombok @Builder 사용
-- 불변 객체 생성
-- 가독성 향상
+trading/
+├── controller/
+│   └── TradingController.java
+├── service/
+│   ├── TradingService.java           // 주문 관리
+│   ├── OrderExecutionService.java    // 실제 거래 실행
+│   └── TradingSimulationService.java // 페이퍼 트레이딩
+├── entity/
+│   ├── Order.java                    // 주문 엔티티
+│   ├── Trade.java                    // 체결 내역
+│   └── TradingAccount.java           // 거래 계좌
+├── dto/
+│   ├── OrderRequest.java
+│   ├── OrderResponse.java
+│   └── TradingHistoryDto.java
+└── provider/
+    ├── TradingProvider.java          // 인터페이스
+    ├── KoreaInvestmentTradingProvider.java  // 한투 실거래
+    ├── UpbitTradingProvider.java     // 업비트 실거래
+    └── SimulatedTradingProvider.java // 페이퍼 트레이딩
 ```
+
+### 핵심 API 엔드포인트
+```yaml
+POST /api/v1/trading/orders              # 주문 생성
+  - Market Order (시장가)
+  - Limit Order (지정가)
+  - Stop Loss (손절)
+
+GET /api/v1/trading/orders/{id}          # 주문 상세
+PUT /api/v1/trading/orders/{id}/cancel   # 주문 취소
+
+GET /api/v1/trading/history              # 거래 내역
+  - Filter: 기간, 종목, 주문 타입
+
+POST /api/v1/trading/simulate            # 페이퍼 트레이딩
+  - 실제 가격으로 시뮬레이션
+  - 가상 계좌 관리
+
+GET /api/v1/trading/accounts             # 거래 계좌 목록
+POST /api/v1/trading/accounts            # 계좌 연결
+```
+
+### 핵심 기능
+1. **페이퍼 트레이딩** (Phase 9 우선)
+   - 실제 가격으로 시뮬레이션
+   - 거래 비용/세금 계산
+   - Portfolio에 자동 반영
+
+2. **실거래 통합** (Phase 10)
+   - 한국투자증권 Open Trading API
+   - Upbit OpenAPI (암호화폐)
+   - OAuth 2.0 계좌 연결
+
+3. **리스크 관리**
+   - Stop Loss 자동 설정
+   - Position Size 계산
+   - 일일 거래 한도
+
+### 기술적 고려사항
+- **보안**: OAuth 2.0, API Key 암호화
+- **비동기 처리**: CompletableFuture, @Async
+- **트랜잭션**: Distributed Transaction (2PC)
+- **실시간 체결**: WebSocket 통합
+
+**포트폴리오 가치**: ⭐⭐⭐⭐⭐
+- 실무에서 바로 사용 가능한 수준
+- 취업/이직 시 큰 어필 포인트
 
 ---
 
-## 📚 7. 문서 위치
+## 2️⃣ 고급 백테스팅 엔진 ⭐⭐⭐
+**우선순위: 높음 | 포트폴리오 완성도: 높음**
 
-### Backend API 스펙
-```
-.claude/backend/
-├── API_AUTH.md             # 인증 API
-├── API_PORTFOLIO.md        # 포트폴리오 API
-├── API_MARKET.md           # 시장 데이터 API
-├── API_CRYPTO.md           # 암호화폐 API (작성 예정)
-├── API_BACKTEST.md         # 백테스팅 API
-└── API_REBALANCING.md      # 리밸런싱 API
+### 현재 상태
+✅ 기본 백테스팅 완료 (7가지 지표)
+- Total Return, CAGR, Sharpe Ratio
+- Max Drawdown, Volatility, Win Rate
+
+### 추가 기능
+1. **Monte Carlo 시뮬레이션**
+   - 1,000+ 시나리오 생성
+   - 확률 분포 분석
+   - 최악의 시나리오 예측
+
+2. **멀티 전략 비교**
+   - Equal Weight vs. Market Cap
+   - Dynamic Rebalancing vs. Buy & Hold
+   - 전략별 Sharpe Ratio 비교
+
+3. **리밸런싱 최적화**
+   - 최적 리밸런싱 주기 찾기
+   - 거래 비용 고려한 임계값 설정
+
+4. **퀀트 팩터 분석**
+   - Momentum, Value, Quality
+   - Factor Tilting 백테스트
+
+### Backend 구조
+```java
+backtest/
+├── engine/
+│   ├── MonteCarloEngine.java
+│   ├── StrategyComparisonEngine.java
+│   └── FactorAnalysisEngine.java
+├── strategy/
+│   ├── TradingStrategy.java (인터페이스)
+│   ├── MomentumStrategy.java
+│   ├── ValueStrategy.java
+│   └── MeanReversionStrategy.java
+└── dto/
+    ├── MonteCarloResult.java
+    ├── StrategyComparisonDto.java
+    └── FactorAnalysisDto.java
 ```
 
-### Frontend 문서
-```
-.claude/frontend/
-├── COMPONENTS.md           # UI 컴포넌트 가이드
-├── THEME_DATA.md           # 디자인 시스템
-├── MODULES.md              # 모듈 구조
-└── PAGES.md                # 페이지 구조
-```
-
-### 프로젝트 문서
-```
-.claude/
-├── CLAUDE.md               # ⭐ 통합 가이드
-├── PROJECT_STATUS.md       # ⭐ 이 문서
-├── README.md               # 폴더 구조 가이드
-└── PLAN.md                 # 개발 계획 (Phase 4 Crypto)
-```
-
-### 실시간 API 문서
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- 모든 API 실시간 테스트 가능
-- Request/Response 스키마 확인
+**포트폴리오 가치**: ⭐⭐⭐⭐
+- 퀀트 개발자 포지션에 적합
+- 금융공학 지식 어필
 
 ---
 
-## 📊 8. 프로젝트 통계
+## 3️⃣ 알림 & 트리거 시스템 ⭐⭐
+**우선순위: 중간 | 포트폴리오 완성도: 중간**
 
-### 코드 통계
+### 기능
+1. **가격 알림**
+   - "AAPL이 $180 이하로 떨어지면 알림"
+   - "BTC가 10% 상승하면 알림"
+
+2. **리밸런싱 알림**
+   - "목표 비중과 5% 이상 차이나면 알림"
+   - "최적 리밸런싱 시점 도달 시 알림"
+
+3. **AI 인사이트 알림**
+   - 포트폴리오 리스크 급등 시
+   - 새로운 투자 기회 발견 시
+
+### Backend 구조
+```java
+notification/
+├── controller/NotificationController.java
+├── service/
+│   ├── NotificationService.java
+│   ├── TriggerService.java           // 트리거 관리
+│   └── AlertScheduler.java           // 주기적 체크
+├── entity/
+│   ├── Notification.java
+│   └── Trigger.java                  // 트리거 설정
+├── channel/
+│   ├── EmailNotificationChannel.java
+│   ├── SlackNotificationChannel.java
+│   └── WebPushNotificationChannel.java
+└── dto/
+    ├── CreateTriggerRequest.java
+    └── NotificationDto.java
 ```
-Backend:
-├── Java 클래스: 150+
-├── API 엔드포인트: 35+
-├── 도메인 모듈: 7개
-├── 외부 API 통합: 6개
-└── DTO 클래스: 60+
 
-Frontend:
-├── 페이지: 8개
-├── 컴포넌트: 25+
-├── API 클라이언트: 7개
-├── TypeScript 타입: 42개
-└── Custom Hooks: 3개
-
-문서:
-├── API 스펙 문서: 6개
-├── 디자인 문서: 3개
-├── 총 문서 페이지: 15+
-└── 코드 주석 커버리지: 80%+
-```
-
-### 기능 통계
-```
-인증:
-├── OAuth 제공자: 1개 (Kakao)
-└── 개발 모드: ✅
-
-포트폴리오:
-├── 자산 타입: 2개 (Stock, Crypto)
-└── 통화: 2개 (USD, KRW)
-
-시장 데이터:
-├── 주식 API: 2개 (AlphaVantage, Finnhub)
-├── 암호화폐 API: 2개 (Upbit, Binance)
-└── 지원 지수: 4개
-
-AI 분석:
-├── 분석 타입: 5개
-└── AI 모델: Gemini 1.5 Pro
-
-백테스팅:
-├── 성과 지표: 7개
-└── 리밸런싱 빈도: 4개
-
-리밸런싱:
-├── 전략: 3개 (1개 구현 완료)
-└── 액션: 3개 (BUY, SELL, HOLD)
-```
+**포트폴리오 가치**: ⭐⭐⭐
+- 실무적 기능
+- 이벤트 드리븐 아키텍처 경험
 
 ---
 
-## ✅ 9. 완성도 현황
+## 4️⃣ 소셜 기능 (공유 & 랭킹) ⭐
+**우선순위: 낮음 | 포트폴리오 완성도: 중간**
 
-### Phase 1-7 완성도
-```
-Phase 1-7: ████████████████████ 100% ✅
+### 기능
+1. **포트폴리오 공유**
+   - Public Link 생성
+   - 익명화된 수익률 공유
+   - 복사 가능한 전략
 
-세부 기능:
-├─ 인증 시스템      ████████████████████ 100% ✅
-├─ 포트폴리오       ████████████████████ 100% ✅
-├─ 시장 데이터      ████████████████     80% ✅
-├─ 암호화폐         ████████████████████ 100% ✅
-├─ AI 분석          ████████████████████ 100% ✅
-├─ 백테스팅         ████████████████████ 100% ✅
-└─ 리밸런싱         ████████████████████ 100% ✅
+2. **리더보드**
+   - 수익률 랭킹 (익명)
+   - 전략별 상위 포트폴리오
+   - 팔로우 기능
+
+3. **커뮤니티 피드**
+   - 투자 인사이트 공유
+   - 댓글 & 리액션
+
+### Backend 구조
+```java
+social/
+├── controller/SocialController.java
+├── service/
+│   ├── SharingService.java
+│   ├── LeaderboardService.java
+│   └── FeedService.java
+├── entity/
+│   ├── SharedPortfolio.java
+│   ├── Follow.java
+│   └── Post.java
+└── dto/
+    ├── ShareLinkDto.java
+    ├── LeaderboardDto.java
+    └── PostDto.java
 ```
 
-### 코드 품질
-```
-코드 품질:
-├─ TypeScript       ████████████████████ 100% ✅
-├─ API 문서화       ████████████████     80% ✅
-├─ 컴포넌트 문서    ████████████████     80% ✅
-└─ 테스트 커버리지  ████                 20% (Phase 8)
-```
-
-### 배포 준비도
-```
-배포 준비도:
-├─ 환경 설정        ████████████████████ 100% ✅
-├─ Docker           ████                 20%
-├─ CI/CD            ▒▒▒▒                  0% (Phase 8)
-└─ AWS 설정         ▒▒▒▒                  0% (Phase 8)
-```
+**포트폴리오 가치**: ⭐⭐
+- SNS 경험 어필
+- 확장성 설계 경험
 
 ---
 
-## 🎯 10. 다음 단계 가이드
+## 5️⃣ 세금 최적화 (Tax-Loss Harvesting) ⭐⭐⭐
+**우선순위: 중상 | 포트폴리오 완성도: 매우 높음**
 
-### 즉시 시작 가능한 명령어
-```bash
-# Phase 8 시작
-"Phase 8 시작: 유닛 테스트 작성 및 E2E 테스트 확장해줘"
+### 기능
+1. **Tax-Loss Harvesting**
+   - 손실 종목 매도 → 세금 절감
+   - 비슷한 종목으로 대체 (Wash Sale 방지)
 
-# 특정 작업 시작
-"Backend 유닛 테스트 작성해줘 - RebalancingService부터"
-"Docker 설정 추가해줘 - Backend Dockerfile부터"
-"GitHub Actions CI/CD 파이프라인 설정해줘"
+2. **세금 시뮬레이션**
+   - 예상 양도소득세 계산
+   - 최적 매도 시점 추천
+
+3. **배당 최적화**
+   - 배당 일정 관리
+   - 세금 효율적인 포트폴리오 구성
+
+### Backend 구조
+```java
+tax/
+├── controller/TaxController.java
+├── service/
+│   ├── TaxCalculationService.java
+│   ├── TaxOptimizationService.java
+│   └── TaxReportService.java
+├── dto/
+│   ├── TaxSimulationRequest.java
+│   ├── TaxOptimizationDto.java
+│   └── TaxReportDto.java
+└── calculator/
+    ├── CapitalGainsTaxCalculator.java
+    └── DividendTaxCalculator.java
 ```
 
-### Phase 8 목표
-1. ✅ Backend 유닛 테스트 (>80% 커버리지)
-2. ✅ Frontend 컴포넌트 테스트 (>70% 커버리지)
-3. ✅ E2E 테스트 확장 (Playwright)
-4. ✅ Docker 설정 (Backend, Frontend)
-5. ✅ AWS 배포 준비 (EC2, RDS, S3)
-6. ✅ CI/CD 파이프라인 구축 (GitHub Actions)
-
-### Phase 8 이후 계획
-- **Phase 9**: 성능 최적화 & 모니터링
-- **Phase 10**: 모바일 앱 개발 (React Native)
-- **Phase 11**: 실시간 알림 시스템
-- **Phase 12**: 소셜 기능 (포트폴리오 공유)
+**포트폴리오 가치**: ⭐⭐⭐⭐⭐
+- 핀테크 도메인 전문성
+- 실무적 가치 매우 높음
 
 ---
 
-## 🎉 현재 상태
+## 📋 추천 로드맵 (3개월)
 
-**Phase 1-7 완료!**
-- ✅ 모든 핵심 기능 구현 완료
-- ✅ API 35개 엔드포인트 작동 중
-- ✅ Mock 데이터 완전 제거
-- ✅ Production-ready 코드
+### Month 1: Phase 8-9
+**Week 1-2**: Testing & Deployment
+- Unit Test, Integration Test
+- AWS 배포 준비
 
-**다음 단계**: Phase 8 - 테스팅 & 배포
+**Week 3-4**: 페이퍼 트레이딩
+- TradingService 기본 구조
+- SimulatedTradingProvider
+- 주문 생성/취소 API
 
-**서버 상태**:
-- Backend: http://localhost:8080 ✅
-- Frontend: http://localhost:3000 ✅
-- Swagger: http://localhost:8080/swagger-ui.html ✅
+### Month 2: Phase 10
+**Week 5-6**: 실거래 통합
+- KoreaInvestmentTradingProvider
+- UpbitTradingProvider
+- OAuth 계좌 연결
+
+**Week 7-8**: 리스크 관리
+- Stop Loss 자동 설정
+- Position Sizing
+- 거래 한도 관리
+
+### Month 3: Phase 11
+**Week 9-10**: 고급 백테스팅
+- Monte Carlo 시뮬레이션
+- 멀티 전략 비교
+
+**Week 11-12**: 세금 최적화 OR 알림 시스템
+- 택 1 집중 개발
+- 다른 하나는 Phase 12로 연기
 
 ---
 
-**Last Updated**: 2025-10-18
+## 🎯 최종 추천
+
+### 최우선 개발 순서
+1. **거래 기능 (Trading)** - 페이퍼 트레이딩부터
+2. **고급 백테스팅** - Monte Carlo, 전략 비교
+3. **세금 최적화** - Tax-Loss Harvesting
+
+**이유**:
+- 거래 기능은 포트폴리오 완성도를 크게 높임
+- 백테스팅은 퀀트 개발자 포지션 타겟 시 필수
+- 세금 최적화는 핀테크 도메인 전문성 증명
+
+### 포트폴리오 임팩트 순위
+1. 🥇 **거래 기능** - "실제로 사용 가능한 투자 플랫폼"
+2. 🥈 **세금 최적화** - "실무적 가치가 높은 금융 솔루션"
+3. 🥉 **고급 백테스팅** - "퀀트 전략 검증 시스템"
+
+---
+
+## 📌 현재 기술 부채
+
+### Backend
+- [ ] Circuit Breaker 패턴 미구현 (Provider 장애 시)
+- [ ] Redis 캐싱 미구현 (개발 환경)
+- [ ] Rate Limiting 미구현
+- [ ] KIS API 키 설정 필요
+
+### Frontend
+- [ ] 추천 포트폴리오 Mock 데이터 → Real API 전환
+- [ ] 실시간 스트리밍 UI 미구현 (SSE, WebSocket)
+- [ ] E2E 테스트 인증 상태 전파 이슈
+
+### DevOps
+- [ ] 프로덕션 환경 구축
+- [ ] 모니터링 시스템 (CloudWatch, Sentry)
+- [ ] CI/CD 파이프라인
+
+---
+
+**문서 작성**: Claude Code SuperClaude
+**다음 업데이트**: Phase 8 완료 시

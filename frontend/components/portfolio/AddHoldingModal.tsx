@@ -102,7 +102,7 @@ export function AddHoldingModal({
           const results = await searchCrypto(searchQuery);
           setCryptoResults(results);
         }
-      } catch (error) {
+      } catch {
         setSearchError('검색 중 오류가 발생했습니다');
         setStockResults([]);
         setCryptoResults([]);
@@ -121,9 +121,10 @@ export function AddHoldingModal({
       onSuccess();
       onClose();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
       setErrors({
-        submit: error.response?.data?.message || '종목 추가에 실패했습니다',
+        submit: err.response?.data?.message || '종목 추가에 실패했습니다',
       });
     },
   });

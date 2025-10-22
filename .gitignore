@@ -129,4 +129,15 @@ application.log
 .cache/
 tmp/
 temp/
+*.pid
 backend.pid
+.frontend.pid
+
+# Docker volumes and data
+postgres_data/
+mysql_data/
+
+# Removed guide files (keep only CLAUDE.md and PLAN.md)
+START_GUIDE.md
+DOCKER_GUIDE.md
+PERSISTENCE_TEST.md

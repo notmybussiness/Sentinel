@@ -68,7 +68,8 @@ public class PortfolioAnalysisService {
     private String buildPrompt(Portfolio portfolio, PortfolioAnalysisRequest request) {
         StringBuilder prompt = new StringBuilder();
 
-        prompt.append("You are a professional investment advisor analyzing a portfolio.\n\n");
+        prompt.append("You are a professional investment advisor analyzing a portfolio.\n");
+        prompt.append("IMPORTANT: Provide ALL analysis content in Korean language (한국어로 분석 내용을 작성해주세요).\n\n");
 
         // Portfolio Summary
         prompt.append(String.format("Portfolio: \"%s\"\n", portfolio.getName()));
@@ -99,12 +100,27 @@ public class PortfolioAnalysisService {
 
                 prompt.append(String.format("   - Quantity: %,.6f\n", holding.getQuantity()));
                 prompt.append(String.format("   - Average Cost: $%,.4f\n", holding.getAverageCost()));
-                prompt.append(String.format("   - Current Price: $%,.4f\n", holding.getCurrentPrice()));
-                prompt.append(String.format("   - Market Value: $%,.2f\n", holding.getMarketValue()));
-                prompt.append(String.format("   - Gain/Loss: %s$%,.2f (%+.2f%%)\n",
-                        holding.getGainLoss().compareTo(BigDecimal.ZERO) >= 0 ? "+" : "",
-                        holding.getGainLoss(),
-                        holding.getGainLossPercent()));
+
+                if (holding.getCurrentPrice() != null) {
+                    prompt.append(String.format("   - Current Price: $%,.4f\n", holding.getCurrentPrice()));
+                } else {
+                    prompt.append("   - Current Price: Not available\n");
+                }
+
+                if (holding.getMarketValue() != null) {
+                    prompt.append(String.format("   - Market Value: $%,.2f\n", holding.getMarketValue()));
+                } else {
+                    prompt.append("   - Market Value: Not available\n");
+                }
+
+                if (holding.getGainLoss() != null && holding.getGainLossPercent() != null) {
+                    prompt.append(String.format("   - Gain/Loss: %s$%,.2f (%+.2f%%)\n",
+                            holding.getGainLoss().compareTo(BigDecimal.ZERO) >= 0 ? "+" : "",
+                            holding.getGainLoss(),
+                            holding.getGainLossPercent()));
+                } else {
+                    prompt.append("   - Gain/Loss: Pending market data update\n");
+                }
             }
             prompt.append("\n");
         }

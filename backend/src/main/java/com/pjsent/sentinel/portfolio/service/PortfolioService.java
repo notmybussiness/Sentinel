@@ -48,15 +48,46 @@ public class PortfolioService {
     }
 
     /**
-     * 특정 포트폴리오 조회
+     * 특정 포트폴리오 조회 (자동 가격 업데이트 포함)
      */
+    @Transactional
     public PortfolioDto getPortfolioById(Long portfolioId, Long userId) {
         log.info("포트폴리오 조회. 포트폴리오 ID: {}, 사용자 ID: {}", portfolioId, userId);
-        
+
         Portfolio portfolio = portfolioRepository.findByIdAndUserId(portfolioId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
-        
+
+        // 조회 시 자동으로 최신 가격 업데이트 및 재계산
+        updatePortfolioPrices(portfolio);
+
         return convertToDto(portfolio);
+    }
+
+    /**
+     * 포트폴리오 가격 업데이트 (내부용)
+     */
+    private void updatePortfolioPrices(Portfolio portfolio) {
+        for (PortfolioHolding holding : portfolio.getHoldings()) {
+            try {
+                if (holding.getAssetType() == AssetType.CRYPTO) {
+                    CryptoPriceDto cryptoPrice = cryptoDataService.getCryptoPrice(
+                        holding.getSymbol(),
+                        holding.getBaseCurrency()
+                    );
+                    holding.updateCurrentPrice(BigDecimal.valueOf(cryptoPrice.getPrice()));
+                } else {
+                    var stockPrice = marketDataService.getStockPrice(holding.getSymbol());
+                    holding.updateCurrentPrice(BigDecimal.valueOf(stockPrice.getPrice()));
+                }
+            } catch (Exception e) {
+                log.warn("가격 업데이트 실패. 심볼: {}, 타입: {}, 오류: {}",
+                    holding.getSymbol(), holding.getAssetType(), e.getMessage());
+                // 가격 조회 실패해도 기존 가격 유지
+            }
+        }
+
+        portfolio.recalculate();
+        portfolioRepository.save(portfolio);
     }
 
     /**
