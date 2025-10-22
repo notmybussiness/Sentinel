@@ -54,6 +54,28 @@ public class MarketDataController {
     }
     
     /**
+     * 단일 주식의 현재 가격을 조회합니다. (quote 엔드포인트 - 호환성)
+     *
+     * @param symbol 주식 심볼 (예: AAPL, MSFT, 005930)
+     * @return 주식 가격 데이터
+     */
+    @GetMapping("/quote/{symbol}")
+    public ResponseEntity<StockPriceDto> getQuote(@PathVariable String symbol) {
+        log.info("주식 시세 조회 요청 (quote). 심볼: {}", symbol);
+        
+        try {
+            StockPriceDto stockPrice = marketDataService.getStockPrice(symbol);
+            return ResponseEntity.ok(stockPrice);
+        } catch (IllegalArgumentException e) {
+            log.warn("잘못된 요청 파라미터. 심볼: {}, 오류: {}", symbol, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("주식 시세 조회 실패. 심볼: {}, 오류: {}", symbol, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
      * 여러 주식의 현재 가격을 조회합니다. (Query Parameter 방식)
      *
      * @param symbols 쉼표로 구분된 주식 심볼 목록 (예: AAPL,MSFT,GOOGL)
