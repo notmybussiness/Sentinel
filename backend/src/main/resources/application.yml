@@ -59,15 +59,26 @@ kakao:
 # Stock Market API 기본 설정 (API 키는 secret에서 주입)
 stock:
   market:
+    # 한국투자증권 Open API (Primary Provider)
+    korea-investment:
+      enabled: ${KIS_ENABLED:true}
+      base-url: https://openapi.koreainvestment.com:9443
+      app-key: ${KIS_APP_KEY}
+      app-secret: ${KIS_APP_SECRET}
+      timeout: 10000
+      # OAuth 토큰 설정
+      token-expiration: 86400  # 24시간 (초 단위)
+      token-refresh-before: 3600  # 만료 1시간 전 자동 갱신
+
     alphavantage:
-      enabled: ${ALPHAVANTAGE_ENABLED:true}
+      enabled: ${ALPHAVANTAGE_ENABLED:false}  # 비활성화 (Fallback용)
       base-url: https://www.alphavantage.co/query
       rate-limit: 5
       timeout: 10000
       api-key: ${ALPHAVANTAGE_API_KEY}
 
     finnhub:
-      enabled: ${FINNHUB_ENABLED:true}
+      enabled: ${FINNHUB_ENABLED:false}  # 비활성화 (Fallback용)
       base-url: https://finnhub.io/api/v1
       rate-limit: 60
       timeout: 10000
