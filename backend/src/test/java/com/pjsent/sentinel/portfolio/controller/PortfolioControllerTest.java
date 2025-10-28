@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
+import com.pjsent.sentinel.config.WithMockJwtUser;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -32,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * PortfolioController 테스트
  */
 @WebMvcTest(PortfolioController.class)
-@WithMockUser
 @Import(TestSecurityConfig.class)
 @TestPropertySource(properties = {
     "jwt.secret=test-jwt-secret-for-controller-test",
@@ -99,6 +99,7 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 목록 조회 성공")
     void should_ReturnPortfolioList_When_GetPortfolios() throws Exception {
         // Given
@@ -106,8 +107,7 @@ class PortfolioControllerTest {
                 .thenReturn(List.of(portfolioDto));
 
         // When & Then
-        mockMvc.perform(get("/api/v1/portfolios")
-                        .param("userId", userId.toString()))
+        mockMvc.perform(get("/api/v1/portfolios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(portfolioId))
@@ -116,6 +116,7 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("특정 포트폴리오 조회 성공")
     void should_ReturnPortfolio_When_GetPortfolio() throws Exception {
         // Given
@@ -123,8 +124,7 @@ class PortfolioControllerTest {
                 .thenReturn(portfolioDto);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/portfolios/{portfolioId}", portfolioId)
-                        .param("userId", userId.toString()))
+        mockMvc.perform(get("/api/v1/portfolios/{portfolioId}", portfolioId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(portfolioId))
                 .andExpect(jsonPath("$.name").value("테스트 포트폴리오"))
@@ -132,6 +132,7 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 생성 성공")
     void should_CreatePortfolio_When_ValidRequest() throws Exception {
         // Given
@@ -144,7 +145,6 @@ class PortfolioControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/portfolios")
-                        .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -153,6 +153,7 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 생성 실패 - 유효성 검증 실패")
     void should_ReturnBadRequest_When_InvalidCreateRequest() throws Exception {
         // Given
@@ -161,13 +162,13 @@ class PortfolioControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/portfolios")
-                        .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 수정 성공")
     void should_UpdatePortfolio_When_ValidRequest() throws Exception {
         // Given
@@ -180,7 +181,6 @@ class PortfolioControllerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/portfolios/{portfolioId}", portfolioId)
-                        .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -188,18 +188,19 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 삭제 성공")
     void should_DeletePortfolio_When_ValidPortfolioId() throws Exception {
         // Given
         doNothing().when(portfolioService).deletePortfolio(portfolioId, userId);
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/portfolios/{portfolioId}", portfolioId)
-                        .param("userId", userId.toString()))
+        mockMvc.perform(delete("/api/v1/portfolios/{portfolioId}", portfolioId))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("보유 종목 추가 성공")
     void should_AddHolding_When_ValidRequest() throws Exception {
         // Given
@@ -213,7 +214,6 @@ class PortfolioControllerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/portfolios/{portfolioId}/holdings", portfolioId)
-                        .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -222,6 +222,7 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("보유 종목 수정 성공")
     void should_UpdateHolding_When_ValidRequest() throws Exception {
         // Given
@@ -233,9 +234,8 @@ class PortfolioControllerTest {
                 .thenReturn(holdingDto);
 
         // When & Then
-        mockMvc.perform(put("/api/v1/portfolios/{portfolioId}/holdings/{holdingId}", 
+        mockMvc.perform(put("/api/v1/portfolios/{portfolioId}/holdings/{holdingId}",
                         portfolioId, holdingDto.getId())
-                        .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -243,19 +243,20 @@ class PortfolioControllerTest {
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("보유 종목 삭제 성공")
     void should_DeleteHolding_When_ValidHoldingId() throws Exception {
         // Given
         doNothing().when(portfolioService).deleteHolding(portfolioId, holdingDto.getId(), userId);
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/portfolios/{portfolioId}/holdings/{holdingId}", 
-                        portfolioId, holdingDto.getId())
-                        .param("userId", userId.toString()))
+        mockMvc.perform(delete("/api/v1/portfolios/{portfolioId}/holdings/{holdingId}",
+                        portfolioId, holdingDto.getId()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockJwtUser(userId = 1L)
     @DisplayName("포트폴리오 재계산 성공")
     void should_RecalculatePortfolio_When_ValidPortfolioId() throws Exception {
         // Given
@@ -263,8 +264,7 @@ class PortfolioControllerTest {
                 .thenReturn(portfolioDto);
 
         // When & Then
-        mockMvc.perform(post("/api/v1/portfolios/{portfolioId}/recalculate", portfolioId)
-                        .param("userId", userId.toString()))
+        mockMvc.perform(post("/api/v1/portfolios/{portfolioId}/recalculate", portfolioId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(portfolioId));
     }

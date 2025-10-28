@@ -31,7 +31,7 @@ public class RebalancingController {
             Authentication authentication,
             @Valid @RequestBody RebalancingRequest request
     ) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = (Long) authentication.getPrincipal();
         log.info("Received rebalancing recommendation request from user {}: {}", userId, request);
 
         RebalancingResponse response = rebalancingService.generateRecommendations(userId, request);
@@ -50,7 +50,7 @@ public class RebalancingController {
             Authentication authentication,
             @Valid @RequestBody RebalancingRequest request
     ) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = (Long) authentication.getPrincipal();
         log.info("Received rebalancing simulation request from user {}: {}", userId, request);
 
         RebalancingSimulationResponse response = rebalancingService.simulateRebalancing(userId, request);
