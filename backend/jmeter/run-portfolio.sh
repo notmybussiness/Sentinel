@@ -5,114 +5,16 @@
 
 set -e
 
-# Colors
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Load common functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common-functions.sh"
 
-# Configuration
-HOST="${HOST:-192.168.0.58}"
-RESULTS_DIR="./results"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+# ==================== Run Portfolio Test ====================
 
-# PostgreSQL Configuration
-PG_HOST="${PG_HOST:-192.168.0.5}"
-PG_PORT="${PG_PORT:-5432}"
-PG_USER="${PG_USER:-sentinel}"
-PG_PASSWORD="${PG_PASSWORD:-sentinel_password}"
-PG_DB="${PG_DB:-sentinel}"
-
-# Functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-# Check prerequisites
-check_jmeter() {
-    if ! command -v jmeter &> /dev/null; then
-        log_error "JMeter not installed"
-        exit 1
-    fi
-    log_success "JMeter found: $(jmeter --version | head -1)"
-}
-
-check_backend() {
-    log_info "Checking backend at $HOST:8080..."
-    if curl -f "http://$HOST:8080/actuator/health" > /dev/null 2>&1; then
-        log_success "Backend is UP"
-    else
-        log_error "Backend is DOWN at $HOST:8080"
-        exit 1
-    fi
-}
-
-check_postgresql() {
-    log_info "Checking PostgreSQL at $PG_HOST:$PG_PORT..."
-    if command -v psql &> /dev/null; then
-        if PGPASSWORD=$PG_PASSWORD psql -h $PG_HOST -p $PG_PORT -U $PG_USER -d $PG_DB -c "SELECT 1" > /dev/null 2>&1; then
-            log_success "PostgreSQL is UP"
-            return 0
-        else
-            log_warning "PostgreSQL connection failed"
-            return 1
-        fi
-    else
-        log_warning "psql not installed, skipping PostgreSQL check"
-        return 1
-    fi
-}
-
-reset_pg_stats() {
-    log_info "Resetting PostgreSQL query statistics..."
-    if PGPASSWORD=$PG_PASSWORD psql -h $PG_HOST -p $PG_PORT -U $PG_USER -d $PG_DB -c "SELECT pg_stat_statements_reset();" > /dev/null 2>&1; then
-        log_success "Statistics reset"
-    else
-        log_warning "Could not reset statistics (pg_stat_statements may not be enabled)"
-    fi
-}
-
-get_query_stats() {
-    local output_file=$1
-    log_info "Collecting query statistics..."
-    if PGPASSWORD=$PG_PASSWORD psql -h $PG_HOST -p $PG_PORT -U $PG_USER -d $PG_DB > "$output_file" 2>&1 <<EOF
-SELECT
-    query,
-    calls,
-    ROUND(mean_exec_time::numeric, 2) as mean_ms,
-    ROUND(total_exec_time::numeric, 2) as total_ms
-FROM pg_stat_statements
-WHERE query LIKE '%portfolio%' OR query LIKE '%holding%'
-ORDER BY calls DESC
-LIMIT 20;
-EOF
-    then
-        log_success "Query statistics saved to $output_file"
-    else
-        log_warning "Could not collect query statistics"
-    fi
-}
-
-# Create results directory
-mkdir -p "$RESULTS_DIR"
-
-# Run portfolio test
 run_portfolio() {
     local users=${1:-10}
     local mode=${2:-baseline}
+    local timestamp=$(date +%Y%m%d_%H%M%S)
 
     echo ""
     echo "======================================"
@@ -120,7 +22,7 @@ run_portfolio() {
     echo "  Mode: $mode"
     echo "  Users: $users"
     echo "  Loops: 100"
-    echo "  Timestamp: $TIMESTAMP"
+    echo "  Timestamp: $timestamp"
     echo "======================================"
     echo ""
 
@@ -137,39 +39,44 @@ run_portfolio() {
         -Jhost="$HOST" \
         -Jusers="$users" \
         -Jloops=100 \
-        -l "$RESULTS_DIR/portfolio-${mode}-${users}users-${TIMESTAMP}.jtl" \
-        -e -o "$RESULTS_DIR/portfolio-${mode}-${users}users-${TIMESTAMP}-report"
+        -l "$RESULTS_DIR/portfolio-${mode}-${users}users-${timestamp}.jtl" \
+        -e -o "$RESULTS_DIR/portfolio-${mode}-${users}users-${timestamp}-report"
 
     # Get query statistics after test
     if check_postgresql; then
-        get_query_stats "$RESULTS_DIR/portfolio-${mode}-queries-${TIMESTAMP}.txt"
+        get_query_stats "$RESULTS_DIR/portfolio-${mode}-queries-${timestamp}.txt"
     fi
 
     log_success "Portfolio test completed"
     echo ""
     echo "Results:"
-    echo "  JTL:    $RESULTS_DIR/portfolio-${mode}-${users}users-${TIMESTAMP}.jtl"
-    echo "  Report: $RESULTS_DIR/portfolio-${mode}-${users}users-${TIMESTAMP}-report/index.html"
-    if [ -f "$RESULTS_DIR/portfolio-${mode}-queries-${TIMESTAMP}.txt" ]; then
-        echo "  Queries: $RESULTS_DIR/portfolio-${mode}-queries-${TIMESTAMP}.txt"
+    echo "  JTL:    $RESULTS_DIR/portfolio-${mode}-${users}users-${timestamp}.jtl"
+    echo "  Report: $RESULTS_DIR/portfolio-${mode}-${users}users-${timestamp}-report/index.html"
+    if [ -f "$RESULTS_DIR/portfolio-${mode}-queries-${timestamp}.txt" ]; then
+        echo "  Queries: $RESULTS_DIR/portfolio-${mode}-queries-${timestamp}.txt"
         echo ""
         log_info "Top queries:"
-        head -15 "$RESULTS_DIR/portfolio-${mode}-queries-${TIMESTAMP}.txt"
+        head -15 "$RESULTS_DIR/portfolio-${mode}-queries-${timestamp}.txt"
     fi
     echo ""
 }
 
-# Main script
+# ==================== Main Script ====================
+
 main() {
+    echo ""
     echo "======================================"
     echo "  Sentinel Portfolio Test Runner"
     echo "======================================"
     echo ""
 
     # Check prerequisites
-    check_jmeter
-    check_backend
+    check_jmeter || exit 1
+    check_backend || exit 1
     check_postgresql
+
+    # Setup directory
+    setup_results_dir
 
     # Parse arguments
     USERS="${1:-10}"

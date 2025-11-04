@@ -5,75 +5,23 @@
 
 set -e
 
-# Colors
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Load common functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common-functions.sh"
 
-# Configuration
-HOST="${HOST:-192.168.0.58}"
-RESULTS_DIR="./results"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+# ==================== Run SSE Test ====================
 
-# PostgreSQL Configuration
-PG_HOST="${PG_HOST:-192.168.0.5}"
-PG_PORT="${PG_PORT:-5432}"
-PG_USER="${PG_USER:-sentinel}"
-PG_PASSWORD="${PG_PASSWORD:-sentinel_password}"
-PG_DB="${PG_DB:-sentinel}"
-
-# Functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-# Check prerequisites
-check_jmeter() {
-    if ! command -v jmeter &> /dev/null; then
-        log_error "JMeter not installed"
-        exit 1
-    fi
-    log_success "JMeter found: $(jmeter --version | head -1)"
-}
-
-check_backend() {
-    log_info "Checking backend at $HOST:8080..."
-    if curl -f "http://$HOST:8080/actuator/health" > /dev/null 2>&1; then
-        log_success "Backend is UP"
-    else
-        log_error "Backend is DOWN at $HOST:8080"
-        exit 1
-    fi
-}
-
-# Create results directory
-mkdir -p "$RESULTS_DIR"
-
-# Run SSE test
 run_sse() {
     local clients=${1:-10}
     local duration=${2:-300}
+    local timestamp=$(date +%Y%m%d_%H%M%S)
 
     echo ""
     echo "======================================"
     echo "  Phase 2: SSE Streaming Test"
     echo "  Concurrent Clients: $clients"
     echo "  Duration: $duration seconds"
-    echo "  Timestamp: $TIMESTAMP"
+    echo "  Timestamp: $timestamp"
     echo "======================================"
     echo ""
 
@@ -81,14 +29,14 @@ run_sse() {
     log_warning "Long-lived connections will be maintained"
     log_info "Monitoring memory usage is recommended"
 
-    # Start background memory monitoring if possible
+    # Start background memory monitoring
     if command -v curl &> /dev/null; then
         (
             while sleep 5; do
                 MEM=$(curl -s "http://$HOST:8080/actuator/metrics/jvm.memory.used" 2>/dev/null | grep -o '"value":[0-9]*' | head -1 | cut -d':' -f2)
                 if [ -n "$MEM" ]; then
                     MEM_MB=$((MEM / 1024 / 1024))
-                    echo "$(date '+%H:%M:%S') - Memory: ${MEM_MB}MB" >> "$RESULTS_DIR/sse-memory-${TIMESTAMP}.log"
+                    echo "$(date '+%H:%M:%S') - Memory: ${MEM_MB}MB" >> "$RESULTS_DIR/sse-memory-${timestamp}.log"
                 fi
             done
         ) &
@@ -99,8 +47,8 @@ run_sse() {
         -Jhost="$HOST" \
         -Jclients="$clients" \
         -Jduration="$duration" \
-        -l "$RESULTS_DIR/sse-${clients}clients-${TIMESTAMP}.jtl" \
-        -e -o "$RESULTS_DIR/sse-${clients}clients-${TIMESTAMP}-report"
+        -l "$RESULTS_DIR/sse-${clients}clients-${timestamp}.jtl" \
+        -e -o "$RESULTS_DIR/sse-${clients}clients-${timestamp}-report"
 
     # Stop memory monitoring
     if [ -n "$MONITOR_PID" ]; then
@@ -110,24 +58,29 @@ run_sse() {
     log_success "SSE test completed"
     echo ""
     echo "Results:"
-    echo "  JTL:    $RESULTS_DIR/sse-${clients}clients-${TIMESTAMP}.jtl"
-    echo "  Report: $RESULTS_DIR/sse-${clients}clients-${TIMESTAMP}-report/index.html"
-    if [ -f "$RESULTS_DIR/sse-memory-${TIMESTAMP}.log" ]; then
-        echo "  Memory: $RESULTS_DIR/sse-memory-${TIMESTAMP}.log"
+    echo "  JTL:    $RESULTS_DIR/sse-${clients}clients-${timestamp}.jtl"
+    echo "  Report: $RESULTS_DIR/sse-${clients}clients-${timestamp}-report/index.html"
+    if [ -f "$RESULTS_DIR/sse-memory-${timestamp}.log" ]; then
+        echo "  Memory: $RESULTS_DIR/sse-memory-${timestamp}.log"
     fi
     echo ""
 }
 
-# Main script
+# ==================== Main Script ====================
+
 main() {
+    echo ""
     echo "======================================"
     echo "  Sentinel SSE Test Runner"
     echo "======================================"
     echo ""
 
     # Check prerequisites
-    check_jmeter
-    check_backend
+    check_jmeter || exit 1
+    check_backend || exit 1
+
+    # Setup directory
+    setup_results_dir
 
     # Parse arguments
     CLIENTS="${1:-10}"

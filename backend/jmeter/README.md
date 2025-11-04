@@ -2,6 +2,7 @@
 
 > **목적**: 성능 실험을 위한 JMeter 테스트 시나리오
 > **실행 방식**: CLI 전용 (메모리 효율, 고성능)
+> **Mac 실행**: LF 변환 완료 ✅
 > **최종 업데이트**: 2025-11-03
 
 ---
@@ -10,7 +11,10 @@
 
 ```
 jmeter/
-├── README.md                    # 이 문서
+├── README.md                    # 이 문서 (빠른 참조)
+├── EXPERIMENTS.md               # ⭐ 실험 상세 설명 (필독!)
+│
+├── common-functions.sh          # 공통 함수 모듈
 │
 ├── test1-baseline.jmx           # Phase 0: 전체 API 베이스라인
 ├── test2-stock.jmx              # Phase 1: 주식 API (외부 API 호출)
@@ -19,12 +23,10 @@ jmeter/
 ├── test5-longpoll.jmx           # Phase 2: Long Polling
 ├── test6-portfolio.jmx          # Phase 3: 포트폴리오 N+1 쿼리
 │
-├── run-baseline.sh              # Baseline 테스트 실행 스크립트
-├── run-stock.sh                 # Stock API 테스트 실행 스크립트
-├── run-sse.sh                   # SSE 테스트 실행 스크립트
-├── run-portfolio.sh             # Portfolio 테스트 실행 스크립트
-│
-├── run-tests.sh                 # 통합 테스트 실행 스크립트 (레거시)
+├── run-baseline.sh              # Phase 0 실행 스크립트
+├── run-stock.sh                 # Phase 1 실행 스크립트
+├── run-sse.sh                   # Phase 2 실행 스크립트
+├── run-portfolio.sh             # Phase 3 실행 스크립트
 │
 └── results/                     # 테스트 결과 (자동 생성)
     ├── *.jtl                    # CSV 결과 파일
@@ -35,23 +37,27 @@ jmeter/
 
 ---
 
-## 🚀 빠른 시작
+## 🎯 4가지 Phase (중복 제거 완료)
+
+1. **Phase 0**: Baseline - 전체 API 기본 성능
+2. **Phase 1**: Stock API - 외부 API 부하 테스트
+3. **Phase 2**: SSE - 실시간 스트리밍
+4. **Phase 3**: Portfolio - N+1 쿼리 문제 탐지
+
+**각 실험 상세 설명**: `EXPERIMENTS.md` 참고 ⭐
+
+---
+
+## 🚀 빠른 시작 (Mac)
 
 ### 1. JMeter 설치
 
-**Mac:**
 ```bash
+# Mac에서 JMeter 설치
 brew install jmeter
-```
 
-**Windows:**
-```powershell
-choco install jmeter
-```
-
-**Linux:**
-```bash
-sudo apt install jmeter
+# 설치 확인
+jmeter --version
 ```
 
 ### 2. 환경 준비
@@ -67,27 +73,30 @@ cd backend
 docker-compose up -d
 ```
 
-### 3. 테스트 실행
+### 3. 테스트 실행 (Mac)
 
 ```bash
-cd backend/jmeter
+# jmeter 폴더로 이동
+cd /path/to/Sentinel/backend/jmeter
 
-# Phase 0: Baseline
+# Phase 0: Baseline (10명)
 ./run-baseline.sh 10
 
-# Phase 1: Stock API
+# Phase 1: Stock API (50명)
 ./run-stock.sh 50
 
-# Phase 2: SSE
+# Phase 2: SSE (50 클라이언트, 5분)
 ./run-sse.sh 50 300
 
-# Phase 3: Portfolio
+# Phase 3: Portfolio N+1 (50명, baseline 모드)
 ./run-portfolio.sh 50 baseline
 ```
 
+**각 Phase 상세 설명**: `EXPERIMENTS.md` 참고 ⭐
+
 ---
 
-## 📊 테스트 시나리오 상세
+## 📊 테스트 시나리오 요약
 
 ### Phase 0: Baseline Test (`run-baseline.sh`)
 
