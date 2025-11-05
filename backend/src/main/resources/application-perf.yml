@@ -1,0 +1,156 @@
+# Performance Test Profile
+# JMeter 부하 테스트 전용 설정
+
+spring:
+  application:
+    name: sentinel-perf
+
+  # PostgreSQL (운영과 동일)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sentinel
+    username: sentinel
+    password: sentinel123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate  # 성능 테스트는 스키마 변경 없음
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+
+  # Redis 비활성화 (불필요)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+# 서버 설정 (성능 최적화)
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 200          # 최대 쓰레드 (부하 테스트용)
+      min-spare: 50
+    max-connections: 10000
+    accept-count: 100
+    connection-timeout: 20000
+
+# JWT 설정 (토큰 만료 시간 연장)
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 86400000    # 24시간 (성능 테스트용)
+  refresh-token-expiration: 604800000  # 7일
+
+# Kakao OAuth (테스트에서는 불필요)
+kakao:
+  oauth:
+    client-id: ${KAKAO_CLIENT_ID:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/v1/auth/kakao/callback}
+    scope: profile_nickname,account_email,profile_image
+
+# Stock Market API (성능 테스트 시 최소화)
+stock:
+  market:
+    korea-investment:
+      enabled: ${KIS_ENABLED:true}
+      base-url: https://openapi.koreainvestment.com:9443
+      app-key: ${KIS_APP_KEY}
+      app-secret: ${KIS_APP_SECRET}
+      timeout: 10000
+      token-expiration: 86400
+      token-refresh-before: 3600
+
+    alphavantage:
+      enabled: ${ALPHAVANTAGE_ENABLED:false}
+      base-url: https://www.alphavantage.co/query
+      rate-limit: 5
+      timeout: 10000
+      api-key: ${ALPHAVANTAGE_API_KEY}
+
+    finnhub:
+      enabled: ${FINNHUB_ENABLED:false}
+      base-url: https://finnhub.io/api/v1
+      rate-limit: 60
+      timeout: 10000
+      api-key: ${FINNHUB_API_KEY}
+
+# AI 설정 (성능 테스트 시 비활성화)
+ai:
+  gemini:
+    enabled: false  # AI 호출 제외
+    api-key: ${GEMINI_API_KEY}
+    base-url: https://generativelanguage.googleapis.com/v1beta/models
+    model: gemini-2.5-pro-latest
+    timeout: 30000
+    max-tokens: 2048
+    temperature: 0.7
+
+# Crypto Market API
+crypto:
+  market:
+    upbit:
+      enabled: ${UPBIT_ENABLED:true}
+      base-url: https://api.upbit.com/v1
+      websocket-url: wss://api.upbit.com/websocket/v1
+      timeout: 10000
+
+    binance:
+      enabled: ${BINANCE_ENABLED:true}
+      base-url: https://api.binance.com/api/v3
+      timeout: 10000
+
+  # 실시간 스트리밍 비활성화
+  streaming:
+    websocket:
+      enabled: false
+
+# 비동기 처리 설정 (성능 최적화)
+async:
+  executor:
+    core-pool-size: 20
+    max-pool-size: 100
+    queue-capacity: 500
+    thread-name-prefix: "PerfTest-"
+    keep-alive-seconds: 60
+
+# RestTemplate 설정 (타임아웃 단축)
+rest:
+  template:
+    connect-timeout: 5000
+    read-timeout: 10000
+
+# 로깅 설정 (최소화)
+logging:
+  level:
+    root: WARN
+    com.pjsent.sentinel: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"
+
+# 모니터링 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# 성능 테스트 전용 설정
+perf:
+  test:
+    enabled: true
+    user-count: 500  # 테스트 유저 수
+    token-expiration: 86400000  # 24시간

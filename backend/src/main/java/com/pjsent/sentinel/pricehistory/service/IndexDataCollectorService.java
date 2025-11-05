@@ -18,10 +18,13 @@ import java.util.List;
  * 인덱스 및 ETF 데이터 수집 서비스
  *
  * 주요 인덱스(S&P 500, NASDAQ 등)와 유명 ETF 데이터를 주기적으로 수집하여 저장합니다.
+ *
+ * ⚠️ 성능 테스트 시 비활성화 (perf 프로파일 제외)
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@org.springframework.context.annotation.Profile("!perf")
 public class IndexDataCollectorService {
 
     private final MarketDataService marketDataService;

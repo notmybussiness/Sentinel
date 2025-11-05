@@ -50,4 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * 이메일과 활성 상태로 사용자 조회
      */
     Optional<User> findByEmailAndIsActive(String email, Boolean isActive);
+
+    /**
+     * 이메일 접두사로 사용자 목록 조회 (성능 테스트용)
+     */
+    java.util.List<User> findByEmailStartingWith(String emailPrefix);
 }
