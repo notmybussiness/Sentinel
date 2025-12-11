@@ -2,6 +2,7 @@ package com.pjsent.sentinel.crypto.controller;
 
 import com.pjsent.sentinel.crypto.dto.CryptoPriceDto;
 import com.pjsent.sentinel.crypto.streaming.StreamingService;
+import com.pjsent.sentinel.crypto.streaming.WebSocketMetrics;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,6 +43,7 @@ public class CryptoStreamController {
 
         // Spring이 자동으로 모든 StreamingService 구현체를 주입
         private final List<StreamingService> streamingServices;
+        private final WebSocketMetrics metrics;
 
         /**
          * 실시간 가격 스트리밍 (SSE)
@@ -80,8 +82,10 @@ public class CryptoStreamController {
                 // 1. Price Stream (Upstream)
                 Flux<ServerSentEvent<CryptoPriceDto>> priceStream = service.startStreaming(symbolList, baseCurrency)
                                 .timeout(Duration.ofSeconds(60)) // Upstream Timeout (60s)
-                                .onBackpressureDrop(dropped -> log.debug("⚠️ Backpressure: 데이터 drop - {}",
-                                                dropped.getSymbol()))
+                                .onBackpressureDrop(dropped -> {
+                                        log.debug("⚠️ Backpressure: 데이터 drop - {}", dropped.getSymbol());
+                                        metrics.recordMessageDropped();
+                                })
                                 .map(price -> ServerSentEvent.<CryptoPriceDto>builder()
                                                 .event("price-update")
                                                 .data(price)
@@ -150,7 +154,8 @@ public class CryptoStreamController {
                                                 .map(service -> Map.of(
                                                                 "name", service.getStreamingMethod(),
                                                                 "status", service.isAvailable() ? "UP" : "DOWN"))
-                                                .collect(Collectors.toList()));
+                                                .collect(Collectors.toList()),
+                                "metrics", metrics.getStats());
         }
 
         /**

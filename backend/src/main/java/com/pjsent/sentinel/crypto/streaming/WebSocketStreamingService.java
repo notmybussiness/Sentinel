@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * ========================================================================
@@ -45,12 +46,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketStreamingService implements StreamingService {
 
     private final UpbitWebSocketClient upbitWebSocketClient;
+    private final WebSocketMetrics metrics;
 
     @Value("${crypto.streaming.websocket.enabled:true}")
     private boolean enabled;
 
     // WebSocket에서 수신한 실시간 가격 캐시
     private final Map<String, CryptoPriceDto> priceCache = new ConcurrentHashMap<>();
+
+    // 연결 시작 시간 (연결 유지 시간 측정용)
+    private final AtomicLong connectionStartTime = new AtomicLong(0);
 
     // ========================================================================
     // Main Streaming Method
@@ -67,20 +72,53 @@ public class WebSocketStreamingService implements StreamingService {
 
         // 🔥 실제 Upbit WebSocket 연결!
         return upbitWebSocketClient.connect(symbols)
-                .doOnNext(this::updateCache)
-                .doOnSubscribe(sub -> log.info("🔌 Upbit WebSocket 구독 시작. 심볼: {}", symbols))
-                .doOnCancel(() -> log.info("🔌 Upbit WebSocket 구독 취소. 심볼: {}", symbols))
-                .doOnComplete(() -> log.info("🔌 Upbit WebSocket 스트림 완료. 심볼: {}", symbols))
-                .doOnError(error -> log.error("❌ Upbit WebSocket 오류: {}", error.getMessage()))
+                .doOnNext(price -> {
+                    updateCache(price);
+                    metrics.recordMessageReceived();
+                    metrics.updateLastMessageAge(upbitWebSocketClient.getSecondsSinceLastMessage());
+                })
+                .doOnSubscribe(sub -> {
+                    log.info("🔌 Upbit WebSocket 구독 시작. 심볼: {}", symbols);
+                    metrics.recordConnectionStart();
+                    connectionStartTime.set(System.currentTimeMillis());
+                })
+                .doOnCancel(() -> {
+                    log.info("🔌 Upbit WebSocket 구독 취소. 심볼: {}", symbols);
+                    recordConnectionEnd();
+                })
+                .doOnComplete(() -> {
+                    log.info("🔌 Upbit WebSocket 스트림 완료. 심볼: {}", symbols);
+                    recordConnectionEnd();
+                })
+                .doOnError(error -> {
+                    log.error("❌ Upbit WebSocket 오류: {}", error.getMessage());
+                    metrics.recordError();
+                })
                 // 에러 시 재연결 (최대 5회, 지수 백오프)
                 .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(30))
-                        .doBeforeRetry(signal -> log.warn("🔄 WebSocket 재연결 시도 #{}", signal.totalRetries() + 1)))
+                        .doBeforeRetry(signal -> {
+                            log.warn("🔄 WebSocket 재연결 시도 #{}", signal.totalRetries() + 1);
+                            metrics.recordReconnection();
+                        }))
                 // 최종 실패 시 캐시 값 반환 (Graceful Degradation)
                 .onErrorResume(error -> {
                     log.error("❌ WebSocket 완전 실패. 캐시 값 반환: {}", error.getMessage());
+                    metrics.recordError();
                     return getCachedPricesAsFlux(symbols, baseCurrency);
                 });
+    }
+
+    /**
+     * 연결 종료 시 연결 유지 시간 기록
+     */
+    private void recordConnectionEnd() {
+        long startTime = connectionStartTime.get();
+        if (startTime > 0) {
+            long duration = System.currentTimeMillis() - startTime;
+            metrics.recordConnectionEnd(duration);
+            connectionStartTime.set(0);
+        }
     }
 
     // ========================================================================

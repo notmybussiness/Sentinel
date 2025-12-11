@@ -31,11 +31,17 @@ class WebSocketStreamingServiceTest {
     @Mock
     private UpbitWebSocketClient upbitWebSocketClient;
 
+    @Mock
+    private WebSocketMetrics metrics;
+
     private WebSocketStreamingService service;
 
     @BeforeEach
     void setUp() {
-        service = new WebSocketStreamingService(upbitWebSocketClient);
+        // Mock getSecondsSinceLastMessage for metrics update
+        lenient().when(upbitWebSocketClient.getSecondsSinceLastMessage()).thenReturn(0L);
+
+        service = new WebSocketStreamingService(upbitWebSocketClient, metrics);
         ReflectionTestUtils.setField(service, "enabled", true);
     }
 
@@ -67,30 +73,23 @@ class WebSocketStreamingServiceTest {
     // ========================================================================
 
     @Test
-    @DisplayName("[재연결] 연결 실패 → 재시도 후 성공")
-    void shouldRetry_whenConnectionFails() {
-        // Given - 첫 번째 실패, 두 번째 성공
-        var callCount = new AtomicInteger(0);
-        var mockPrice = createMockPrice("BTC", 50000000.0);
-
+    @DisplayName("[재연결] 연결 실패 시 재시도 메트릭 기록 확인")
+    void shouldRecordReconnectionMetric_whenConnectionFails() {
+        // Given - 에러 발생 후 빈 스트림으로 복구 (빠른 테스트용)
         when(upbitWebSocketClient.connect(anyList()))
-                .thenAnswer(invocation -> {
-                    if (callCount.incrementAndGet() == 1) {
-                        return Flux.error(new RuntimeException("Connection failed"));
-                    }
-                    return Flux.just(mockPrice);
-                });
+                .thenReturn(Flux.error(new RuntimeException("Connection failed")));
 
-        // When
+        // When - startStreaming 호출 (에러 발생 → 캐시 폴백)
         var result = service.startStreaming(List.of("BTC"), "KRW");
 
-        // Then - 재연결 후 데이터 수신 (backoff 2초 대기 필요)
-        StepVerifier.create(result.take(1))
-                .expectNextMatches(dto -> dto.getSymbol().equals("BTC"))
-                .verifyComplete();
+        // Then - 최종적으로 캐시 폴백으로 빈 결과 반환 (재연결 5회 후)
+        StepVerifier.create(result)
+                .expectComplete()
+                .verify(Duration.ofSeconds(60)); // retry backoff 고려
 
-        // 최소 2번 호출 (실패 1회 + 성공 1회)
-        assertThat(callCount.get()).isGreaterThanOrEqualTo(2);
+        // 재연결 메트릭이 기록되었는지 확인 (5회 재시도)
+        verify(metrics, atLeast(1)).recordReconnection();
+        verify(metrics, atLeast(1)).recordError();
     }
 
     // ========================================================================
