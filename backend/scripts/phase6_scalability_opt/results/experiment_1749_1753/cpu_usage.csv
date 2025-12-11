@@ -1,0 +1,18 @@
+timestamp,labels,value
+2025-11-30T17:49:00,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",1.10052664690203
+2025-11-30T17:49:15,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",0.5072280072185119
+2025-11-30T17:49:30,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",11.034547653690133
+2025-11-30T17:49:45,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",12.89546288461249
+2025-11-30T17:50:00,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",8.286395923258832
+2025-11-30T17:50:15,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",10.853705506349936
+2025-11-30T17:50:30,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",4.866697371810695
+2025-11-30T17:50:45,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",10.25001508802221
+2025-11-30T17:51:00,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",1.5226787529840848
+2025-11-30T17:51:15,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",6.718239053835702
+2025-11-30T17:51:30,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",7.123240092412623
+2025-11-30T17:51:45,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",6.932786606621858
+2025-11-30T17:52:00,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",8.553920541613017
+2025-11-30T17:52:15,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",7.571047191391034
+2025-11-30T17:52:30,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",8.944898876866826
+2025-11-30T17:52:45,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",9.02221578751461
+2025-11-30T17:53:00,"application=sentinel, environment=experiment, exported_application=sentinel-perf, instance=192.168.0.58:8080, job=sentinel-backend",10.833992040049369

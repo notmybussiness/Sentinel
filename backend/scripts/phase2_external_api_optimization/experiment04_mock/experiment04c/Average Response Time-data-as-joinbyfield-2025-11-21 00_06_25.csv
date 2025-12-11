@@ -1,0 +1,36 @@
+"Time","GET /api/v1/market/price/{symbol}","GET /actuator/health","GET /actuator/prometheus","GET /api/v1/auth/perf/stats","GET /api/v1/auth/perf/tokens","GET /api/v1/crypto/price/{symbol}","GET /api/v1/market/price/{symbol}","GET /api/v1/market/search"
+2025-11-20 23:53:00,,,36.4 ms,,,,,
+2025-11-20 23:53:15,,,32.9 ms,,,,,
+2025-11-20 23:53:30,,,29.9 ms,NaN,NaN,,,
+2025-11-20 23:53:45,,,28.0 ms,NaN,NaN,,,
+2025-11-20 23:54:00,,NaN,29.9 ms,NaN,NaN,2.14 ms,81.8 ms,75.1 ms
+2025-11-20 23:54:15,,NaN,29.0 ms,NaN,NaN,1.83 ms,86.1 ms,87.4 ms
+2025-11-20 23:54:30,,NaN,29.8 ms,NaN,NaN,1.74 ms,121 ms,119 ms
+2025-11-20 23:54:45,,NaN,29.6 ms,NaN,NaN,1.60 ms,291 ms,286 ms
+2025-11-20 23:55:00,,NaN,30.2 ms,NaN,NaN,1.53 ms,559 ms,536 ms
+2025-11-20 23:55:15,,NaN,28.9 ms,NaN,NaN,1.56 ms,974 ms,966 ms
+2025-11-20 23:55:30,,NaN,28.5 ms,NaN,NaN,1.45 ms,1.45 s,1.45 s
+2025-11-20 23:55:45,,NaN,26.7 ms,NaN,NaN,1.60 ms,1.71 s,1.68 s
+2025-11-20 23:56:00,,NaN,28.4 ms,NaN,NaN,1.59 ms,1.84 s,1.78 s
+2025-11-20 23:56:15,,NaN,29.9 ms,NaN,NaN,1.59 ms,1.92 s,1.85 s
+2025-11-20 23:56:30,,NaN,39.5 ms,NaN,NaN,1.48 ms,1.97 s,1.89 s
+2025-11-20 23:56:45,,NaN,40.2 ms,NaN,NaN,1.62 ms,2.01 s,1.94 s
+2025-11-20 23:57:00,,NaN,39.8 ms,NaN,NaN,1.72 ms,2.06 s,1.98 s
+2025-11-20 23:57:15,,NaN,32.7 ms,NaN,NaN,1.96 ms,2.10 s,2.01 s
+2025-11-20 23:57:30,2.24 s,NaN,39.8 ms,NaN,NaN,2.22 ms,2.09 s,2.06 s
+2025-11-20 23:57:45,2.23 s,NaN,37.9 ms,NaN,NaN,2.50 ms,2.08 s,2.10 s
+2025-11-20 23:58:00,2.23 s,NaN,35.6 ms,NaN,NaN,2.58 ms,2.10 s,2.10 s
+2025-11-20 23:58:15,2.22 s,NaN,29.7 ms,NaN,NaN,2.50 ms,2.14 s,2.08 s
+2025-11-20 23:58:30,2.24 s,NaN,33.9 ms,NaN,NaN,2.50 ms,2.13 s,2.07 s
+2025-11-20 23:58:45,2.23 s,NaN,34.7 ms,NaN,NaN,2.50 ms,2.09 s,2.09 s
+2025-11-20 23:59:00,2.23 s,NaN,32.9 ms,NaN,NaN,2.44 ms,2.10 s,2.09 s
+2025-11-20 23:59:15,2.22 s,NaN,30.6 ms,NaN,NaN,2.29 ms,2.14 s,2.08 s
+2025-11-20 23:59:30,2.25 s,NaN,32.5 ms,NaN,NaN,2.15 ms,2.15 s,2.08 s
+2025-11-20 23:59:45,2.24 s,NaN,32.2 ms,NaN,NaN,2.24 ms,2.11 s,2.09 s
+2025-11-21 00:00:00,2.24 s,NaN,31.5 ms,NaN,NaN,2.23 ms,2.11 s,2.10 s
+2025-11-21 00:00:15,2.23 s,NaN,28.5 ms,NaN,NaN,2.35 ms,2.14 s,2.08 s
+2025-11-21 00:00:30,2.25 s,NaN,29.6 ms,NaN,NaN,2.21 ms,2.14 s,2.07 s
+2025-11-21 00:00:45,2.24 s,NaN,32.4 ms,NaN,NaN,2.45 ms,2.14 s,2.07 s
+2025-11-21 00:01:00,2.24 s,NaN,32.8 ms,NaN,NaN,2.21 ms,2.12 s,2.06 s
+2025-11-21 00:01:15,2.23 s,NaN,31.5 ms,NaN,NaN,2.03 ms,2.05 s,2.00 s
+2025-11-21 00:01:30,NaN,NaN,30.8 ms,NaN,NaN,1.49 ms,1.74 s,1.73 s

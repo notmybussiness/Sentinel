@@ -1,0 +1,225 @@
+spring:
+  application:
+    name: sentinel
+  profiles:
+    include: secret
+    # active: perf  # 성능 테스트 시 --spring.profiles.active=perf,secret 사용
+  docker:
+    compose:
+      enabled: false  # Docker 이미 실행 중이면 false (수동 docker-compose up -d)
+  # Local DB Configuration (Docker Compose)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sentinel
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false # Batch performance를 위해 SQL 로그 끔
+        jdbc:
+          batch_size: 1000
+          order_inserts: true
+          order_updates: true
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false  # 앱 실행 시 자동 실행 방지 (API로 실행하거나 스케줄러로 실행)
+
+# 서버 포트 설정
+server:
+  port: 8080
+
+# 비동기 처리 설정
+async:
+  executor:
+    core-pool-size: 10
+    max-pool-size: 50
+    queue-capacity: 200
+    thread-name-prefix: "StockAPI-"
+    keep-alive-seconds: 60
+
+# RestTemplate 설정
+rest:
+  template:
+    connect-timeout: 10000
+    read-timeout: 15000
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.pjsent.sentinel: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 모니터링 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# JWT 설정 (secret에서 실제 값 주입)
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000    # 15분 (밀리초)
+  refresh-token-expiration: 604800000 # 7일 (밀리초)
+
+# Kakao OAuth2 설정 (secret에서 실제 값 주입)
+kakao:
+  oauth:
+    client-id: ${KAKAO_CLIENT_ID:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/v1/auth/kakao/callback}
+    scope: profile_nickname,account_email,profile_image
+
+# Stock Market API 기본 설정 (API 키는 secret에서 주입)
+stock:
+  market:
+    # 한국투자증권 Open API (Primary Provider)
+    korea-investment:
+      enabled: ${KIS_ENABLED:true}
+      base-url: https://openapi.koreainvestment.com:9443
+      app-key: ${KIS_APP_KEY}
+      app-secret: ${KIS_APP_SECRET}
+      timeout: 10000
+      # OAuth 토큰 설정
+      token-expiration: 86400  # 24시간 (초 단위)
+      token-refresh-before: 3600  # 만료 1시간 전 자동 갱신
+
+    alphavantage:
+      enabled: ${ALPHAVANTAGE_ENABLED:false}  # Fallback Provider 비활성화 (Experiment 3a)
+      base-url: https://www.alphavantage.co/query
+      rate-limit: 5
+      timeout: 10000
+      api-key: ${ALPHAVANTAGE_API_KEY}
+
+    finnhub:
+      enabled: ${FINNHUB_ENABLED:false}  # Fallback Provider 비활성화 (Experiment 3a)
+      base-url: https://finnhub.io/api/v1
+      rate-limit: 60
+      timeout: 10000
+      api-key: ${FINNHUB_API_KEY}
+
+    gemini:
+      enabled: ${GEMINI_ENABLED:true}
+      api-key: ${GEMINI_API_KEY}
+
+# AI 설정 (Gemini)
+ai:
+  gemini:
+    enabled: ${GEMINI_ENABLED:true}
+    api-key: ${GEMINI_API_KEY}
+    base-url: https://generativelanguage.googleapis.com/v1beta/models
+    model: gemini-2.5-pro-latest
+    timeout: 30000
+    max-tokens: 2048
+    temperature: 0.7
+
+# Crypto Market API 설정
+crypto:
+  market:
+    upbit:
+      enabled: ${UPBIT_ENABLED:true}
+      base-url: https://api.upbit.com/v1
+      websocket-url: wss://api.upbit.com/websocket/v1
+      timeout: 10000
+
+    binance:
+      enabled: ${BINANCE_ENABLED:true}
+      base-url: https://api.binance.com/api/v3
+      timeout: 10000
+
+  # 실시간 스트리밍 설정
+  streaming:
+    websocket:
+      enabled: ${CRYPTO_WEBSOCKET_ENABLED:false}  # WebSocket 기능 (Phase 2에서 활성화)
+# ========================================
+# Experiment 2: Circuit Breaker + Rate Limiter
+# ========================================
+# Resilience4j 설정
+resilience4j:
+  # Circuit Breaker 설정
+  circuitbreaker:
+    instances:
+      # KIS API Circuit Breaker
+      kisApi:
+        enabled: false  # Experiment 3a: 순수 TTL 효과 테스트를 위해 비활성화
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 70
+        slow-call-duration-threshold: 3000
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        record-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+          - java.util.concurrent.TimeoutException
+      # AlphaVantage API Circuit Breaker
+      alphaVantageApi:
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 70
+        slow-call-duration-threshold: 5000
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+      # Finnhub API Circuit Breaker
+      finnhubApi:
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 70
+        slow-call-duration-threshold: 5000
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+
+  # Rate Limiter 설정
+  ratelimiter:
+    instances:
+      # KIS API Rate Limiter (초당 50 요청)
+      kisApi:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 2s
+        register-health-indicator: true
+      # AlphaVantage Rate Limiter (분당 5 요청)
+      alphaVantageApi:
+        limit-for-period: 5
+        limit-refresh-period: 60s
+        timeout-duration: 500ms
+        register-health-indicator: true
+      # Finnhub Rate Limiter (분당 60 요청)
+      finnhubApi:
+        limit-for-period: 60
+        limit-refresh-period: 60s
+        timeout-duration: 1s
+        register-health-indicator: true
+
+  # Retry 설정
+  retry:
+    instances:
+      marketDataApi:
+        max-attempts: 2
+        wait-duration: 500ms
+        retry-exceptions:
+          - org.springframework.web.client.HttpServerErrorException

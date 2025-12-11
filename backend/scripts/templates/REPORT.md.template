@@ -1,0 +1,87 @@
+# Phase N: [Name] - Performance Report
+
+> **Experiment Period**: [Start] ~ [End]  
+> **Total Experiments**: N  
+> **Best Result**: ExpN - [Description]
+
+---
+
+## 📊 Executive Summary
+
+[1-2 문장으로 핵심 결과 요약]
+
+### Key Metrics
+
+| Metric | Baseline | Best Result | Improvement |
+|--------|----------|-------------|-------------|
+| P95 Response Time | XXXms | XXms | ↓ XX% |
+| TPS (req/s) | XX | XX | ↑ XX% |
+| Error Rate | X% | X% | ↓ XX% |
+
+---
+
+## 🧪 Experiments Conducted
+
+### Exp1: Baseline
+**Goal**: Measure current performance  
+**Result**: [Summary]
+
+### Exp2: [Optimization Name]
+**Goal**: [What was tested]  
+**Changes**: 
+- Change 1
+- Change 2
+
+**Result**: [Summary with numbers]
+
+---
+
+## 📈 Performance Comparison
+
+[차트 또는 그래프 이미지 삽입]
+
+---
+
+## 💡 Key Findings
+
+1. **Finding 1**: [Observation]
+   - **Impact**: [How it affected performance]
+   
+2. **Finding 2**: [Observation]
+   - **Impact**: [How it affected performance]
+
+---
+
+## ✅ Conclusions
+
+### What Worked
+- ✅ [Optimization that worked well]
+- ✅ [Another success]
+
+### What Didn't Work
+- ❌ [Optimization that didn't help]
+- ❌ [Another failure]
+
+### Recommendations
+- 🎯 [Next step recommendation]
+- 🎯 [Another recommendation]
+
+---
+
+## 📝 Technical Details
+
+### Code Changes
+[링크 to specific commits or files]
+
+### Configuration Changes
+```yaml
+# Before
+setting: value
+
+# After  
+setting: optimized_value
+```
+
+---
+
+**Report Generated**: YYYY-MM-DD

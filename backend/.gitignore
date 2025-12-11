@@ -1,0 +1,187 @@
+# ================================================
+# Sentinel Backend .gitignore
+# GitHub에 올라가면 안 되는 파일들
+# ================================================
+
+# ------------------------------------------------
+# 1. IDE 설정 파일
+# ------------------------------------------------
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### Eclipse/STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ------------------------------------------------
+# 2. AI/Coding Assistant 설정 (API 키 포함!)
+# ------------------------------------------------
+
+# Claude Code 설정
+.claude/
+
+# Cursor AI
+.cursor/
+
+# GitHub Copilot
+.copilot/
+
+# ------------------------------------------------
+# 3. Secret/환경 설정 파일 (절대 업로드 금지!)
+# ------------------------------------------------
+
+# Spring Boot 시크릿 설정
+application-secret.yml
+application-secret.yaml
+application-perf.yml
+application-perf.yaml
+application-local.yml
+application-local.yaml
+application-dev.yml
+application-dev.yaml
+application-prod.yml
+application-prod.yaml
+application-staging.yml
+**/application-secret.*
+**/application-*.yml.backup
+
+# 환경 변수 파일
+.env
+.env.*
+!.env.example
+
+# API 키, 인증 정보
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.jks
+
+# ------------------------------------------------
+# 4. 빌드 산출물
+# ------------------------------------------------
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+target/
+
+# 패키지 파일
+*.jar
+*.war
+*.ear
+*.nar
+
+# ------------------------------------------------
+# 5. 로그 및 덤프 파일
+# ------------------------------------------------
+
+logs/
+*.log
+*.log.*
+debug.log
+error.log
+application.log
+
+# Heap Dump
+heapdump/
+*.hprof
+heap_dump.hprof
+
+# ------------------------------------------------
+# 6. 성능 테스트 결과물 (Raw Data)
+# ------------------------------------------------
+
+# Prometheus 메트릭 내보내기
+metrics_export*/
+metrics_export_*/
+
+# k6 테스트 결과
+# scripts/**/results/*.json
+# scripts/**/results/*.csv
+# scripts/**/results/*.log
+# scripts/k6/results/
+
+# JMeter 결과
+jmeter/*결과/
+jmeter_tokens.csv
+*.jtl
+
+# 분석 임시 파일
+scripts/analysis/temp/
+scripts/analysis/.cache/
+
+# ------------------------------------------------
+# 7. 임시 파일 및 캐시
+# ------------------------------------------------
+
+# OS 생성 파일
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 백업 파일
+*.backup
+*.bak
+*.tmp
+*-backup.*
+*-bak.*
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+tmp/
+temp/
+__pycache__/
+*.pyc
+*.pyo
+*.pid
+
+# ------------------------------------------------
+# 8. 기타
+# ------------------------------------------------
+
+# 빌드 로그
+build_log.txt
+
+# SQL 백업
+*.sql.backup
+*.dump
+
+# Node modules
+node_modules/
+
+# Performance test scripts and results
+

@@ -1,0 +1,211 @@
+timestamp,labels,value
+2025-11-23T11:57:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",31457280.0
+2025-11-23T11:57:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",100663296.0
+2025-11-23T11:57:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",144703488.0
+2025-11-23T11:57:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",39845888.0
+2025-11-23T11:58:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",94371840.0
+2025-11-23T11:58:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",77594624.0
+2025-11-23T11:58:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",100663296.0
+2025-11-23T11:58:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",41943040.0
+2025-11-23T11:59:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",123731968.0
+2025-11-23T11:59:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",119537664.0
+2025-11-23T11:59:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",163577848.0
+2025-11-23T11:59:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",161480704.0
+2025-11-23T12:00:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",92274688.0
+2025-11-23T12:00:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",161480704.0
+2025-11-23T12:00:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",96468992.0
+2025-11-23T12:00:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",117440512.0
+2025-11-23T12:01:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",25165824.0
+2025-11-23T12:01:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",161480704.0
+2025-11-23T12:01:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",2097152.0
+2025-11-23T12:01:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",119537664.0
+2025-11-23T12:02:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",113246208.0
+2025-11-23T12:02:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",71303168.0
+2025-11-23T12:02:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",136314880.0
+2025-11-23T12:02:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",58720256.0
+2025-11-23T12:03:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",60817408.0
+2025-11-23T12:03:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",4194304.0
+2025-11-23T12:03:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",106954752.0
+2025-11-23T12:03:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",106954752.0
+2025-11-23T12:04:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",48234496.0
+2025-11-23T12:04:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",132120576.0
+2025-11-23T12:04:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",46137344.0
+2025-11-23T12:04:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",92274688.0
+2025-11-23T12:05:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",104857600.0
+2025-11-23T12:05:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",195035136.0
+2025-11-23T12:05:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Eden Space, instance=192.168.0.58:8080, job=sentinel-backend",201326592.0
+2025-11-23T11:57:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",69467520.0
+2025-11-23T11:57:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",82549920.0
+2025-11-23T11:57:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",92258528.0
+2025-11-23T11:57:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",108587184.0
+2025-11-23T11:58:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",110707544.0
+2025-11-23T11:58:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",113367600.0
+2025-11-23T11:58:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",115495072.0
+2025-11-23T11:58:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",116118424.0
+2025-11-23T11:59:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",117203976.0
+2025-11-23T11:59:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",118004240.0
+2025-11-23T11:59:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",118915504.0
+2025-11-23T11:59:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",119827648.0
+2025-11-23T12:00:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",120718904.0
+2025-11-23T12:00:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",122731376.0
+2025-11-23T12:00:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",123331512.0
+2025-11-23T12:00:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",128326592.0
+2025-11-23T12:01:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",116540816.0
+2025-11-23T12:01:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",117354016.0
+2025-11-23T12:01:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",118154304.0
+2025-11-23T12:01:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",118812720.0
+2025-11-23T12:02:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",119680080.0
+2025-11-23T12:02:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",121392464.0
+2025-11-23T12:02:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",123412880.0
+2025-11-23T12:02:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",124367152.0
+2025-11-23T12:03:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",125484480.0
+2025-11-23T12:03:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",126931864.0
+2025-11-23T12:03:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",128012960.0
+2025-11-23T12:03:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",129129528.0
+2025-11-23T12:04:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",115169384.0
+2025-11-23T12:04:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",115968608.0
+2025-11-23T12:04:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",117731536.0
+2025-11-23T12:04:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",118307080.0
+2025-11-23T12:05:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",119824624.0
+2025-11-23T12:05:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",119967856.0
+2025-11-23T12:05:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Old Gen, instance=192.168.0.58:8080, job=sentinel-backend",119967856.0
+2025-11-23T11:57:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",6633280.0
+2025-11-23T11:57:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",3760016.0
+2025-11-23T11:57:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",13493784.0
+2025-11-23T11:57:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",12582912.0
+2025-11-23T11:58:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",10729072.0
+2025-11-23T11:58:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",10703320.0
+2025-11-23T11:58:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7389072.0
+2025-11-23T11:58:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8388608.0
+2025-11-23T11:59:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7779520.0
+2025-11-23T11:59:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7532080.0
+2025-11-23T11:59:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7824408.0
+2025-11-23T11:59:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7839040.0
+2025-11-23T12:00:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7613728.0
+2025-11-23T12:00:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7298216.0
+2025-11-23T12:00:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",17384912.0
+2025-11-23T12:00:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7686400.0
+2025-11-23T12:01:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7495064.0
+2025-11-23T12:01:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",9092120.0
+2025-11-23T12:01:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8388608.0
+2025-11-23T12:01:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8253416.0
+2025-11-23T12:02:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7612328.0
+2025-11-23T12:02:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7744208.0
+2025-11-23T12:02:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8072736.0
+2025-11-23T12:02:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8943656.0
+2025-11-23T12:03:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",8388608.0
+2025-11-23T12:03:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",10402176.0
+2025-11-23T12:03:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",12768096.0
+2025-11-23T12:03:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7679528.0
+2025-11-23T12:04:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",15432872.0
+2025-11-23T12:04:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7290816.0
+2025-11-23T12:04:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",7491424.0
+2025-11-23T12:04:45,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",6291456.0
+2025-11-23T12:05:00,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",2945104.0
+2025-11-23T12:05:15,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",5184256.0
+2025-11-23T12:05:30,"application=sentinel, area=heap, environment=experiment, exported_application=sentinel-backend, id=G1 Survivor Space, instance=192.168.0.58:8080, job=sentinel-backend",5184256.0
+2025-11-23T11:57:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",15085696.0
+2025-11-23T11:57:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",23870464.0
+2025-11-23T11:57:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",22654464.0
+2025-11-23T11:57:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",22111232.0
+2025-11-23T11:58:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",22676736.0
+2025-11-23T11:58:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",22833024.0
+2025-11-23T11:58:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",23285248.0
+2025-11-23T11:58:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",23528960.0
+2025-11-23T11:59:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24325248.0
+2025-11-23T11:59:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",25578112.0
+2025-11-23T11:59:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",23977472.0
+2025-11-23T11:59:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24111488.0
+2025-11-23T12:00:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24238464.0
+2025-11-23T12:00:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24288640.0
+2025-11-23T12:00:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24330240.0
+2025-11-23T12:00:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24417664.0
+2025-11-23T12:01:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24477952.0
+2025-11-23T12:01:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24514944.0
+2025-11-23T12:01:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24547328.0
+2025-11-23T12:01:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24583168.0
+2025-11-23T12:02:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24627712.0
+2025-11-23T12:02:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24684160.0
+2025-11-23T12:02:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24729344.0
+2025-11-23T12:02:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24799872.0
+2025-11-23T12:03:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",25448704.0
+2025-11-23T12:03:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24877440.0
+2025-11-23T12:03:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24903424.0
+2025-11-23T12:03:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24921600.0
+2025-11-23T12:04:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24861312.0
+2025-11-23T12:04:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24881664.0
+2025-11-23T12:04:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24915456.0
+2025-11-23T12:04:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24934016.0
+2025-11-23T12:05:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",24972160.0
+2025-11-23T12:05:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",25036032.0
+2025-11-23T12:05:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=CodeCache, instance=192.168.0.58:8080, job=sentinel-backend",25056768.0
+2025-11-23T11:57:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",15475128.0
+2025-11-23T11:57:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17052544.0
+2025-11-23T11:57:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17065896.0
+2025-11-23T11:57:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17073544.0
+2025-11-23T11:58:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17073544.0
+2025-11-23T11:58:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17073544.0
+2025-11-23T11:58:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17074056.0
+2025-11-23T11:58:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T11:59:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T11:59:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T11:59:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T11:59:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T12:00:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17076104.0
+2025-11-23T12:00:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17077256.0
+2025-11-23T12:00:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17077256.0
+2025-11-23T12:00:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",17077256.0
+2025-11-23T12:01:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16920904.0
+2025-11-23T12:01:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16920904.0
+2025-11-23T12:01:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16920904.0
+2025-11-23T12:01:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:02:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:02:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:02:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:02:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:03:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:03:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:03:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:03:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16922536.0
+2025-11-23T12:04:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:04:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:04:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:04:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:05:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:05:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T12:05:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Compressed Class Space, instance=192.168.0.58:8080, job=sentinel-backend",16903592.0
+2025-11-23T11:57:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",105886024.0
+2025-11-23T11:57:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116593672.0
+2025-11-23T11:57:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116638704.0
+2025-11-23T11:57:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116668904.0
+2025-11-23T11:58:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116669144.0
+2025-11-23T11:58:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116669336.0
+2025-11-23T11:58:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116671640.0
+2025-11-23T11:58:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T11:59:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T11:59:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T11:59:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T11:59:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T12:00:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116680072.0
+2025-11-23T12:00:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116685336.0
+2025-11-23T12:00:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116685336.0
+2025-11-23T12:00:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116685336.0
+2025-11-23T12:01:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116073848.0
+2025-11-23T12:01:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116073848.0
+2025-11-23T12:01:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116073848.0
+2025-11-23T12:01:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:02:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:02:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:02:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:02:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:03:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:03:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:03:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:03:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116084432.0
+2025-11-23T12:04:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015240.0
+2025-11-23T12:04:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015240.0
+2025-11-23T12:04:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015240.0
+2025-11-23T12:04:45,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015288.0
+2025-11-23T12:05:00,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015288.0
+2025-11-23T12:05:15,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015696.0
+2025-11-23T12:05:30,"application=sentinel, area=nonheap, environment=experiment, exported_application=sentinel-backend, id=Metaspace, instance=192.168.0.58:8080, job=sentinel-backend",116015696.0

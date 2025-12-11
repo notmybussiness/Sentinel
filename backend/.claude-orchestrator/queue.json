@@ -1,0 +1,107 @@
+{
+  "version": "1.0",
+  "tasks": [
+    {
+      "id": "task-001",
+      "type": "feature_implementation",
+      "priority": "high",
+      "title": "Complete Backtest Service Unit Tests",
+      "description": "The backtest feature has controller tests but is missing critical service-layer unit tests. Need to implement comprehensive unit tests for BacktestEngine, HistoricalDataService, and PerformanceCalculator services. These are core business logic components that require thorough testing coverage including edge cases, error handling, and performance metric calculations (Sharpe Ratio, Sortino Ratio, Max Drawdown, CAGR, etc.).",
+      "acceptanceCriteria": [
+        "BacktestEngine service tests cover: portfolio initialization, simulation execution, rebalancing logic, holdings summary generation",
+        "HistoricalDataService tests cover: AlphaVantage API integration, date range filtering, batch fetching, error handling (rate limits, invalid symbols)",
+        "PerformanceCalculator tests cover: all 7 metrics calculations (Total Return, CAGR, Sharpe Ratio, Sortino Ratio, Max Drawdown, Volatility, Win Rate)",
+        "Edge cases tested: empty equity curves, single-day periods, zero returns, weekend handling",
+        "All tests follow TDD principles with clear arrange-act-assert structure",
+        "Test coverage reaches minimum 80% for backtest service layer"
+      ],
+      "status": "in_progress",
+      "createdAt": "2025-12-11T04:09:39.168Z",
+      "updatedAt": "2025-12-11T04:11:23.279Z"
+    },
+    {
+      "id": "task-003",
+      "type": "feature_implementation",
+      "priority": "medium",
+      "title": "Add WebSocket Integration Tests for Crypto Streaming",
+      "description": "The crypto streaming feature (Phase 9) has SSE implementation with backpressure handling, but WebSocket integration tests are missing. CryptoStreamController supports WebSocket method via StreamingService adapter pattern, but only WebSocketStreamingServiceTest exists. Need comprehensive integration tests for WebSocket connection lifecycle, message flow, backpressure handling, and error scenarios to ensure production readiness.",
+      "acceptanceCriteria": [
+        "Integration tests for WebSocket streaming endpoint (/api/v1/crypto/stream/prices?method=WebSocket)",
+        "Test connection lifecycle: connect, subscribe, receive messages, disconnect",
+        "Verify backpressure handling with high-frequency data (drop strategy)",
+        "Test heartbeat/ping messages (10s interval)",
+        "Test timeout handling (60s upstream timeout)",
+        "Verify adapter pattern fallback (WebSocket -> SSE -> any available)",
+        "Load test with k6 for concurrent WebSocket connections (target: 100+ concurrent)",
+        "Error scenarios: invalid symbols, connection drops, service unavailable"
+      ],
+      "status": "in_progress",
+      "createdAt": "2025-12-11T04:09:39.168Z",
+      "updatedAt": "2025-12-11T04:50:05.073Z"
+    },
+    {
+      "id": "task-004",
+      "type": "feature_implementation",
+      "priority": "high",
+      "title": "Implement Backtest Historical Endpoint",
+      "description": "API_BACKTEST.md specifies a 'GET /api/v1/backtest/historical/{symbol}' endpoint for querying historical prices, but this endpoint is not implemented in BacktestController. This endpoint is needed for frontend charting and data validation before running backtests. Implementation should reuse HistoricalDataService and include proper caching.",
+      "acceptanceCriteria": [
+        "GET /api/v1/backtest/historical/{symbol} endpoint implemented with query params (startDate, endDate)",
+        "Response matches API_BACKTEST.md specification (symbol, dataPoints, prices array)",
+        "Reuses HistoricalDataService.getHistoricalPrices() method",
+        "Leverages historical data caching (from task-002)",
+        "Proper error handling: symbol not found (404), invalid date range (400), rate limit exceeded (503)",
+        "Controller unit tests cover all success and error scenarios",
+        "Integration test verifies full request-response flow",
+        "API documentation (Swagger) updated"
+      ],
+      "status": "in_progress",
+      "createdAt": "2025-12-11T04:09:39.168Z",
+      "updatedAt": "2025-12-11T04:55:50.435Z"
+    },
+    {
+      "id": "task-005",
+      "type": "feature_implementation",
+      "priority": "medium",
+      "title": "Implement Backtest Validation Endpoint",
+      "description": "API_BACKTEST.md specifies a 'POST /api/v1/backtest/validate' endpoint to validate backtest parameters before execution. This endpoint checks data availability for all portfolio holdings and warns about potential issues (e.g., crypto assets with limited historical data). Currently not implemented but would improve user experience by catching errors early.",
+      "acceptanceCriteria": [
+        "POST /api/v1/backtest/validate endpoint implemented",
+        "Request/response DTOs match API_BACKTEST.md specification",
+        "Validates: portfolio exists, date range valid (<10 years), holdings have historical data",
+        "Returns data availability map for each symbol (AAPL: true, BTC: false)",
+        "Warnings array for potential issues (crypto assets, insufficient data points, etc.)",
+        "Business logic: checks HistoricalDataService.isApiAvailable() and validates symbols",
+        "Controller and service unit tests",
+        "Integration test with mock portfolio containing both stocks and crypto",
+        "Error handling for portfolio not found, invalid dates"
+      ],
+      "status": "in_progress",
+      "createdAt": "2025-12-11T04:09:39.168Z",
+      "updatedAt": "2025-12-11T05:00:51.615Z"
+    }
+  ],
+  "completed": [
+    {
+      "id": "task-002",
+      "type": "feature_implementation",
+      "priority": "high",
+      "title": "Implement Historical Data Caching for Backtest",
+      "description": "According to API_BACKTEST.md implementation notes, historical data should be cached to reduce AlphaVantage API calls (free tier: 5 calls/min, 100/day). Currently HistoricalDataService makes direct API calls without caching. Need to implement Redis-based caching for historical price data with appropriate TTL (daily updates for recent data) to improve performance and prevent rate limit errors.",
+      "acceptanceCriteria": [
+        "Historical price data cached in Redis with symbol+date range as key",
+        "Cache TTL configured: 24 hours for recent data, 7 days for historical data >30 days old",
+        "Cache hit rate measured and logged",
+        "Fallback mechanism when cache unavailable",
+        "Rate limit handling with exponential backoff for AlphaVantage API",
+        "Unit tests verify caching behavior and cache miss scenarios",
+        "Integration test confirms end-to-end backtest with cached data"
+      ],
+      "status": "completed",
+      "createdAt": "2025-12-11T04:09:39.168Z",
+      "updatedAt": "2025-12-11T04:50:05.067Z"
+    }
+  ],
+  "current": null,
+  "lastUpdated": "2025-12-11T05:00:58.454Z"
+}

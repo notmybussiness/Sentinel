@@ -1,0 +1,35 @@
+"Time","GET /api/v1/market/price/{symbol} 500","GET /actuator/health 200","GET /actuator/prometheus 200","GET /api/v1/crypto/price/{symbol} 200","GET /api/v1/market/price/{symbol} 200","GET /api/v1/market/search 200"
+2025-11-20 14:25:00,,1 req/s,15 req/s,54 req/s,104 req/s,14 req/s
+2025-11-20 14:25:15,,1 req/s,16 req/s,215 req/s,432 req/s,58 req/s
+2025-11-20 14:25:30,,1 req/s,17 req/s,483 req/s,953 req/s,139 req/s
+2025-11-20 14:25:45,,1 req/s,18 req/s,761 req/s,1.61K req/s,250 req/s
+2025-11-20 14:26:00,,1 req/s,19 req/s,1.04K req/s,2.26K req/s,337 req/s
+2025-11-20 14:26:15,,1 req/s,20 req/s,1.22K req/s,2.55K req/s,375 req/s
+2025-11-20 14:26:30,,1 req/s,21 req/s,1.59K req/s,3.24K req/s,474 req/s
+2025-11-20 14:26:45,,1 req/s,22 req/s,1.96K req/s,3.99K req/s,592 req/s
+2025-11-20 14:27:00,,1 req/s,23 req/s,2.37K req/s,4.82K req/s,705 req/s
+2025-11-20 14:27:15,,1 req/s,24 req/s,2.77K req/s,5.69K req/s,861 req/s
+2025-11-20 14:27:30,,1 req/s,25 req/s,3.28K req/s,6.65K req/s,1.02K req/s
+2025-11-20 14:27:45,,1 req/s,26 req/s,3.80K req/s,7.68K req/s,1.18K req/s
+2025-11-20 14:28:00,,1 req/s,27 req/s,4.35K req/s,8.81K req/s,1.36K req/s
+2025-11-20 14:28:15,,1 req/s,28 req/s,4.95K req/s,9.99K req/s,1.55K req/s
+2025-11-20 14:28:30,14 req/s,1 req/s,29 req/s,5.60K req/s,11.2K req/s,1.76K req/s
+2025-11-20 14:28:45,581 req/s,1 req/s,30 req/s,6.19K req/s,11.8K req/s,1.97K req/s
+2025-11-20 14:29:00,1.07K req/s,1 req/s,31 req/s,6.82K req/s,12.5K req/s,2.18K req/s
+2025-11-20 14:29:15,1.07K req/s,1 req/s,32 req/s,7.41K req/s,13.7K req/s,2.38K req/s
+2025-11-20 14:29:30,1.07K req/s,1 req/s,33 req/s,8.05K req/s,15.0K req/s,2.59K req/s
+2025-11-20 14:29:45,1.58K req/s,1 req/s,34 req/s,8.60K req/s,15.7K req/s,2.80K req/s
+2025-11-20 14:30:00,2.11K req/s,1 req/s,35 req/s,9.17K req/s,16.3K req/s,3.00K req/s
+2025-11-20 14:30:15,2.18K req/s,1 req/s,36 req/s,9.74K req/s,17.5K req/s,3.22K req/s
+2025-11-20 14:30:30,2.18K req/s,1 req/s,37 req/s,10.3K req/s,18.7K req/s,3.40K req/s
+2025-11-20 14:30:45,2.60K req/s,1 req/s,38 req/s,11.0K req/s,19.5K req/s,3.59K req/s
+2025-11-20 14:31:00,2.71K req/s,1 req/s,39 req/s,11.6K req/s,20.6K req/s,3.80K req/s
+2025-11-20 14:31:15,2.71K req/s,1 req/s,40 req/s,12.1K req/s,21.7K req/s,4.01K req/s
+2025-11-20 14:31:30,2.71K req/s,1 req/s,41 req/s,12.7K req/s,22.9K req/s,4.23K req/s
+2025-11-20 14:31:45,2.71K req/s,1 req/s,42 req/s,13.3K req/s,24.0K req/s,4.44K req/s
+2025-11-20 14:32:00,2.79K req/s,1 req/s,43 req/s,13.9K req/s,25.1K req/s,4.62K req/s
+2025-11-20 14:32:15,3.26K req/s,1 req/s,44 req/s,14.4K req/s,25.8K req/s,4.79K req/s
+2025-11-20 14:32:30,3.38K req/s,1 req/s,45 req/s,14.8K req/s,26.5K req/s,4.93K req/s
+2025-11-20 14:32:45,3.38K req/s,1 req/s,46 req/s,15.0K req/s,26.9K req/s,5.00K req/s
+2025-11-20 14:33:00,3.38K req/s,1 req/s,47 req/s,15.0K req/s,26.9K req/s,5.00K req/s
+2025-11-20 14:33:15,3.38K req/s,1 req/s,48 req/s,15.0K req/s,26.9K req/s,5.00K req/s

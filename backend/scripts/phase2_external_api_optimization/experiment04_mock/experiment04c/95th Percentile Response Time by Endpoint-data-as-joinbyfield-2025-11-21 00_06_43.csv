@@ -1,0 +1,36 @@
+"Time","/actuator/health","/actuator/prometheus","/api/v1/auth/perf/stats","/api/v1/auth/perf/tokens","/api/v1/crypto/price/{symbol}","/api/v1/market/price/{symbol}","/api/v1/market/search"
+2025-11-20 23:53:00,,44 ms,,,,,
+2025-11-20 23:53:15,,44 ms,,,,,
+2025-11-20 23:53:30,,38 ms,NaN,NaN,,,
+2025-11-20 23:53:45,,38 ms,NaN,NaN,,,
+2025-11-20 23:54:00,NaN,38 ms,NaN,NaN,4 ms,99 ms,190 ms
+2025-11-20 23:54:15,NaN,33 ms,NaN,NaN,3 ms,197 ms,290 ms
+2025-11-20 23:54:30,NaN,33 ms,NaN,NaN,3 ms,376 ms,348 ms
+2025-11-20 23:54:45,NaN,33 ms,NaN,NaN,3 ms,1 s,1 s
+2025-11-20 23:55:00,NaN,33 ms,NaN,NaN,2 ms,2 s,1 s
+2025-11-20 23:55:15,NaN,33 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:55:30,NaN,33 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:55:45,NaN,33 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:56:00,NaN,33 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:56:15,NaN,38 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:56:30,NaN,61 ms,NaN,NaN,2 ms,2 s,2 s
+2025-11-20 23:56:45,NaN,61 ms,NaN,NaN,3 ms,2 s,2 s
+2025-11-20 23:57:00,NaN,61 ms,NaN,NaN,4 ms,2 s,2 s
+2025-11-20 23:57:15,NaN,38 ms,NaN,NaN,6 ms,2 s,2 s
+2025-11-20 23:57:30,NaN,55 ms,NaN,NaN,7 ms,2 s,2 s
+2025-11-20 23:57:45,NaN,55 ms,NaN,NaN,8 ms,2 s,2 s
+2025-11-20 23:58:00,NaN,55 ms,NaN,NaN,9 ms,2 s,2 s
+2025-11-20 23:58:15,NaN,38 ms,NaN,NaN,8 ms,3 s,2 s
+2025-11-20 23:58:30,NaN,39 ms,NaN,NaN,8 ms,3 s,2 s
+2025-11-20 23:58:45,NaN,39 ms,NaN,NaN,8 ms,2 s,2 s
+2025-11-20 23:59:00,NaN,38 ms,NaN,NaN,8 ms,2 s,2 s
+2025-11-20 23:59:15,NaN,33 ms,NaN,NaN,7 ms,3 s,2 s
+2025-11-20 23:59:30,NaN,38 ms,NaN,NaN,7 ms,3 s,2 s
+2025-11-20 23:59:45,NaN,38 ms,NaN,NaN,7 ms,2 s,2 s
+2025-11-21 00:00:00,NaN,38 ms,NaN,NaN,7 ms,2 s,2 s
+2025-11-21 00:00:15,NaN,33 ms,NaN,NaN,8 ms,3 s,2 s
+2025-11-21 00:00:30,NaN,33 ms,NaN,NaN,7 ms,3 s,2 s
+2025-11-21 00:00:45,NaN,38 ms,NaN,NaN,8 ms,3 s,2 s
+2025-11-21 00:01:00,NaN,38 ms,NaN,NaN,7 ms,2 s,2 s
+2025-11-21 00:01:15,NaN,38 ms,NaN,NaN,6 ms,2 s,2 s
+2025-11-21 00:01:30,NaN,38 ms,NaN,NaN,3 ms,2 s,2 s

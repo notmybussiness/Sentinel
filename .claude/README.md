@@ -1,257 +1,427 @@
-# 📚 .claude/ Folder Guide
+# Sentinel - 개발 시작 가이드
 
-> **.claude/ 폴더는 프로젝트 문서와 진행 기록을 관리하는 공간입니다**
->
-> **첫 시작은 항상 [CLAUDE.md](./CLAUDE.md)에서!**
+> **빠른 시작**: 환경 설정 → 실행 → 테스트
+> 전체 프로젝트 구조는 [CLAUDE.md](./CLAUDE.md) 참조
+
+**Last Updated**: 2025-12-06
 
 ---
 
-## 📁 Folder Structure
+## 🎯 시작하기 전에
+
+### 필수 문서
+1. **[CLAUDE.md](./CLAUDE.md)** - 프로젝트 전체 지도 (아키텍처, 코드 스타일, 워크플로우)
+2. **[roadmap/CURRENT_STATUS.md](./roadmap/CURRENT_STATUS.md)** - 현재 Phase 7 완료, Phase 8 계획
+3. **[specs/README.md](./specs/README.md)** - API 명세서 (35개 엔드포인트)
+
+---
+
+## 🚀 Quick Start
+
+### 1. 환경 요구사항
+
+| 항목 | 버전 |
+|------|------|
+| **Java** | 21+ |
+| **Node.js** | 18+ |
+| **Docker** | Latest |
+| **PostgreSQL** | 14+ (Docker) |
+| **Redis** | 7+ (Docker) |
+
+### 2. PostgreSQL & Redis 시작
+
+```bash
+# 프로젝트 루트에서
+docker-compose up -d
+
+# 확인
+docker ps
+# CONTAINER STATUS가 Up 이면 정상
+```
+
+**서비스 포트**:
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+
+### 3. Backend 실행
+
+```bash
+# backend 디렉토리로 이동
+cd backend
+
+# 실행 (CMD 또는 PowerShell - Git Bash 불가!)
+gradlew bootRun
+
+# 또는 개발 프로필로 실행
+gradlew bootRun --args='--spring.profiles.active=dev,secret'
+
+# 또는 성능 테스트 프로필
+gradlew bootRun --args='--spring.profiles.active=perf,secret'
+```
+
+**확인**:
+- http://localhost:8080 접속
+- http://localhost:8080/actuator/health 상태 확인
+
+### 4. Frontend 실행 (Optional)
+
+```bash
+# frontend 디렉토리로 이동
+cd frontend
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+```
+
+**확인**:
+- http://localhost:3000 접속
+
+---
+
+## 🧪 테스트
+
+### Backend Unit/Integration Tests
+
+```bash
+cd backend
+
+# 전체 테스트 실행
+gradlew test
+
+# 특정 클래스 테스트
+gradlew test --tests PortfolioServiceTest
+
+# 특정 메서드 테스트
+gradlew test --tests PortfolioServiceTest.createPortfolio
+```
+
+### k6 Load Tests
+
+```bash
+cd backend/scripts/phase7_redis_cache/tests
+
+# Phase 7 baseline 테스트 (Redis 캐시)
+k6 run exp11_redis_baseline.js
+
+# 결과 확인
+cat ../results/exp11_summary.json | jq '.metrics.http_reqs.values.rate'
+```
+
+---
+
+## 🔧 환경 설정 파일
+
+### application-secret.yml (필수)
+
+**위치**: `backend/src/main/resources/application-secret.yml`
+
+```yaml
+# JWT 설정
+jwt:
+  secret: your-jwt-secret-key-here
+
+# Kakao OAuth2
+kakao:
+  oauth:
+    client-id: your-kakao-client-id
+    client-secret: your-kakao-client-secret
+
+# Gemini AI
+ai:
+  gemini:
+    api-key: your-gemini-api-key
+
+# Stock Market APIs
+stock:
+  market:
+    alphavantage:
+      api-key: your-alphavantage-key
+    finnhub:
+      api-key: your-finnhub-key
+    korea-investment:
+      app-key: your-kis-app-key
+      app-secret: your-kis-app-secret
+```
+
+**⚠️ 주의**: `application-secret.yml`은 `.gitignore`에 포함되어 있습니다.
+
+---
+
+## 📊 모니터링
+
+### Actuator Endpoints
+
+```bash
+# Health Check
+curl http://localhost:8080/actuator/health
+
+# HikariCP Connection Pool
+curl http://localhost:8080/actuator/metrics/hikaricp.connections.active
+curl http://localhost:8080/actuator/metrics/hikaricp.connections.pending
+
+# Cache Metrics
+curl http://localhost:8080/actuator/metrics/cache.gets?tag=cache:portfolios
+
+# All Metrics
+curl http://localhost:8080/actuator/metrics
+```
+
+### Prometheus & Grafana
+
+**Prometheus**: http://192.168.0.5:9090
+**Grafana**: http://192.168.0.5:3001
+
+**대시보드**:
+- TPS (Requests per second)
+- P95 Response Time
+- Error Rate
+- HikariCP Connection Pool
+- Redis Cache Hit Rate
+
+---
+
+## 🐛 디버깅
+
+### Backend 로그 레벨 조정
+
+`application.yml` 또는 `application-dev.yml`:
+
+```yaml
+logging:
+  level:
+    root: INFO
+    com.pjsent.sentinel: DEBUG
+    org.hibernate.SQL: DEBUG                        # SQL 쿼리 출력
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 파라미터 바인딩
+    org.springframework.cache: DEBUG                # 캐시 동작
+    org.springframework.data.redis: DEBUG           # Redis 동작
+```
+
+### 개발 모드 로그인
+
+프론트엔드가 없을 때 빠른 테스트용:
+
+```bash
+# 개발 사용자로 자동 로그인 (테스트 전용)
+POST http://localhost:8080/api/v1/auth/dev-login
+```
+
+**응답**:
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1...",
+  "refreshToken": "eyJhbGciOiJIUzI1...",
+  "expiresIn": 900,
+  "user": {
+    "id": 1,
+    "email": "dev@sentinel.com",
+    "name": "개발자"
+  }
+}
+```
+
+---
+
+## 📁 주요 디렉토리 구조
+
+### Backend
+
+```
+backend/
+├── src/main/java/com/pjsent/sentinel/
+│   ├── user/          # 인증 (OAuth2, JWT)
+│   ├── portfolio/     # 포트폴리오 CRUD
+│   ├── market/        # 주식 시장 데이터
+│   ├── crypto/        # 암호화폐 (Upbit, Binance)
+│   ├── backtest/      # 백테스팅 엔진
+│   ├── rebalancing/   # 리밸런싱 알고리즘
+│   └── config/        # 설정 (Cache, Security, Async)
+│
+├── src/main/resources/
+│   ├── application.yml           # 기본 설정
+│   ├── application-dev.yml       # 개발 프로필
+│   ├── application-perf.yml      # 성능 테스트 프로필
+│   └── application-secret.yml    # ⚠️ 비밀 정보 (.gitignore)
+│
+└── scripts/
+    ├── phase7_redis_cache/tests/  # k6 테스트 스크립트
+    └── results/                   # 성능 테스트 결과
+```
+
+### 문서 (.claude/)
 
 ```
 .claude/
-├── CLAUDE.md              # ⭐ Entry Point - 모든 문서의 Navigation Hub
-├── PLAN.md                # ⭐ 프로젝트 계획 + 진행 체크리스트
-├── CURRENT_STATE.md       # 📊 현재 구현 상태 스냅샷
-├── README.md              # 📖 이 파일 - 폴더 구조 설명
+├── CLAUDE.md               # 👈 프로젝트 메타 가이드 (시작점)
+├── README.md               # 👈 이 파일 (개발 시작 가이드)
 │
-├── backend/               # 🔧 Backend Domain API 스펙
-│   ├── API_AUTH.md        # 인증 API
-│   ├── API_PORTFOLIO.md   # 포트폴리오 API
-│   └── API_MARKET.md      # 시장 데이터 API
+├── specs/                  # API 명세서
+│   ├── README.md
+│   ├── API_AUTH.md
+│   ├── API_PORTFOLIO.md
+│   └── ...
 │
-├── frontend/              # 🎨 Frontend 문서
-│   ├── COMPONENTS.md      # 컴포넌트 라이브러리 (20+)
-│   ├── THEME_DATA.md      # 디자인 시스템 (색상, 타이포그래피)
-│   ├── MODULES.md         # 모듈 구조 (lib, contexts, types)
-│   └── PAGES.md           # 페이지 라우팅 및 구조
+├── roadmap/                # 프로젝트 계획
+│   ├── ROADMAP.md
+│   ├── CURRENT_STATUS.md
+│   └── archive/
 │
-├── progress/              # 📝 일일 작업 기록
-│   └── YYYY-MM-DD-{feature-name}.md
+├── docs/                   # 기술 문서
+│   ├── architecture/       # ADR, 설계 문서
+│   ├── performance/        # 성능 최적화 기록
+│   └── learning/           # 학습 기록
 │
-└── archive/               # 📦 과거 기획 문서 보관
-    ├── SENTINEL_PRD.md
-    ├── 3WEEK_RAPID_DEPLOYMENT_PLAN.md
-    ├── BACKEND_ENGINEERING_MINDSET.md
-    ├── IMPLEMENTATION_DECISIONS.md
-    └── API_SPECIFICATION_OLD.md
+└── commands/               # 슬래시 커맨드
 ```
 
 ---
 
-## 📖 문서 읽는 순서
+## 🔑 주요 명령어 치트시트
 
-### 🆕 처음 프로젝트 시작할 때
-1. **[CLAUDE.md](./CLAUDE.md)** - 프로젝트 개요, 전체 구조
-2. **[PLAN.md](./PLAN.md)** - 프로젝트 목표, 로드맵, Phase 확인
-3. **[CURRENT_STATE.md](./CURRENT_STATE.md)** - 현재 구현 상태
-4. 필요 시 `backend/` 또는 `frontend/` 문서 참조
+### Git
 
-### 🔄 매 세션 시작할 때
-1. **[PLAN.md](./PLAN.md)** → "Immediate Next Steps" 확인
-2. **[CURRENT_STATE.md](./CURRENT_STATE.md)** → 최신 구현 상태
-3. **`progress/`** → 최근 작업 내용 확인
-4. 작업 시작!
+```bash
+# 새 feature 브랜치
+git checkout -b feat/circuit-breaker
 
-### 🔍 특정 작업할 때
-**Backend 개발**:
-- `backend/API_[domain].md` 참조
+# 커밋 (올바른 형식)
+git commit -m "feat: add circuit breaker to UpbitProvider"
+git commit -m "perf(phase8): optimize HikariCP connection pool"
 
-**Frontend 개발**:
-- `frontend/COMPONENTS.md` → 사용 가능한 컴포넌트
-- `frontend/THEME_DATA.md` → 디자인 가이드
-- `frontend/PAGES.md` → 페이지 구조
+# ❌ 절대 금지
+git commit -m "feat: add feature
 
----
-
-## 🎯 각 문서의 목적
-
-### Core Documents
-
-#### **CLAUDE.md** (⭐ 가장 중요)
-- **목적**: 전체 프로젝트 Navigation Hub
-- **언제**: 프로젝트 처음 시작, 문서 찾을 때
-- **내용**: Quick start, 문서 맵, 개발 워크플로우
-
-#### **PLAN.md** (⭐ 매 세션 필수)
-- **목적**: 프로젝트 계획 + 진행 체크리스트
-- **언제**: 매 세션 시작/종료 시
-- **내용**: 7단계 로드맵, 체크리스트, Next Steps
-- **업데이트**: 매 세션 (체크박스 상태)
-
-#### **CURRENT_STATE.md**
-- **목적**: 현재 구현 상태 스냅샷
-- **언제**: 현재 무엇이 완료/미완인지 확인
-- **내용**: 완료 기능, 디자인 시스템, 환경 설정
-- **업데이트**: 새 기능 추가 시
-
----
-
-### Backend Documents (`backend/`)
-
-#### **API_AUTH.md**
-- 인증 관련 API 엔드포인트
-- Kakao OAuth, JWT 토큰 관리
-- Request/Response 예시
-
-#### **API_PORTFOLIO.md**
-- 포트폴리오 CRUD API
-- Holdings 관리
-- 가격 재계산 로직
-
-#### **API_MARKET.md**
-- 시장 데이터 API (🚧 작업 중)
-- 가격 조회, 검색, 지수
-- Provider 시스템 (AlphaVantage, Finnhub)
-
----
-
-### Frontend Documents (`frontend/`)
-
-#### **COMPONENTS.md**
-- 20+ UI 컴포넌트 라이브러리
-- 각 컴포넌트 Props, 사용법
-- 개발 체크리스트
-
-#### **THEME_DATA.md**
-- 디자인 시스템 전체
-- 색상, 타이포그래피, 간격
-- Glassmorphism 가이드
-
-#### **MODULES.md**
-- 프론트엔드 모듈 구조
-- lib, contexts, types 설명
-- Import patterns
-
-#### **PAGES.md**
-- 페이지 라우팅 맵
-- 각 페이지 상세 설명
-- Protected route pattern
-
----
-
-### Progress Files (`progress/`)
-
-**파일명 규칙**: `YYYY-MM-DD-{feature-name}.md`
-
-**목적**: 일일 작업 기록
-
-**내용 구조**:
-```markdown
-# {기능명} - YYYY-MM-DD
-
-## Summary
-간단한 요약
-
-## Changes Made
-구체적인 변경 사항
-
-## Files Modified
-변경된 파일 목록
-
-## Result
-최종 결과
+Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-**업데이트**: 중요 작업 완료 시
+### Gradle
 
----
+```bash
+# 빌드
+gradlew build
 
-### Archive (`archive/`)
+# 테스트
+gradlew test
 
-**목적**: 과거 기획 문서 보관
+# 클린 빌드
+gradlew clean build
 
-**파일**:
-- `SENTINEL_PRD.md`: 초기 PRD
-- `3WEEK_RAPID_DEPLOYMENT_PLAN.md`: 배포 계획
-- `BACKEND_ENGINEERING_MINDSET.md`: 백엔드 원칙
-- `IMPLEMENTATION_DECISIONS.md`: 기술 결정
-- `API_SPECIFICATION_OLD.md`: 구 API 스펙 (참고용)
-
-**용도**: 참고용, 거의 읽지 않음
-
----
-
-## 🔄 정리 주기
-
-### 매 세션
-- **PLAN.md**: 체크박스 상태 업데이트
-- **CURRENT_STATE.md**: 새 기능 추가
-
-### 주요 작업 완료 시
-- **progress/**: 새 파일 생성
-- **backend/API_*.md**: API 변경 시 업데이트
-- **frontend/COMPONENTS.md**: 새 컴포넌트 추가 시
-
-### 거의 안 함
-- **CLAUDE.md**: 구조 대변경 시에만
-- **README.md**: 폴더 구조 변경 시
-- **THEME_DATA.md**: 디자인 시스템 변경 시
-
----
-
-## 💡 문서 작성 가이드
-
-### Progress 파일 작성
-```markdown
-# Feature Name - 2025-MM-DD
-
-## Summary
-What was accomplished in 2-3 sentences
-
-## Changes Made
-- Specific change 1
-- Specific change 2
-- Specific change 3
-
-## Files Modified
-- path/to/file1.tsx
-- path/to/file2.ts
-
-## Result
-Final outcome and next steps
+# 특정 프로필로 실행
+gradlew bootRun --args='--spring.profiles.active=perf,secret'
 ```
 
-### 문서 업데이트 원칙
-1. **정확성**: 코드와 문서는 항상 동기화
-2. **간결성**: 핵심만 작성, 불필요한 설명 제거
-3. **구조화**: 일관된 포맷 유지
-4. **날짜**: 주요 업데이트 시 날짜 기록
+### Docker
+
+```bash
+# 서비스 시작
+docker-compose up -d
+
+# 로그 확인
+docker-compose logs -f
+
+# 서비스 중지
+docker-compose stop
+
+# 서비스 중지 + 데이터 삭제
+docker-compose down -v
+```
+
+### Redis CLI
+
+```bash
+# 연결 확인
+redis-cli ping
+
+# 통계 확인
+redis-cli INFO stats | grep keyspace
+
+# 캐시 키 조회
+redis-cli KEYS "sentinel:*"
+
+# 특정 캐시 값 확인
+redis-cli GET "sentinel:portfolios::1"
+
+# 캐시 전체 삭제 (주의!)
+redis-cli FLUSHALL
+```
 
 ---
 
 ## 🚨 주의사항
 
-### 절대 커밋하지 말 것
-- `.env.local` (Frontend 환경 변수)
-- `application-secret.yml` (Backend 시크릿)
-- 개인 API 키 정보
+### 1. Backend 실행 환경
+- ❌ **Git Bash에서 실행 불가**
+- ✅ **CMD 또는 PowerShell 사용**
 
-### Git에 포함할 것
-- 모든 `.claude/` 문서들
-- `progress/` 작업 기록
-- `archive/` 참고 문서
+### 2. API Rate Limits
+- **AlphaVantage**: 분당 5회, 일일 100회
+- **Finnhub**: 분당 60회
+- **Upbit**: 공식 제한 없음 (과도한 요청 시 차단 가능)
 
----
+### 3. Spec-First Development
+- 코드 작성 전 **반드시** `.claude/specs/API_*.md` 확인
+- JSON 구조와 **정확히 일치**하는 코드 작성
 
-## 📞 Quick Reference
-
-### 문서 찾기
-- **다음 할 일?** → PLAN.md
-- **현재 상태?** → CURRENT_STATE.md
-- **API 스펙?** → backend/API_*.md
-- **컴포넌트?** → frontend/COMPONENTS.md
-- **디자인?** → frontend/THEME_DATA.md
-
-### 세션 워크플로우
-```
-시작: PLAN.md → CURRENT_STATE.md → progress/latest
-작업: 코딩 + 테스트 + 문서 참조
-종료: PLAN.md 업데이트 → CURRENT_STATE.md 업데이트 → Git commit
-```
+### 4. 성능 테스트
+- 항상 **k6로 Before/After 측정**
+- Full path 테스트 (Client → WAS → DB)
 
 ---
 
-**Last Updated**: 2025-10-01
-**Version**: 2.0 - Reorganized Structure
-**Total Documents**: 15 (4 core + 3 backend + 4 frontend + archive)
+## 🔗 추가 리소스
+
+### 공식 문서
+- [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
+- [Spring Data JPA](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
+- [Redis Documentation](https://redis.io/docs/)
+- [k6 Documentation](https://k6.io/docs/)
+
+### 프로젝트 문서
+- **전체 아키텍처**: [CLAUDE.md](./CLAUDE.md)
+- **API 스펙**: [specs/README.md](./specs/README.md)
+- **현재 진행 상황**: [roadmap/CURRENT_STATUS.md](./roadmap/CURRENT_STATUS.md)
+- **Phase 8 계획**: [plans/glimmering-sprouting-cherny.md](./plans/glimmering-sprouting-cherny.md)
+
+---
+
+## 📞 문제 해결
+
+### 자주 발생하는 이슈
+
+**1. `gradlew: command not found`**
+```bash
+# Windows: Git Bash 사용 중 (CMD/PowerShell 사용)
+# 또는 gradlew.bat 사용
+gradlew.bat bootRun
+```
+
+**2. `Cannot connect to PostgreSQL`**
+```bash
+# Docker 컨테이너 상태 확인
+docker ps
+
+# 재시작
+docker-compose restart
+```
+
+**3. `Redis connection refused`**
+```bash
+# Redis 상태 확인
+redis-cli ping
+
+# Docker 로그 확인
+docker-compose logs redis
+```
+
+**4. `JWT token expired` (k6 테스트)**
+- JWT TTL: 15분 (dev), 24시간 (perf)
+- k6 스크립트에 JWT refresh 로직 추가 필요 (Phase 8 계획)
+
+---
+
+**Last Updated**: 2025-12-06
+**문의**: 프로젝트 관리자

@@ -1,0 +1,111 @@
+# Test Configuration - Isolated for Batch Testing
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  # Spring Batch for H2
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false  # 자동 실행 방지, 테스트에서 수동 실행
+
+  # Disable Kafka for tests
+  kafka:
+    bootstrap-servers: localhost:9999  # 비활성화용 dummy
+    consumer:
+      auto-startup: false
+
+  # Disable security for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+# JWT 설정 (테스트용 dummy)
+jwt:
+  secret: test-secret-key-for-unit-testing-minimum-256-bits-required-here
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+# API 설정 - 모두 비활성화 (Batch 테스트는 외부 API 불필요)
+stock:
+  market:
+    korea-investment:
+      enabled: false
+      base-url: https://openapi.koreainvestment.com:9443
+      app-key: test-app-key
+      app-secret: test-app-secret
+      timeout: 10000
+      token-expiration: 86400
+      token-refresh-before: 3600
+    alphavantage:
+      enabled: false
+      base-url: https://www.alphavantage.co/query
+      api-key: test-api-key
+      rate-limit: 5
+      timeout: 10000
+    finnhub:
+      enabled: false
+      base-url: https://finnhub.io/api/v1
+      api-key: test-api-key
+      rate-limit: 60
+      timeout: 10000
+    gemini:
+      enabled: false
+
+crypto:
+  market:
+    upbit:
+      enabled: false
+      base-url: https://api.upbit.com/v1
+      websocket-url: wss://api.upbit.com/websocket/v1
+      timeout: 10000
+    binance:
+      enabled: false
+      base-url: https://api.binance.com/api/v3
+      timeout: 10000
+  streaming:
+    websocket:
+      enabled: false
+
+ai:
+  gemini:
+    enabled: false
+    api-key: test-api-key
+    base-url: https://generativelanguage.googleapis.com/v1beta/models
+    model: gemini-2.5-pro-latest
+    timeout: 30000
+    max-tokens: 2048
+    temperature: 0.7
+
+kakao:
+  oauth:
+    client-id: test-client-id
+    client-secret: test-client-secret
+    redirect-uri: "http://localhost:8080/api/v1/auth/kakao/callback"
+    scope: profile_nickname,account_email,profile_image
+
+# Resilience4j 비활성화
+resilience4j:
+  circuitbreaker:
+    instances:
+      kisApi:
+        enabled: false
+
+# Disable logging for faster tests
+logging:
+  level:
+    root: WARN
+    com.pjsent.sentinel: INFO
+    org.springframework.batch: DEBUG

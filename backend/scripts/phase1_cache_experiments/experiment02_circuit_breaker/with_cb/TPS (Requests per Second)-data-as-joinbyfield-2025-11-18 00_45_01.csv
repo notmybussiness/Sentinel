@@ -1,0 +1,22 @@
+"Time","GET UNKNOWN 403","GET /actuator/health 200","GET /actuator/prometheus 200","GET /api/v1/auth/perf/stats 200","GET /api/v1/auth/perf/tokens 200","POST /api/v1/market/prices 500","POST /api/v1/auth/dev-login 200","POST /api/v1/market/prices 200"
+2025-11-18 00:34:00,2 req/s,5 req/s,216 req/s,1 req/s,1 req/s,29.2K req/s,1 req/s,9.08K req/s
+2025-11-18 00:34:15,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:34:30,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:34:45,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:35:00,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:35:15,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:35:30,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:35:45,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:36:00,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:36:15,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:36:30,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:36:45,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:37:00,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:37:15,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:37:30,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:37:45,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:38:00,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:38:15,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:38:30,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:38:45,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s
+2025-11-18 00:39:00,2 req/s,6 req/s,217 req/s,1 req/s,1 req/s,29.2K req/s,2 req/s,9.09K req/s

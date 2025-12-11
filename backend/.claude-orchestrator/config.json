@@ -1,0 +1,14 @@
+{
+  "project": {
+    "name": "backend",
+    "path": "C:\\Users\\zetto\\Desktop\\Sentinel\\backend"
+  },
+  "scope": "Find uncompleted feature especially backtesting and websocket",
+  "goals": [
+    "Plan to complete each feature with well running  unit test"
+  ],
+  "platform": "web",
+  "maxTasks": 10,
+  "continuous": false,
+  "initialized": "2025-12-11T04:07:26.265Z"
+}

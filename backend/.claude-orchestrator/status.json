@@ -1,0 +1,22 @@
+{
+  "orchestrator": {
+    "running": false,
+    "pid": null,
+    "startedAt": null
+  },
+  "teamLead": {
+    "status": "idle",
+    "lastActivity": "2025-12-11T05:00:58.452Z"
+  },
+  "developer": {
+    "status": "idle",
+    "currentTask": "task-004",
+    "lastActivity": "2025-12-11T05:00:51.609Z"
+  },
+  "lastCycle": {
+    "number": 1,
+    "completed": 1,
+    "failed": 4,
+    "remaining": 0
+  }
+}

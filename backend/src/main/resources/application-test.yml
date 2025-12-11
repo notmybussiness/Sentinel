@@ -1,0 +1,96 @@
+# Test Profile
+# Integration Test용 설정
+
+spring:
+  application:
+    name: sentinel-test
+
+  # PostgreSQL (로컬 Docker)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sentinel
+    username: sentinel
+    password: sentinel_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  # JPA Settings
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      repositories:
+        enabled: true
+
+  # Cache Configuration
+  cache:
+    type: redis
+
+  # AutoConfiguration (Redis 명시적 활성화)
+  autoconfigure:
+    exclude: []  # 모든 exclude 제거
+
+# Server Configuration
+server:
+  port: 0  # Random port for tests
+
+# JWT
+jwt:
+  secret: test-secret-key-for-jwt-must-be-at-least-256-bits-long-for-hs512
+  access-token-expiration: 86400000
+  refresh-token-expiration: 604800000
+
+# Kakao OAuth (Test values)
+kakao:
+  oauth:
+    client-id: test-client-id
+    client-secret: test-client-secret
+    redirect-uri: http://localhost:8080/api/v1/auth/kakao/callback
+    scope: profile_nickname,account_email,profile_image
+
+# Stock Market API (Test mode)
+stock:
+  market:
+    korea-investment:
+      enabled: false
+    alphavantage:
+      enabled: false
+    finnhub:
+      enabled: false
+
+# AI (Disabled for tests)
+ai:
+  gemini:
+    enabled: false
+
+# Crypto Market API (Test mode)
+crypto:
+  market:
+    upbit:
+      enabled: false
+    binance:
+      enabled: false
+  streaming:
+    websocket:
+      enabled: false
+
+# Logging
+logging:
+  level:
+    root: WARN
+    com.pjsent.sentinel: INFO
+    org.springframework.cache: DEBUG
+    org.springframework.data.redis: DEBUG

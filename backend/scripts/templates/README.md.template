@@ -1,0 +1,71 @@
+# Phase N: [Name]
+
+> **Goal**: [Performance optimization goal]  
+> **Duration**: [Start Date] ~ [End Date]  
+> **Status**: 🔄 In Progress / ✅ Complete
+
+---
+
+## 🎯 Objectives
+
+[Describe what this phase aims to achieve]
+
+---
+
+## 🧪 Experiments
+
+| ID | Name | Description | Status |
+|----|------|-------------|--------|
+| ExpN | Baseline | Current state measurement | ✅ Complete |
+| ExpN+1 | [Optimization] | [What changed] | 🔄 In Progress |
+| ExpN+2 | [Further optimization] | [What changed] | ⏳ Planned |
+
+---
+
+## 🚀 How to Run
+
+### 1. Windows에서 준비
+```bash
+# k6 스크립트 확인
+cd phaseN_name/tests
+
+# Naver Cloud에 업로드
+# - tests/ 폴더 전체
+# - common/k6/utils.js
+# - (필요시) 토큰 파일
+```
+
+### 2. Mac에서 실행
+```bash
+# Naver Cloud에서 다운로드
+cd ~/k6_tests/phaseN_name
+
+# k6 실행
+k6 run tests/expN_baseline.js --out json=results/expN/result.json
+
+# 결과를 Naver Cloud에 업로드
+```
+
+### 3. Windows에서 분석
+```bash
+# Naver Cloud에서 결과 다운로드
+# results/expN/ 폴더에 저장
+
+# Prometheus 메트릭 추출
+cd C:\...\scripts
+python common\python\export_metrics.py --start "YYYY-MM-DDTHH:MM:SSZ" --end "YYYY-MM-DDTHH:MM:SSZ" --output phaseN_name\results\expN
+
+# 분석 실행
+cd phaseN_name\analysis
+python analyze_expN.py
+```
+
+---
+
+## 📊 Results Summary
+
+[링크 to REPORT.md]
+
+---
+
+**Last Updated**: YYYY-MM-DD
