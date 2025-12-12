@@ -30,6 +30,27 @@ spring:
     job:
       enabled: false  # 앱 실행 시 자동 실행 방지 (API로 실행하거나 스케줄러로 실행)
 
+  # Redis Configuration (localhost for test)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3000
+
+  # Kafka Configuration (localhost for test)
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: sentinel-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.pjsent.sentinel.*
+
 # 서버 포트 설정
 server:
   port: 8080
