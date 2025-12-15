@@ -3,6 +3,7 @@ package com.pjsent.sentinel.common.config;
 import com.pjsent.sentinel.user.service.JwtService;
 import com.pjsent.sentinel.user.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,6 +32,9 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
+
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -79,13 +83,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // 허용할 Origin 설정
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:3000",  // Next.js 개발 서버
-            "http://localhost:8080",  // Spring Boot 개발 서버
-            "https://yourdomain.com"  // 프로덕션 도메인
-        ));
+
+        // 허용할 Origin 설정 (application.yml의 cors.allowed-origins에서 읽어옴)
+        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
         
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

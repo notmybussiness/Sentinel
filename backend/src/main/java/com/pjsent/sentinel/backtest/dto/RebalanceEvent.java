@@ -31,4 +31,9 @@ public class RebalanceEvent {
      * 거래 목록
      */
     private List<Trade> trades;
+
+    /**
+     * 이 리밸런싱 이벤트의 총 거래 비용
+     */
+    private Double totalTransactionCost;
 }

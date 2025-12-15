@@ -123,7 +123,9 @@ public class CacheConfig {
         cacheConfigurations.put("cryptoSearch", defaultConfig.entryTtl(Duration.ofMinutes(1)));  // 3분
         cacheConfigurations.put("stockSearch", defaultConfig.entryTtl(Duration.ofMinutes(1)));   // 3분
         cacheConfigurations.put("portfolios", defaultConfig.entryTtl(Duration.ofMinutes(1)));   // 1분 (Phase 7: TTL 증가)
-        cacheConfigurations.put("historicalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (과거 데이터는 안정적)
+        cacheConfigurations.put("historicalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (AlphaVantage 미국 주식)
+        cacheConfigurations.put("kisHistoricalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (KIS 한국 주식)
+        cacheConfigurations.put("cryptoHistoricalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (Upbit 암호화폐)
 
         RedisCacheManager cacheManager = RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)

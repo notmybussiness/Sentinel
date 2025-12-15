@@ -1,8 +1,7 @@
 # Backtest API Specification
 
-> **Phase 6**: 백테스팅 엔진 API 스펙
->
-> **Last Updated**: 2025-10-18
+> **Last Updated**: 2025-12-14
+> **Status**: ✅ 구현 완료 (100%)
 
 ---
 
@@ -11,10 +10,26 @@
 백테스팅 엔진은 과거 데이터를 기반으로 포트폴리오 전략을 시뮬레이션하고 성과를 평가합니다.
 
 ### 핵심 기능
-1. 과거 주식 가격 데이터 조회 (AlphaVantage TIME_SERIES_DAILY)
-2. 포트폴리오 가치 시뮬레이션
-3. 리밸런싱 전략 적용 (없음, 월별, 분기별, 연별)
-4. 성과 지표 계산 (Sharpe Ratio, Sortino Ratio, Max Drawdown, Total Return, CAGR)
+1. ✅ 과거 주식/암호화폐 가격 데이터 조회
+2. ✅ 포트폴리오 가치 시뮬레이션
+3. ✅ 리밸런싱 전략 적용 (없음, 월별, 분기별, 연별)
+4. ✅ 성과 지표 계산 (Sharpe, Sortino, Max Drawdown, CAGR 등)
+5. ✅ 거래 비용 모델링 (Transaction Cost)
+
+### 데이터 소스 아키텍처
+```
+                    HistoricalDataFacade
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+         ▼                 ▼                 ▼
+    ┌─────────┐      ┌─────────┐      ┌─────────┐
+    │  KIS    │      │ Alpha   │      │  Upbit  │
+    │(한국주식)│      │Vantage  │      │(암호화폐)│
+    │ 005930  │      │ AAPL    │      │  BTC    │
+    │ 50req/s │      │ 5req/m  │      │600req/m │
+    └─────────┘      └─────────┘      └─────────┘
+```
 
 ---
 
@@ -32,140 +47,50 @@ Authorization: Bearer {token}
 
 {
   "portfolioId": 1,
-  "startDate": "2020-01-01",
-  "endDate": "2023-12-31",
-  "initialCapital": 10000.00,
-  "rebalanceFrequency": "QUARTERLY"
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31",
+  "initialCapital": 10000000,
+  "rebalanceFrequency": "QUARTERLY",
+  "transactionCostPercent": 0.001
 }
 ```
 
 **Request Fields**
-- `portfolioId` (Long, required): 백테스팅할 포트폴리오 ID
-- `startDate` (String, required): 시작일 (YYYY-MM-DD)
-- `endDate` (String, required): 종료일 (YYYY-MM-DD)
-- `initialCapital` (Double, required): 초기 투자 금액 (USD)
-- `rebalanceFrequency` (String, required): 리밸런싱 빈도
-  - `NONE`: 리밸런싱 없음
-  - `MONTHLY`: 월별
-  - `QUARTERLY`: 분기별
-  - `YEARLY`: 연별
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `portfolioId` | Long | ✅ | - | 백테스팅할 포트폴리오 ID |
+| `startDate` | String | ✅ | - | 시작일 (YYYY-MM-DD) |
+| `endDate` | String | ✅ | - | 종료일 (YYYY-MM-DD) |
+| `initialCapital` | Double | ✅ | - | 초기 투자 금액 |
+| `rebalanceFrequency` | Enum | ✅ | - | NONE, MONTHLY, QUARTERLY, YEARLY |
+| `transactionCostPercent` | Double | ❌ | 0.001 | 거래 비용 비율 (0.1% = 0.001) |
 
 **Response**
 ```json
 {
   "portfolioId": 1,
-  "portfolioName": "Tech Portfolio",
-  "startDate": "2020-01-01",
-  "endDate": "2023-12-31",
-  "initialCapital": 10000.00,
-  "finalValue": 15234.56,
+  "portfolioName": "삼성전자 포트폴리오",
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31",
+  "initialCapital": 10000000,
+  "finalValue": 10523450,
   "rebalanceFrequency": "QUARTERLY",
+  "transactionCostPercent": 0.001,
+  "totalTransactionCosts": 12345.67,
+  "costImpactPercent": 0.12,
   "performance": {
-    "totalReturn": 52.35,
-    "cagr": 11.23,
-    "sharpeRatio": 1.45,
-    "sortinoRatio": 1.87,
-    "maxDrawdown": -15.67,
-    "volatility": 18.45,
-    "winRate": 62.5
+    "totalReturn": 5.23,
+    "cagr": 5.23,
+    "sharpeRatio": 0.85,
+    "sortinoRatio": 1.12,
+    "maxDrawdown": -8.45,
+    "volatility": 15.67,
+    "winRate": 52.3
   },
-  "equityCurve": [
-    {
-      "date": "2020-01-01",
-      "value": 10000.00,
-      "dailyReturn": 0.00,
-      "cumulativeReturn": 0.00
-    },
-    {
-      "date": "2020-01-02",
-      "value": 10123.45,
-      "dailyReturn": 1.23,
-      "cumulativeReturn": 1.23
-    }
-  ],
-  "rebalanceEvents": [
-    {
-      "date": "2020-04-01",
-      "reason": "QUARTERLY_REBALANCE",
-      "trades": [
-        {
-          "symbol": "AAPL",
-          "action": "BUY",
-          "quantity": 5,
-          "price": 150.25,
-          "amount": 751.25
-        }
-      ]
-    }
-  ],
-  "holdingsSummary": [
-    {
-      "symbol": "AAPL",
-      "finalQuantity": 25,
-      "finalValue": 3750.00,
-      "finalWeight": 24.62,
-      "totalReturn": 45.23
-    }
-  ],
-  "executedAt": "2025-10-18T12:34:56"
-}
-```
-
-**Response Fields**
-- `portfolioId`: 포트폴리오 ID
-- `portfolioName`: 포트폴리오 이름
-- `startDate`: 백테스팅 시작일
-- `endDate`: 백테스팅 종료일
-- `initialCapital`: 초기 투자 금액
-- `finalValue`: 최종 포트폴리오 가치
-- `rebalanceFrequency`: 적용된 리밸런싱 빈도
-- `performance`: 성과 지표
-  - `totalReturn`: 총 수익률 (%)
-  - `cagr`: 연평균 성장률 (%)
-  - `sharpeRatio`: 샤프 비율 (위험 대비 수익률)
-  - `sortinoRatio`: 소르티노 비율 (하방 위험 대비 수익률)
-  - `maxDrawdown`: 최대 낙폭 (%)
-  - `volatility`: 변동성 (표준편차, %)
-  - `winRate`: 승률 (%)
-- `equityCurve`: 포트폴리오 가치 추이 (일별)
-  - `date`: 날짜
-  - `value`: 포트폴리오 가치
-  - `dailyReturn`: 일일 수익률 (%)
-  - `cumulativeReturn`: 누적 수익률 (%)
-- `rebalanceEvents`: 리밸런싱 이벤트 목록
-  - `date`: 리밸런싱 날짜
-  - `reason`: 리밸런싱 사유
-  - `trades`: 거래 내역
-- `holdingsSummary`: 종목별 최종 요약
-  - `symbol`: 종목 심볼
-  - `finalQuantity`: 최종 보유 수량
-  - `finalValue`: 최종 가치
-  - `finalWeight`: 최종 비중 (%)
-  - `totalReturn`: 총 수익률 (%)
-- `executedAt`: 백테스팅 실행 시각
-
-**Error Responses**
-```json
-{
-  "message": "Portfolio not found",
-  "status": 404,
-  "timestamp": "2025-10-18T12:34:56"
-}
-```
-
-```json
-{
-  "message": "Invalid date range: start date must be before end date",
-  "status": 400,
-  "timestamp": "2025-10-18T12:34:56"
-}
-```
-
-```json
-{
-  "message": "Historical data unavailable for symbol AAPL",
-  "status": 503,
-  "timestamp": "2025-10-18T12:34:56"
+  "equityCurve": [...],
+  "rebalanceEvents": [...],
+  "holdingsSummary": [...],
+  "executedAt": "2025-12-14T12:34:56"
 }
 ```
 
@@ -177,31 +102,34 @@ Authorization: Bearer {token}
 
 **Request**
 ```http
-GET /api/v1/backtest/historical/{symbol}?startDate=2020-01-01&endDate=2023-12-31
+GET /api/v1/backtest/historical/{symbol}?startDate=2024-01-01&endDate=2024-12-31
 Authorization: Bearer {token}
 ```
 
-**Query Parameters**
-- `startDate` (String, required): 시작일 (YYYY-MM-DD)
-- `endDate` (String, required): 종료일 (YYYY-MM-DD)
+**라우팅 규칙**
+| 심볼 패턴 | Provider | 예시 |
+|-----------|----------|------|
+| 6자리 숫자 | KIS (한국투자증권) | 005930, 035720 |
+| 영문 | AlphaVantage | AAPL, GOOGL |
 
-**Response**
+**Response (삼성전자 005930 예시)**
 ```json
 {
-  "symbol": "AAPL",
-  "startDate": "2020-01-01",
-  "endDate": "2023-12-31",
-  "dataPoints": 1008,
+  "symbol": "005930",
+  "startDate": "2024-11-01",
+  "endDate": "2024-12-13",
+  "dataPoints": 31,
   "prices": [
     {
-      "date": "2020-01-01",
-      "open": 150.25,
-      "high": 152.50,
-      "low": 149.80,
-      "close": 151.75,
-      "volume": 12345678,
-      "adjustedClose": 151.75
-    }
+      "date": "2024-11-01",
+      "open": 59000,
+      "high": 59600,
+      "low": 58100,
+      "close": 58300,
+      "volume": 19083180,
+      "adjustedClose": 58300
+    },
+    ...
   ]
 }
 ```
@@ -210,7 +138,7 @@ Authorization: Bearer {token}
 
 ### 3. Validate Backtest Parameters
 
-백테스팅 파라미터를 검증합니다.
+백테스팅 실행 전 파라미터 유효성 및 데이터 가용성을 검증합니다.
 
 **Request**
 ```http
@@ -220,9 +148,9 @@ Authorization: Bearer {token}
 
 {
   "portfolioId": 1,
-  "startDate": "2020-01-01",
-  "endDate": "2023-12-31",
-  "initialCapital": 10000.00,
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31",
+  "initialCapital": 10000000,
   "rebalanceFrequency": "QUARTERLY"
 }
 ```
@@ -231,171 +159,187 @@ Authorization: Bearer {token}
 ```json
 {
   "valid": true,
+  "errors": [],
   "warnings": [
-    "Holdings contain crypto assets which may have limited historical data"
+    "Some holdings may have limited historical data"
   ],
   "dataAvailability": {
+    "005930": true,
     "AAPL": true,
-    "GOOGL": true,
-    "BTC": false
+    "BTC": true
   }
 }
 ```
 
 ---
 
-## Performance Metrics Formulas
+### 4. Get Backtest Status
 
-### 1. Total Return
-```
-Total Return (%) = ((Final Value - Initial Capital) / Initial Capital) * 100
-```
+백테스팅 서비스 상태를 확인합니다.
 
-### 2. CAGR (Compound Annual Growth Rate)
-```
-CAGR (%) = (((Final Value / Initial Capital) ^ (1 / Years)) - 1) * 100
+**Request**
+```http
+GET /api/v1/backtest/status
 ```
 
-### 3. Sharpe Ratio
-```
-Sharpe Ratio = (Average Return - Risk Free Rate) / Standard Deviation of Returns
-```
-- Risk Free Rate: 2% (assumed)
-- Higher is better (>1.0 is good, >2.0 is excellent)
-
-### 4. Sortino Ratio
-```
-Sortino Ratio = (Average Return - Risk Free Rate) / Downside Deviation
-```
-- Downside Deviation: Standard deviation of negative returns only
-- Higher is better
-
-### 5. Max Drawdown
-```
-Max Drawdown (%) = ((Trough Value - Peak Value) / Peak Value) * 100
-```
-- Most negative value during the period
-- Lower is better (less negative)
-
-### 6. Volatility
-```
-Volatility (%) = Standard Deviation of Daily Returns * sqrt(252)
-```
-- Annualized volatility
-- Lower is better (more stable)
-
-### 7. Win Rate
-```
-Win Rate (%) = (Number of Positive Return Days / Total Trading Days) * 100
+**Response**
+```json
+{
+  "available": true,
+  "provider": "HistoricalDataFacade",
+  "supportedFrequencies": ["NONE", "MONTHLY", "QUARTERLY", "YEARLY"],
+  "maxDateRange": "10 years",
+  "dataSources": {
+    "koreanStock": "KIS (한국투자증권)",
+    "usStock": "AlphaVantage",
+    "crypto": "Upbit"
+  }
+}
 ```
 
 ---
 
 ## Data Sources
 
-### AlphaVantage TIME_SERIES_DAILY
+### 1. KIS (한국투자증권) - 한국 주식
+
 ```
-https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&outputsize=full&apikey=YOUR_KEY
+API: FHKST03010100 (국내주식 기간별 시세)
+Rate Limit: ~50 req/s
+Cache TTL: 7일
 ```
 
-**Response Example**
-```json
-{
-  "Meta Data": {
-    "1. Information": "Daily Prices (open, high, low, close) and Volumes",
-    "2. Symbol": "AAPL",
-    "3. Last Refreshed": "2023-12-31"
-  },
-  "Time Series (Daily)": {
-    "2023-12-31": {
-      "1. open": "150.25",
-      "2. high": "152.50",
-      "3. low": "149.80",
-      "4. close": "151.75",
-      "5. volume": "12345678"
-    }
-  }
-}
+**지원 종목**: 코스피/코스닥 전종목 (6자리 종목코드)
+- 005930 (삼성전자)
+- 035720 (카카오)
+- 000660 (SK하이닉스)
+
+### 2. AlphaVantage - 미국 주식
+
+```
+API: TIME_SERIES_DAILY
+Rate Limit: 5 req/min, 100 req/day
+Cache TTL: 7일
 ```
 
-**Rate Limits**
-- Free tier: 5 API calls per minute, 100 per day
-- Consider caching historical data
+**지원 종목**: NYSE/NASDAQ 전종목
+- AAPL, GOOGL, MSFT, TSLA
+
+### 3. Upbit - 암호화폐
+
+```
+API: /candles/days
+Rate Limit: 600 req/min
+Cache TTL: 7일
+```
+
+**지원 종목**: Upbit 상장 암호화폐
+- BTC, ETH, XRP, SOL
 
 ---
 
-## Implementation Notes
+## Performance Metrics
 
-### 1. Historical Data Caching ✅ IMPLEMENTED
-- **Strategy**: Redis-based caching with 7-day TTL
-- **Cache Key**: `symbol_startDate_endDate` (e.g., "AAPL_2020-01-01_2023-12-31")
-- **Benefits**:
-  - Reduces AlphaVantage API calls (5/min, 100/day limit)
-  - Improves backtest performance (~2s → ~50ms for cached data)
-  - Request deduplication with `sync=true`
-- **Configuration**: See `CacheConfig.java:126`
-- **Implementation**: `HistoricalDataService.java:57` (@Cacheable annotation)
-- **Cache Eviction**: Manual eviction available via `evictHistoricalDataCache()` and `evictAllHistoricalDataCache()` methods
+| 지표 | 공식 | 설명 |
+|------|------|------|
+| **Total Return** | `(Final - Initial) / Initial × 100` | 총 수익률 (%) |
+| **CAGR** | `((Final/Initial)^(1/Years) - 1) × 100` | 연평균 성장률 |
+| **Sharpe Ratio** | `(Return - RiskFree) / StdDev` | 위험 대비 수익률 |
+| **Sortino Ratio** | `(Return - RiskFree) / DownsideDev` | 하방 위험 대비 수익률 |
+| **Max Drawdown** | `(Trough - Peak) / Peak × 100` | 최대 낙폭 |
+| **Volatility** | `StdDev × sqrt(252)` | 연환산 변동성 |
+| **Win Rate** | `Positive Days / Total Days × 100` | 승률 |
 
-### 2. Rebalancing Logic
+---
+
+## Transaction Cost Model
+
+### 거래 비용 계산
+```java
+// 각 거래(BUY/SELL)마다 비용 적용
+double cost = tradeAmount × transactionCostPercent;
+portfolioValue -= cost;
 ```
-1. Calculate target weights (e.g., equal weight)
-2. Calculate current weights based on market values
-3. For each holding:
-   - If current weight > target + threshold: SELL
-   - If current weight < target - threshold: BUY
-4. Execute trades
+
+### 비용 영향 보고
+```json
+{
+  "totalTransactionCosts": 45678.90,
+  "costImpactPercent": 0.46
+}
 ```
 
-### 3. Transaction Costs
-- Consider adding transaction cost modeling (e.g., 0.1% per trade)
-- Affects realistic performance expectations
+---
 
-### 4. Dividend Handling
-- Use adjusted close prices to account for dividends
-- AlphaVantage provides adjusted close in TIME_SERIES_DAILY_ADJUSTED
+## Implementation Status
 
-### 5. Crypto Support
-- Phase 6 focuses on stock backtesting
-- Crypto backtesting deferred to Phase 7
+### ✅ 완료 (100%)
+- [x] POST /run - 백테스팅 실행
+- [x] GET /historical/{symbol} - 과거 데이터 조회
+- [x] POST /validate - 파라미터 검증
+- [x] GET /status - 서비스 상태
+
+### 데이터 소스
+- [x] KIS 한국 주식 (KisHistoricalDataService)
+- [x] AlphaVantage 미국 주식 (HistoricalDataService)
+- [x] Upbit 암호화폐 (CryptoHistoricalDataService)
+
+### 기능
+- [x] Stock + Crypto 혼합 백테스팅
+- [x] Transaction Cost 모델링
+- [x] Circuit Breaker (kisApi, alphaVantageApi, upbitApi)
+- [x] Redis 캐시 (7일 TTL)
+
+---
+
+## Backend Implementation
+
+**Controller**
+```
+backtest/controller/BacktestController.java
+```
+
+**Services**
+```
+backtest/service/BacktestEngine.java
+backtest/service/HistoricalDataFacade.java      ← Routing
+backtest/service/KisHistoricalDataService.java  ← Korean Stock
+backtest/service/HistoricalDataService.java     ← US Stock
+backtest/service/CryptoHistoricalDataService.java ← Crypto
+backtest/service/PerformanceCalculator.java
+```
+
+**DTOs**
+```
+backtest/dto/BacktestRequest.java
+backtest/dto/BacktestResponse.java
+backtest/dto/BacktestValidationResponse.java
+backtest/dto/HistoricalPriceData.java
+backtest/dto/PerformanceMetrics.java
+```
+
+---
+
+## Cache Configuration
+
+| Cache Name | TTL | 용도 |
+|------------|-----|------|
+| `kisHistoricalData` | 7일 | KIS 한국 주식 일봉 |
+| `historicalData` | 7일 | AlphaVantage 미국 주식 |
+| `cryptoHistoricalData` | 7일 | Upbit 암호화폐 일봉 |
 
 ---
 
 ## Error Handling
 
-### Common Errors
-1. **Portfolio Not Found** (404)
-2. **Invalid Date Range** (400)
-   - Start date >= End date
-   - Date range > 10 years
-3. **Historical Data Unavailable** (503)
-   - API rate limit exceeded
-   - Symbol not found
-4. **Insufficient Data Points** (400)
-   - Date range too short (<30 days)
-5. **Invalid Rebalance Frequency** (400)
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `INVALID_DATE_RANGE` | 시작일 >= 종료일 |
+| 400 | `RANGE_TOO_LONG` | 기간 > 10년 |
+| 404 | `PORTFOLIO_NOT_FOUND` | 포트폴리오 없음 |
+| 503 | `DATA_UNAVAILABLE` | API 장애 |
 
 ---
 
-## Testing Strategy
-
-### Unit Tests
-- PerformanceCalculator: Test each metric formula
-- BacktestEngine: Test rebalancing logic
-- HistoricalDataService: Mock API responses
-
-### Integration Tests
-- End-to-end backtest execution
-- Verify equity curve calculations
-- Validate performance metrics
-
-### Performance Tests
-- Large portfolios (>50 holdings)
-- Long time ranges (5+ years)
-- Frequent rebalancing (monthly)
-
----
-
-**Last Updated**: 2025-10-18
-**Status**: 📝 Specification Complete
-**Next**: Backend Implementation
+**Last Updated**: 2025-12-14
+**Maintainer**: Claude Code

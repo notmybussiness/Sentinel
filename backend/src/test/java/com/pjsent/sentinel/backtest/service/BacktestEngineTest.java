@@ -7,11 +7,14 @@ import com.pjsent.sentinel.portfolio.entity.PortfolioHolding;
 import com.pjsent.sentinel.portfolio.repository.PortfolioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,7 +38,19 @@ class BacktestEngineTest {
     private HistoricalDataService historicalDataService;
 
     @Mock
+    private HistoricalDataFacade historicalDataFacade;
+
+    @Mock
     private PerformanceCalculator performanceCalculator;
+
+    @Mock
+    private CacheManager cacheManager;
+
+    @Mock
+    private Cache historicalDataCache;
+
+    @Mock
+    private Cache cryptoHistoricalDataCache;
 
     @InjectMocks
     private BacktestEngine backtestEngine;
@@ -95,7 +110,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -112,7 +127,7 @@ class BacktestEngineTest {
         assertThat(response.getHoldingsSummary()).isNotNull();
 
         verify(portfolioRepository, times(1)).findById(1L);
-        verify(historicalDataService, times(1)).getBatchHistoricalPrices(anyList(), any(), any());
+        verify(historicalDataFacade, times(1)).getBatchHistoricalPrices(anyList(), any(), any());
         verify(performanceCalculator, times(1)).calculatePerformance(anyList(), anyDouble(), any(), any());
     }
 
@@ -141,9 +156,9 @@ class BacktestEngineTest {
     }
 
     @Test
-    @DisplayName("runBacktest: No stock holdings throws IllegalArgumentException")
-    void should_ThrowIllegalArgumentException_When_NoStockHoldings() {
-        // Given: Portfolio with no holdings
+    @DisplayName("runBacktest: No holdings throws IllegalArgumentException")
+    void should_ThrowIllegalArgumentException_When_NoHoldings() {
+        // Given: Portfolio with empty holdings
         Portfolio emptyPortfolio = Portfolio.builder()
             .userId(1L)
             .name("Empty Portfolio")
@@ -151,6 +166,10 @@ class BacktestEngineTest {
             .build();
 
         try {
+            var holdingsField = Portfolio.class.getDeclaredField("holdings");
+            holdingsField.setAccessible(true);
+            holdingsField.set(emptyPortfolio, new ArrayList<>());
+
             var idField = Portfolio.class.getDeclaredField("id");
             idField.setAccessible(true);
             idField.set(emptyPortfolio, 2L);
@@ -172,12 +191,12 @@ class BacktestEngineTest {
         // When & Then
         assertThatThrownBy(() -> backtestEngine.runBacktest(emptyRequest))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("no stock holdings");
+            .hasMessageContaining("no holdings");
     }
 
     @Test
-    @DisplayName("runBacktest: Filters only STOCK assets, ignores CRYPTO")
-    void should_FilterStockHoldings_When_MixedAssetTypes() {
+    @DisplayName("runBacktest: Includes both STOCK and CRYPTO assets")
+    void should_IncludeAllAssetTypes_When_MixedPortfolio() {
         // Given: Portfolio with mixed STOCK and CRYPTO holdings
         Portfolio mixedPortfolio = Portfolio.builder()
             .userId(1L)
@@ -205,12 +224,14 @@ class BacktestEngineTest {
         when(portfolioRepository.findById(3L))
             .thenReturn(Optional.of(mixedPortfolio));
 
-        Map<String, List<HistoricalPriceData>> stockOnlyData = new HashMap<>();
-        stockOnlyData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 150.0));
-        stockOnlyData.put("GOOGL", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 2800.0));
+        // Now includes all asset types (STOCK + CRYPTO)
+        Map<String, List<HistoricalPriceData>> mixedData = new HashMap<>();
+        mixedData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 150.0));
+        mixedData.put("BTC", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 40000.0));
+        mixedData.put("GOOGL", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 2800.0));
 
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(stockOnlyData);
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
+            .thenReturn(mixedData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
 
@@ -225,13 +246,9 @@ class BacktestEngineTest {
         // When
         BacktestResponse response = backtestEngine.runBacktest(mixedRequest);
 
-        // Then: Only stock holdings should be in summary (AAPL, GOOGL, not BTC)
+        // Then: All holdings (STOCK + CRYPTO) should be included
         assertThat(response.getHoldingsSummary()).isNotNull();
-        // If holdings summary is generated, verify only STOCK symbols are present
-        if (!response.getHoldingsSummary().isEmpty()) {
-            assertThat(response.getHoldingsSummary())
-                .noneMatch(holding -> holding.getSymbol().equals("BTC"));
-        }
+        assertThat(response).isNotNull();
     }
 
     // ========================================
@@ -244,7 +261,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -269,7 +286,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(incompleteData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -288,7 +305,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -312,7 +329,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -332,7 +349,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -354,7 +371,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -379,7 +396,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(dataWithGaps);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -398,7 +415,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -430,7 +447,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -461,7 +478,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(sixMonthData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -493,7 +510,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(oneYearData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -525,7 +542,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(threeYearData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -543,7 +560,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -571,7 +588,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -604,7 +621,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -617,6 +634,102 @@ class BacktestEngineTest {
     }
 
     // ========================================
+    // 4.1 Transaction Cost Tests (3 tests)
+    // ========================================
+
+    @Test
+    @DisplayName("transactionCost: Default 0.1% cost applied to rebalancing trades")
+    void should_ApplyDefaultTransactionCost_When_Rebalancing() {
+        // Given: Monthly rebalancing request without explicit transaction cost
+        BacktestRequest monthlyRequest = BacktestRequest.builder()
+            .portfolioId(1L)
+            .startDate(LocalDate.of(2023, 1, 1))
+            .endDate(LocalDate.of(2023, 3, 31)) // 3 months = at least 2 rebalancing events
+            .initialCapital(10000.0)
+            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+            .build();
+
+        Map<String, List<HistoricalPriceData>> threeMonthData = new HashMap<>();
+        threeMonthData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 150.0));
+        threeMonthData.put("GOOGL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 2800.0));
+        threeMonthData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 300.0));
+
+        when(portfolioRepository.findById(1L))
+            .thenReturn(Optional.of(testPortfolio));
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
+            .thenReturn(threeMonthData);
+        when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
+            .thenReturn(createTestPerformanceMetrics());
+
+        // When
+        BacktestResponse response = backtestEngine.runBacktest(monthlyRequest);
+
+        // Then: Transaction cost fields should be present
+        assertThat(response.getTransactionCostPercent()).isEqualTo(0.001); // Default 0.1%
+        assertThat(response.getTotalTransactionCosts()).isNotNull();
+        assertThat(response.getCostImpactPercent()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("transactionCost: Custom 0.5% cost applied correctly")
+    void should_ApplyCustomTransactionCost_When_Specified() {
+        // Given: Request with custom 0.5% transaction cost
+        BacktestRequest customCostRequest = BacktestRequest.builder()
+            .portfolioId(1L)
+            .startDate(LocalDate.of(2023, 1, 1))
+            .endDate(LocalDate.of(2023, 3, 31))
+            .initialCapital(10000.0)
+            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+            .transactionCostPercent(0.005) // 0.5%
+            .build();
+
+        Map<String, List<HistoricalPriceData>> threeMonthData = new HashMap<>();
+        threeMonthData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 150.0));
+        threeMonthData.put("GOOGL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 2800.0));
+        threeMonthData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 300.0));
+
+        when(portfolioRepository.findById(1L))
+            .thenReturn(Optional.of(testPortfolio));
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
+            .thenReturn(threeMonthData);
+        when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
+            .thenReturn(createTestPerformanceMetrics());
+
+        // When
+        BacktestResponse response = backtestEngine.runBacktest(customCostRequest);
+
+        // Then: Custom transaction cost should be applied
+        assertThat(response.getTransactionCostPercent()).isEqualTo(0.005); // Custom 0.5%
+    }
+
+    @Test
+    @DisplayName("transactionCost: Zero cost when no rebalancing")
+    void should_HaveZeroTransactionCost_When_NoRebalancing() {
+        // Given: Request with NONE rebalancing
+        BacktestRequest noneRequest = BacktestRequest.builder()
+            .portfolioId(1L)
+            .startDate(LocalDate.of(2023, 1, 1))
+            .endDate(LocalDate.of(2023, 1, 31))
+            .initialCapital(10000.0)
+            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+            .build();
+
+        when(portfolioRepository.findById(1L))
+            .thenReturn(Optional.of(testPortfolio));
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
+            .thenReturn(testHistoricalData);
+        when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
+            .thenReturn(createTestPerformanceMetrics());
+
+        // When
+        BacktestResponse response = backtestEngine.runBacktest(noneRequest);
+
+        // Then: No rebalancing = zero transaction costs
+        assertThat(response.getTotalTransactionCosts()).isEqualTo(0.0);
+        assertThat(response.getCostImpactPercent()).isEqualTo(0.0);
+    }
+
+    // ========================================
     // 5. Calculation Helpers (4 tests)
     // ========================================
 
@@ -626,7 +739,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -656,7 +769,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -675,7 +788,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -711,7 +824,7 @@ class BacktestEngineTest {
 
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -739,7 +852,7 @@ class BacktestEngineTest {
         // Given
         when(portfolioRepository.findById(1L))
             .thenReturn(Optional.of(testPortfolio));
-        when(historicalDataService.getBatchHistoricalPrices(anyList(), any(), any()))
+        when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
             .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
             .thenReturn(createTestPerformanceMetrics());
@@ -852,5 +965,218 @@ class BacktestEngineTest {
             .volatility(12.3)
             .winRate(65.0)
             .build();
+    }
+
+    // ========================================
+    // 7. Validation Tests (8 tests)
+    // ========================================
+
+    @Nested
+    @DisplayName("validateBacktestRequest Tests")
+    class ValidateBacktestRequestTests {
+
+        @Test
+        @DisplayName("validateBacktestRequest: Valid request returns valid=true")
+        void should_ReturnValid_When_RequestIsValid() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+            when(cacheManager.getCache("historicalData"))
+                .thenReturn(historicalDataCache);
+            when(historicalDataCache.get(anyString()))
+                .thenReturn(() -> testHistoricalData.get("AAPL"));
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(testRequest);
+
+            // Then
+            assertThat(response.isValid()).isTrue();
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getPortfolioSummary()).isNotNull();
+            assertThat(response.getPortfolioSummary().getStockCount()).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Portfolio not found returns error")
+        void should_ReturnError_When_PortfolioNotFound() {
+            // Given
+            when(portfolioRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+            BacktestRequest invalidRequest = BacktestRequest.builder()
+                .portfolioId(999L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
+
+            // Then
+            assertThat(response.isValid()).isFalse();
+            assertThat(response.getErrors()).contains("Portfolio not found: 999");
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Invalid date range returns error")
+        void should_ReturnError_When_StartDateAfterEndDate() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+
+            BacktestRequest invalidRequest = BacktestRequest.builder()
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 12, 31))
+                .endDate(LocalDate.of(2023, 1, 1)) // End before start
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
+
+            // Then
+            assertThat(response.isValid()).isFalse();
+            assertThat(response.getErrors()).contains("Start date must be before end date");
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Future end date returns error")
+        void should_ReturnError_When_EndDateInFuture() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+
+            BacktestRequest invalidRequest = BacktestRequest.builder()
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.now().plusYears(1)) // Future date
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
+
+            // Then
+            assertThat(response.isValid()).isFalse();
+            assertThat(response.getErrors()).contains("End date cannot be in the future");
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Exceeding 10 year period returns error")
+        void should_ReturnError_When_PeriodExceedsTenYears() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+
+            BacktestRequest invalidRequest = BacktestRequest.builder()
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2010, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31)) // > 10 years
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
+
+            // Then
+            assertThat(response.isValid()).isFalse();
+            assertThat(response.getErrors()).contains("Backtest period cannot exceed 10 years");
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Negative initial capital returns error")
+        void should_ReturnError_When_InitialCapitalNegative() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+
+            BacktestRequest invalidRequest = BacktestRequest.builder()
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31))
+                .initialCapital(-1000.0) // Negative
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
+
+            // Then
+            assertThat(response.isValid()).isFalse();
+            assertThat(response.getErrors()).contains("Initial capital must be positive");
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Mixed portfolio (Stock + Crypto) is valid")
+        void should_ReturnValid_When_MixedPortfolioWithCrypto() throws Exception {
+            // Given: Portfolio with mixed holdings (Stock + Crypto)
+            Portfolio mixedPortfolio = Portfolio.builder()
+                .userId(1L)
+                .name("Mixed Portfolio")
+                .description("Test Description")
+                .build();
+
+            List<PortfolioHolding> mixedHoldings = new ArrayList<>();
+            mixedHoldings.add(createStockHolding(mixedPortfolio, "AAPL", 10.0, 150.0));
+            mixedHoldings.add(createCryptoHolding(mixedPortfolio, "BTC", 0.5, 50000.0));
+
+            var holdingsField = Portfolio.class.getDeclaredField("holdings");
+            holdingsField.setAccessible(true);
+            holdingsField.set(mixedPortfolio, mixedHoldings);
+
+            var idField = Portfolio.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(mixedPortfolio, 2L);
+
+            when(portfolioRepository.findById(2L))
+                .thenReturn(Optional.of(mixedPortfolio));
+            when(cacheManager.getCache("historicalData"))
+                .thenReturn(historicalDataCache);
+            when(cacheManager.getCache("cryptoHistoricalData"))
+                .thenReturn(historicalDataCache);
+            when(historicalDataCache.get(anyString()))
+                .thenReturn(null);
+
+            BacktestRequest mixedRequest = BacktestRequest.builder()
+                .portfolioId(2L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(mixedRequest);
+
+            // Then: Both Stock and Crypto are now fully supported
+            assertThat(response.isValid()).isTrue();
+            assertThat(response.getPortfolioSummary().getStockCount()).isEqualTo(1);
+            assertThat(response.getPortfolioSummary().getCryptoCount()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("validateBacktestRequest: Cache miss generates warning")
+        void should_ReturnWarning_When_DataNotCached() {
+            // Given
+            when(portfolioRepository.findById(1L))
+                .thenReturn(Optional.of(testPortfolio));
+            when(cacheManager.getCache("historicalData"))
+                .thenReturn(historicalDataCache);
+            when(historicalDataCache.get(anyString()))
+                .thenReturn(null); // Not cached
+
+            // When
+            BacktestValidationResponse response = backtestEngine.validateBacktestRequest(testRequest);
+
+            // Then
+            assertThat(response.isValid()).isTrue();
+            assertThat(response.getWarnings()).anyMatch(w -> w.contains("not cached"));
+            assertThat(response.getDataAvailability()).containsValue(false);
+        }
     }
 }

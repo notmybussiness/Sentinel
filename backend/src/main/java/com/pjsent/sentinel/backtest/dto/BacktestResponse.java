@@ -77,4 +77,19 @@ public class BacktestResponse {
      * 백테스팅 실행 시각
      */
     private LocalDateTime executedAt;
+
+    /**
+     * 총 거래 비용 (모든 리밸런싱 이벤트의 비용 합계)
+     */
+    private Double totalTransactionCosts;
+
+    /**
+     * 거래 비용이 수익률에 미친 영향 (비용 / 초기자본 × 100)
+     */
+    private Double costImpactPercent;
+
+    /**
+     * 적용된 거래 비용 비율
+     */
+    private Double transactionCostPercent;
 }

@@ -40,6 +40,11 @@ public class Trade {
     private Double amount;
 
     /**
+     * 거래 비용 (거래 금액 × 비용 비율)
+     */
+    private Double transactionCost;
+
+    /**
      * 거래 유형
      */
     public enum TradeAction {

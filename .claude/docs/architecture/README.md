@@ -1,15 +1,33 @@
 # Architecture Decision Records (ADR)
 
-> **Last Updated**: 2024-11-24
+> **Last Updated**: 2025-12-14
 
 ---
 
 ## 📚 ADR 목록
 
-### 성능 최적화
-1. [ADR-001: Cache Layer를 Service로 이동](./ADR-001-cache-layer-service.md) - 2024-11-20
-2. [ADR-002: EntityGraph로 N+1 해결](./ADR-002-entity-graph-n1.md) - 2024-11-22
-3. [ADR-003: Cache TTL 전략](./ADR-003-cache-ttl-strategy.md) - 2024-11-19
+### 성능 최적화 (Phase 1-7 완료)
+| ADR | 제목 | 상태 | 결과 |
+|-----|------|------|------|
+| ADR-001 | Cache Layer를 Service로 이동 | ✅ 완료 | 1949ms → 10ms (210x 개선) |
+| ADR-002 | EntityGraph로 N+1 해결 | ✅ 완료 | 11 queries → 2 queries |
+| ADR-003 | Cache TTL 전략 | ✅ 완료 | Hit Rate 95%+ |
+
+### 인프라 & 캐싱
+| ADR | 제목 | 상태 | 날짜 |
+|-----|------|------|------|
+| [ADR-004](./adr-001-redis-before-kafka.md) | Redis 분산 캐시를 Kafka EDA보다 우선 구현 | ✅ Accepted | 2025-12-04 |
+
+### 데이터 소스 & API
+| ADR | 제목 | 상태 | 날짜 |
+|-----|------|------|------|
+| [ADR-005](./adr-002-kis-historical-data.md) | Historical Data Source 선택 (KIS vs 외부 API) | ✅ Implemented | 2025-12-14 |
+
+### 아키텍처 설계
+| 문서 | 설명 |
+|------|------|
+| [Kafka EDA Design](./kafka-eda-design.md) | Event-Driven Architecture 설계 (Phase 8+) |
+| [Branch Strategy](./branch-strategy.md) | Git 브랜치 전략 |
 
 ---
 

@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pjsent.sentinel.backtest.dto.HistoricalPriceData;
 import com.pjsent.sentinel.common.exception.BusinessException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class HistoricalDataService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final CacheManager cacheManager;
 
     @Value("${stock.market.alphavantage.base-url}")
     private String baseUrl;
@@ -49,11 +53,18 @@ public class HistoricalDataService {
      * - sync=true: 동시 요청 중복 방지 (request deduplication)
      * - AlphaVantage API 제한: 5 calls/min, 100 calls/day
      *
+     * Circuit Breaker 적용:
+     * - alphaVantageApi 인스턴스 사용
+     * - 50% 실패율 시 Circuit Open
+     * - 15초 후 Half-Open 상태로 전환
+     * - Fallback: 캐시된 데이터 반환 시도
+     *
      * @param symbol 종목 심볼
      * @param startDate 시작일
      * @param endDate 종료일
      * @return 과거 가격 데이터 목록
      */
+    @CircuitBreaker(name = "alphaVantageApi", fallbackMethod = "getHistoricalPricesFallback")
     @Cacheable(
         value = "historicalData",
         key = "#symbol + '_' + #startDate.toString() + '_' + #endDate.toString()",
@@ -76,6 +87,41 @@ public class HistoricalDataService {
             log.error("Error parsing historical data for {}: {}", symbol, e.getMessage());
             throw new BusinessException("Error parsing historical data for " + symbol);
         }
+    }
+
+    /**
+     * Circuit Breaker Fallback 메서드
+     *
+     * Circuit이 열려있거나 API 호출 실패 시 호출됩니다.
+     * 캐시에서 관련 데이터를 찾아 반환하고, 없으면 빈 리스트를 반환합니다.
+     *
+     * @param symbol 종목 심볼
+     * @param startDate 시작일
+     * @param endDate 종료일
+     * @param throwable 원인 예외
+     * @return 캐시된 데이터 또는 빈 리스트
+     */
+    @SuppressWarnings("unchecked")
+    public List<HistoricalPriceData> getHistoricalPricesFallback(
+            String symbol, LocalDate startDate, LocalDate endDate, Throwable throwable) {
+
+        log.warn("Circuit Breaker fallback for {} ({} to {}): {}",
+                symbol, startDate, endDate, throwable.getMessage());
+
+        // 캐시에서 데이터 조회 시도
+        Cache cache = cacheManager.getCache("historicalData");
+        if (cache != null) {
+            String cacheKey = symbol + "_" + startDate.toString() + "_" + endDate.toString();
+            Cache.ValueWrapper cached = cache.get(cacheKey);
+            if (cached != null && cached.get() != null) {
+                log.info("Returning cached data for {} from fallback", symbol);
+                return (List<HistoricalPriceData>) cached.get();
+            }
+        }
+
+        // 캐시에 데이터가 없으면 빈 리스트 반환
+        log.warn("No cached data available for {}. Returning empty list.", symbol);
+        return new ArrayList<>();
     }
 
     /**

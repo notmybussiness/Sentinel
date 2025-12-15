@@ -1,11 +1,38 @@
-# 📊 Market Data API Specification
+# Market Data API Specification
+
+> **Last Updated**: 2025-12-14
+> **Status**: ✅ 구현 완료 (90%)
+
+---
 
 ## Base Information
 - **Domain**: `/api/v1/market`
 - **Authentication**: Optional (rate limit differs)
-- **Rate Limit**:
-  - Authenticated: 1000 requests/hour
-  - Anonymous: 100 requests/hour
+- **Primary Provider**: KIS (한국투자증권) - 한국 주식
+- **Fallback Providers**: AlphaVantage, Finnhub, Yahoo Finance
+
+---
+
+## Provider Architecture
+
+```
+                    MarketDataProviderFactory
+                           │
+    ┌──────────────────────┼──────────────────────┐
+    │                      │                      │
+    ▼                      ▼                      ▼
+┌─────────┐          ┌─────────┐          ┌─────────┐
+│  KIS    │          │ Alpha   │          │Finnhub  │
+│ Order:1 │          │Vantage  │          │ Order:3 │
+│ 50req/s │          │ Order:2 │          │60req/m  │
+│         │          │ 5req/m  │          │         │
+└─────────┘          └─────────┘          └─────────┘
+     │                    │                    │
+     └────────────────────┼────────────────────┘
+                          │
+                   Circuit Breaker
+                   (Auto Failover)
+```
 
 ---
 
@@ -15,17 +42,26 @@
 **Endpoint**: `GET /api/v1/market/price/{symbol}`
 
 **Parameters**:
-- `symbol` (path): Stock ticker symbol (e.g., AAPL, TSLA)
+- `symbol` (path): Stock ticker symbol
+
+**Example**:
+- Korean: `GET /api/v1/market/price/005930` (삼성전자)
+- US: `GET /api/v1/market/price/AAPL`
 
 **Response**: `200 OK`
 ```json
 {
-  "symbol": "AAPL",
-  "price": 180.50,
-  "change": 2.30,
-  "changePercent": 1.29,
-  "timestamp": "2025-10-01T14:30:00Z",
-  "currency": "USD"
+  "symbol": "005930",
+  "price": 56100,
+  "open": 55800,
+  "high": 56300,
+  "low": 55500,
+  "close": 55900,
+  "change": 200,
+  "changePercent": 0.36,
+  "lastTradingDay": "2024-12-13",
+  "timestamp": "2025-12-14T12:30:00",
+  "provider": "KoreaInvestment"
 }
 ```
 
@@ -37,7 +73,7 @@
 **Request**:
 ```json
 {
-  "symbols": ["AAPL", "TSLA", "GOOGL", "MSFT"]
+  "symbols": ["005930", "035720", "AAPL", "GOOGL"]
 }
 ```
 
@@ -46,18 +82,16 @@
 {
   "prices": [
     {
-      "symbol": "AAPL",
-      "price": 180.50,
-      "change": 2.30,
-      "changePercent": 1.29,
-      "timestamp": "2025-10-01T14:30:00Z"
+      "symbol": "005930",
+      "price": 56100,
+      "changePercent": 0.36,
+      "provider": "KoreaInvestment"
     },
     {
-      "symbol": "TSLA",
-      "price": 250.75,
-      "change": -5.20,
-      "changePercent": -2.03,
-      "timestamp": "2025-10-01T14:30:00Z"
+      "symbol": "AAPL",
+      "price": 180.50,
+      "changePercent": 1.29,
+      "provider": "AlphaVantage"
     }
   ]
 }
@@ -65,7 +99,38 @@
 
 ---
 
-### 3. Get Market Indices
+### 3. Search Stocks
+**Endpoint**: `GET /api/v1/market/search`
+
+**Query Parameters**:
+- `q` (required): Search query
+- `limit` (optional): Results limit (default: 10)
+
+**Example**: `GET /api/v1/market/search?q=삼성&limit=5`
+
+**Response**: `200 OK`
+```json
+{
+  "results": [
+    {
+      "symbol": "005930",
+      "name": "삼성전자",
+      "region": "KR",
+      "type": "300"
+    },
+    {
+      "symbol": "005935",
+      "name": "삼성전자우",
+      "region": "KR",
+      "type": "300"
+    }
+  ]
+}
+```
+
+---
+
+### 4. Get Market Indices
 **Endpoint**: `GET /api/v1/market/indices`
 
 **Response**: `200 OK`
@@ -73,100 +138,18 @@
 {
   "indices": [
     {
-      "symbol": "^GSPC",
-      "name": "S&P 500",
-      "value": 4500.25,
+      "symbol": "KOSPI",
+      "name": "코스피",
+      "value": 2450.25,
       "change": 15.30,
-      "changePercent": 0.34,
-      "timestamp": "2025-10-01T14:30:00Z"
+      "changePercent": 0.63
     },
     {
-      "symbol": "^IXIC",
-      "name": "NASDAQ",
-      "value": 14200.50,
-      "change": -22.15,
-      "changePercent": -0.16,
-      "timestamp": "2025-10-01T14:30:00Z"
-    }
-  ]
-}
-```
-
----
-
-### 4. Search Assets
-**Endpoint**: `GET /api/v1/market/search`
-
-**Query Parameters**:
-- `q` (required): Search query
-- `type` (optional): Asset type (stock, crypto, commodity, etf)
-- `limit` (optional): Results limit (default: 10, max: 50)
-
-**Example**: `GET /api/v1/market/search?q=apple&type=stock&limit=5`
-
-**Response**: `200 OK`
-```json
-{
-  "results": [
-    {
-      "symbol": "AAPL",
-      "name": "Apple Inc.",
-      "type": "stock",
-      "exchange": "NASDAQ",
-      "currency": "USD"
-    },
-    {
-      "symbol": "AAPL.L",
-      "name": "Apple Inc. (London)",
-      "type": "stock",
-      "exchange": "LSE",
-      "currency": "GBP"
-    }
-  ]
-}
-```
-
----
-
-### 5. Get Fear & Greed Index
-**Endpoint**: `GET /api/v1/market/fear-greed`
-
-**Response**: `200 OK`
-```json
-{
-  "value": 65,
-  "sentiment": "Greed",
-  "timestamp": "2025-10-01T00:00:00Z",
-  "components": {
-    "momentum": 70,
-    "volume": 60,
-    "volatility": 55,
-    "marketBreadth": 65,
-    "putCallRatio": 70
-  }
-}
-```
-
----
-
-### 6. Get Trending Assets
-**Endpoint**: `GET /api/v1/market/trending`
-
-**Query Parameters**:
-- `type` (optional): Asset type filter
-- `limit` (optional): Results limit (default: 10)
-
-**Response**: `200 OK`
-```json
-{
-  "trending": [
-    {
-      "symbol": "TSLA",
-      "name": "Tesla Inc.",
-      "price": 250.75,
-      "changePercent": 5.20,
-      "volume": 45000000,
-      "trendScore": 95
+      "symbol": "KOSDAQ",
+      "name": "코스닥",
+      "value": 750.50,
+      "change": -5.15,
+      "changePercent": -0.68
     }
   ]
 }
@@ -176,56 +159,156 @@
 
 ## Data Providers
 
-### Provider Priority
-1. **AlphaVantage** (Primary)
-   - Rate: 5 calls/minute
-   - Use: Stock prices, historical data
+### 1. KIS 한국투자증권 (Primary - Order: 1)
 
-2. **Finnhub** (Fallback)
-   - Rate: 60 calls/minute
-   - Use: Real-time quotes, search
+```yaml
+Provider: KoreaInvestmentProvider
+API: Open API
+Rate Limit: ~50 req/s
+Supported: 한국 주식 (코스피/코스닥)
 
-3. **Yahoo Finance** (Backup)
-   - Rate: Unlimited
-   - Use: Emergency fallback
+Features:
+  - OAuth 2.0 토큰 자동 갱신
+  - 실시간 시세 조회
+  - 종목 검색
+  - Circuit Breaker: kisApi
+```
 
-### Circuit Breaker
-- Automatic provider switching on failure
-- 15-minute cache TTL
-- Async processing with thread pools
+**Configuration**:
+```yaml
+stock:
+  market:
+    korea-investment:
+      enabled: true
+      base-url: https://openapi.koreainvestment.com:9443
+      app-key: ${KIS_APP_KEY}
+      app-secret: ${KIS_APP_SECRET}
+```
+
+### 2. AlphaVantage (Fallback - Order: 2)
+
+```yaml
+Provider: AlphaVantageProvider
+API: Global Quote
+Rate Limit: 5 req/min, 100 req/day
+Supported: 미국 주식 (NYSE, NASDAQ)
+
+Features:
+  - Time Series Data
+  - Historical Data
+  - Symbol Search
+  - Circuit Breaker: alphaVantageApi
+```
+
+### 3. Finnhub (Fallback - Order: 3)
+
+```yaml
+Provider: FinnhubProvider
+API: REST API
+Rate Limit: 60 req/min
+Supported: 미국/유럽 주식
+
+Features:
+  - Real-time Quotes
+  - Company Profiles
+```
+
+### 4. Yahoo Finance (Emergency - Order: 4)
+
+```yaml
+Provider: YahooFinanceProvider
+Rate Limit: Unlimited (비공식)
+Supported: 글로벌 주식
+
+Note: Emergency fallback only
+```
+
+---
+
+## Circuit Breaker Configuration
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      kisApi:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+
+      alphaVantageApi:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 60s
+```
+
+---
+
+## Cache Configuration
+
+| Cache Name | TTL | 용도 |
+|------------|-----|------|
+| `stockPrice` | 30초 | 실시간 주가 |
+| `stockSearch` | 3분 | 종목 검색 결과 |
+| `marketIndices` | 15분 | 시장 지수 |
 
 ---
 
 ## Implementation Status
 
-### ✅ Implemented
-- Single/batch price fetching
-- Provider failover system
-- Caching layer (Redis)
-- Rate limiting
+### ✅ 완료
+- [x] Single/Batch price fetching
+- [x] KIS Provider (한국 주식)
+- [x] AlphaVantage Provider (미국 주식)
+- [x] Finnhub Provider
+- [x] Provider Failover (Circuit Breaker)
+- [x] Redis Caching
+- [x] Stock Search
 
 ### 🚧 Pending
-- Market indices endpoint
-- Fear & Greed Index integration
-- Asset search functionality
-- Trending assets algorithm
-- Historical data API
-- Real-time WebSocket updates
+- [ ] Market indices endpoint 개선
+- [ ] Real-time WebSocket updates
+- [ ] Fear & Greed Index
 
 ---
 
 ## Backend Implementation
 
-**Controller**: `backend/src/main/java/com/pjsent/sentinel/market/controller/MarketController.java`
+**Controller**
+```
+market/controller/MarketController.java
+```
 
-**Service**: `backend/src/main/java/com/pjsent/sentinel/market/service/MarketDataService.java`
+**Service**
+```
+market/service/MarketDataService.java
+```
 
-**Providers**:
-- `backend/src/main/java/com/pjsent/sentinel/market/provider/AlphaVantageProvider.java`
-- `backend/src/main/java/com/pjsent/sentinel/market/provider/FinnhubProvider.java`
+**Providers**
+```
+market/service/provider/KoreaInvestmentProvider.java  ← Primary
+market/service/provider/AlphaVantageProvider.java
+market/service/provider/FinnhubProvider.java
+market/service/provider/YahooFinanceProvider.java
+```
 
-**Factory**: `backend/src/main/java/com/pjsent/sentinel/market/factory/MarketDataProviderFactory.java`
+**Factory**
+```
+market/service/factory/MarketDataProviderFactory.java
+```
 
 ---
 
-**Last Updated**: 2025-10-01
+## Error Handling
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `INVALID_SYMBOL` | 잘못된 종목 코드 |
+| 404 | `SYMBOL_NOT_FOUND` | 종목 없음 |
+| 503 | `ALL_PROVIDERS_DOWN` | 모든 Provider 장애 |
+| 429 | `RATE_LIMIT_EXCEEDED` | Rate limit 초과 |
+
+---
+
+**Last Updated**: 2025-12-14
+**Maintainer**: Claude Code

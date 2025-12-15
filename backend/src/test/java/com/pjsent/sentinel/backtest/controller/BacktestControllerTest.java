@@ -7,7 +7,7 @@ import com.pjsent.sentinel.backtest.dto.HistoricalPriceResponse;
 import com.pjsent.sentinel.backtest.dto.HistoricalPriceData;
 import com.pjsent.sentinel.backtest.dto.PerformanceMetrics;
 import com.pjsent.sentinel.backtest.service.BacktestEngine;
-import com.pjsent.sentinel.backtest.service.HistoricalDataService;
+import com.pjsent.sentinel.backtest.service.HistoricalDataFacade;
 import com.pjsent.sentinel.config.TestSecurityConfig;
 import com.pjsent.sentinel.user.service.JwtService;
 import com.pjsent.sentinel.user.service.KakaoOAuthService;
@@ -51,6 +51,9 @@ class BacktestControllerTest {
 
     @MockBean
     private BacktestEngine backtestEngine;
+
+    @MockBean
+    private HistoricalDataFacade historicalDataFacade;
 
     @MockBean
     private JwtService jwtService;

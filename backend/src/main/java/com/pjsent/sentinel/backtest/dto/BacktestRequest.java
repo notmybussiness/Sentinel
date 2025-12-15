@@ -36,6 +36,15 @@ public class BacktestRequest {
     private RebalanceFrequency rebalanceFrequency;
 
     /**
+     * 거래 비용 비율 (기본값: 0.1% = 0.001)
+     * 매 거래(BUY/SELL) 시 거래 금액의 일정 비율이 비용으로 차감됨
+     */
+    @Builder.Default
+    @DecimalMin(value = "0.0", message = "Transaction cost must be non-negative")
+    @DecimalMax(value = "0.1", message = "Transaction cost must be at most 10%")
+    private Double transactionCostPercent = 0.001;
+
+    /**
      * 리밸런싱 빈도
      */
     public enum RebalanceFrequency {

@@ -1,4 +1,9 @@
-# 🪙 Crypto API Specification
+# Crypto API Specification
+
+> **Last Updated**: 2025-12-14
+> **Status**: ✅ 구현 완료 (100%)
+
+---
 
 ## Base Information
 - **Domain**: `/api/v1/crypto`
@@ -8,6 +13,29 @@
   - Anonymous: 100 requests/hour
 - **Primary Provider**: Upbit (No API Key Required)
 - **Fallback Provider**: Binance (No API Key Required)
+
+---
+
+## Provider Architecture
+
+```
+                    CryptoDataProviderFactory
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+         ▼                 ▼                 ▼
+    ┌─────────┐       ┌─────────┐      ┌─────────┐
+    │  Upbit  │       │ Binance │      │ (Future)│
+    │(Primary)│       │(Fallback│      │ Provider│
+    │ KRW Base│       │USD Base)│      │         │
+    │600req/m │       │1200/min │      │         │
+    └─────────┘       └─────────┘      └─────────┘
+         │                 │
+         └────────┬────────┘
+                  │
+           Circuit Breaker
+           (upbitApi, binanceApi)
+```
 
 ---
 
@@ -35,7 +63,7 @@
   "high24h": 56000000,
   "low24h": 53500000,
   "baseCurrency": "KRW",
-  "timestamp": "2025-10-17T14:30:00Z",
+  "timestamp": "2025-12-14T14:30:00Z",
   "provider": "upbit"
 }
 ```
@@ -64,7 +92,7 @@
       "change": 1200000,
       "changePercent": 2.23,
       "baseCurrency": "KRW",
-      "timestamp": "2025-10-17T14:30:00Z"
+      "timestamp": "2025-12-14T14:30:00Z"
     },
     {
       "symbol": "ETH",
@@ -73,7 +101,7 @@
       "change": -50000,
       "changePercent": -1.41,
       "baseCurrency": "KRW",
-      "timestamp": "2025-10-17T14:30:00Z"
+      "timestamp": "2025-12-14T14:30:00Z"
     }
   ]
 }
@@ -164,7 +192,7 @@
   "interval": "1d",
   "data": [
     {
-      "timestamp": "2025-10-01T00:00:00Z",
+      "timestamp": "2024-12-01T00:00:00Z",
       "open": 53000000,
       "high": 54500000,
       "low": 52800000,
@@ -194,7 +222,7 @@
       "responseTime": 60
     }
   },
-  "timestamp": "2025-10-17T14:30:00Z"
+  "timestamp": "2025-12-14T14:30:00Z"
 }
 ```
 
@@ -213,10 +241,10 @@
 **Response** (SSE - Server-Sent Events):
 ```
 event: price-update
-data: {"symbol":"BTC","price":55000000,"changePercent":2.23,"timestamp":"2025-10-17T14:30:00Z"}
+data: {"symbol":"BTC","price":55000000,"changePercent":2.23,"timestamp":"2025-12-14T14:30:00Z"}
 
 event: price-update
-data: {"symbol":"ETH","price":3500000,"changePercent":1.85,"timestamp":"2025-10-17T14:30:01Z"}
+data: {"symbol":"ETH","price":3500000,"changePercent":1.85,"timestamp":"2025-12-14T14:30:01Z"}
 ```
 
 ---
@@ -269,114 +297,23 @@ data: {"symbol":"ETH","price":3500000,"changePercent":1.85,"timestamp":"2025-10-
 
 ## Data Providers
 
-### Provider Priority
-1. **Upbit** (Primary - KRW Base)
-   - No API Key Required ✅
-   - Rate: 600 requests/minute (IP-based)
-   - WebSocket: Unlimited connections
-   - Use: KRW-based crypto prices, Korean market
+### 1. Upbit (Primary - Order: 1)
 
-2. **Binance** (Fallback - USD Base)
-   - No API Key Required ✅
-   - Rate: 1200 weight/minute
-   - WebSocket: 300 connections/5min
-   - Use: USD-based crypto prices, global market
+```yaml
+Provider: UpbitProvider
+API: Public API (No Key Required)
+Rate Limit: 600 req/min (IP-based)
+Supported: KRW 기준 암호화폐
 
-### Provider Factory Pattern
-```java
-CryptoDataProvider provider = cryptoProviderFactory.getProvider(baseCurrency);
-// baseCurrency == "KRW" → UpbitProvider
-// baseCurrency == "USD" → BinanceProvider
+Features:
+  - 실시간 시세 조회
+  - 일봉/분봉 데이터
+  - 종목 검색
+  - 트렌딩 코인
+  - Circuit Breaker: upbitApi
 ```
 
----
-
-## Implementation Status
-
-### ✅ Implemented (Phase 4)
-- Week 1: Backend REST API
-  - Single/batch price fetching
-  - Search functionality
-  - Trending cryptocurrencies
-  - Historical data endpoint
-  - Service status endpoint
-
-- Week 2: Adapter Pattern Streaming
-  - SSEStreamingService (권장, 1초 간격)
-  - WebSocketStreamingService (고성능, 500ms)
-  - LongPollingStreamingService (Fallback, 2초)
-  - Auto-fallback (SSE → LongPolling)
-  - Performance comparison dashboard
-
-- Week 3: Portfolio Integration
-  - Portfolio Crypto Holdings
-  - AddCryptoHoldingModal
-  - Asset type discrimination (STOCK/CRYPTO)
-  - Multi-currency support (KRW/USD)
-
-### 🔄 In Progress (Phase 4 Week 4)
-- Manual testing
-- E2E test automation
-- API documentation finalization
-
----
-
-## Backend Implementation
-
-**Controller**:
-- `backend/src/main/java/com/pjsent/sentinel/crypto/controller/CryptoDataController.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/controller/CryptoStreamController.java`
-
-**Service**:
-- `backend/src/main/java/com/pjsent/sentinel/crypto/service/CryptoDataService.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/streaming/SSEStreamingService.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/streaming/WebSocketStreamingService.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/streaming/LongPollingStreamingService.java`
-
-**Providers**:
-- `backend/src/main/java/com/pjsent/sentinel/crypto/service/provider/UpbitProvider.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/service/provider/BinanceProvider.java` (준비 완료)
-
-**Factory**:
-- `backend/src/main/java/com/pjsent/sentinel/crypto/service/factory/CryptoProviderFactory.java`
-
-**DTOs**:
-- `backend/src/main/java/com/pjsent/sentinel/crypto/dto/CryptoPriceDto.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/dto/CryptoSearchResultDto.java`
-- `backend/src/main/java/com/pjsent/sentinel/crypto/dto/HistoricalDataDto.java`
-
----
-
-## Frontend Integration
-
-**API Client**: `frontend/lib/api/crypto.ts`
-- `getCryptoPrice(symbol, baseCurrency)`
-- `getBatchCryptoPrices(symbols, baseCurrency)`
-- `searchCrypto(query, limit)`
-- `getTrendingCryptos(baseCurrency, limit)`
-- `getCryptoHistorical(symbol, baseCurrency, interval, count)`
-- `getCryptoStatus()`
-
-**Streaming Adapters**: `frontend/lib/streaming/`
-- `SSEAdapter.ts` - EventSource 기반 (자동 재연결)
-- `LongPollingAdapter.ts` - setInterval 기반
-- `StreamingAdapter.ts` - 인터페이스
-
-**Hooks**: `frontend/lib/hooks/`
-- `useStreamingPrices.ts` - Auto-fallback 지원 (SSE → LongPolling)
-
-**Components**:
-- `frontend/components/crypto/TrendingCryptoCard.tsx`
-- `frontend/components/portfolio/AddCryptoHoldingModal.tsx`
-
-**Test Pages**:
-- `frontend/app/test-streaming/page.tsx` - 실시간 성능 비교 대시보드
-
----
-
-## Configuration
-
-**Backend (`application.yml`)**:
+**Configuration**:
 ```yaml
 crypto:
   market:
@@ -385,78 +322,174 @@ crypto:
       base-url: https://api.upbit.com/v1
       websocket-url: wss://api.upbit.com/websocket/v1
       timeout: 10000
-
-    binance:
-      enabled: true
-      base-url: https://api.binance.com/api/v3
-      timeout: 10000
-
-  streaming:
-    websocket:
-      enabled: false  # Phase 4 Week 2에서 활성화
 ```
 
-**No API Keys Required!** ✅
-- Upbit: Public API only
-- Binance: Public API only
+### 2. Binance (Fallback - Order: 2)
+
+```yaml
+Provider: BinanceProvider
+API: Public API (No Key Required)
+Rate Limit: 1200 weight/min
+Supported: USD/USDT 기준 암호화폐
+
+Features:
+  - Global 마켓 데이터
+  - Fallback Provider
+  - Circuit Breaker: binanceApi
+```
+
+---
+
+## Circuit Breaker Configuration
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      upbitApi:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+      binanceApi:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+```
+
+---
+
+## Cache Configuration
+
+| Cache Name | TTL | 용도 |
+|------------|-----|------|
+| `cryptoPrice` | 30초 | 실시간 시세 |
+| `cryptoSearch` | 5분 | 종목 검색 결과 |
+| `trendingCoins` | 5분 | 트렌딩 코인 |
+| `cryptoHistoricalData` | 7일 | 백테스팅용 일봉 데이터 |
+
+---
+
+## Implementation Status
+
+### ✅ 완료 (100%)
+- [x] Single/batch price fetching
+- [x] Upbit Provider (KRW 마켓)
+- [x] Binance Provider (USD 마켓)
+- [x] Search functionality
+- [x] Trending cryptocurrencies
+- [x] Historical data (일봉)
+- [x] SSE Streaming Service
+- [x] WebSocket Streaming Service
+- [x] LongPolling Streaming Service
+- [x] Provider Factory Pattern
+- [x] Circuit Breaker (upbitApi)
+- [x] Redis Caching
+- [x] Backtesting Integration (CryptoHistoricalDataService)
+
+### Streaming 성능
+| Method | Interval | Latency | 용도 |
+|--------|----------|---------|------|
+| SSE | 1초 | 50ms | 권장 (자동 재연결) |
+| WebSocket | 500ms | 10ms | 고성능 |
+| Long Polling | 2초 | 200ms | Fallback |
+
+---
+
+## Backend Implementation
+
+**Controller**
+```
+crypto/controller/CryptoDataController.java
+crypto/controller/CryptoStreamController.java
+```
+
+**Service**
+```
+crypto/service/CryptoDataService.java
+```
+
+**Streaming**
+```
+crypto/streaming/SSEStreamingService.java
+crypto/streaming/WebSocketStreamingService.java
+crypto/streaming/LongPollingStreamingService.java
+crypto/streaming/StreamingService.java (interface)
+crypto/streaming/UpbitWebSocketClient.java
+crypto/streaming/WebSocketMetrics.java
+```
+
+**Providers**
+```
+crypto/service/provider/UpbitProvider.java      ← Primary
+crypto/service/provider/BinanceProvider.java    ← Fallback
+crypto/service/provider/CryptoDataProvider.java ← Interface
+```
+
+**Factory**
+```
+crypto/service/factory/CryptoDataProviderFactory.java
+```
+
+**Backtesting Integration**
+```
+backtest/service/CryptoHistoricalDataService.java
+```
+
+**DTOs**
+```
+crypto/dto/CryptoPriceDto.java
+crypto/dto/CryptoSearchResultDto.java
+crypto/dto/TrendingCoinDto.java
+```
+
+---
+
+## Backtesting Support
+
+암호화폐 백테스팅을 위한 별도 서비스가 구현되어 있습니다.
+
+### CryptoHistoricalDataService
+
+```java
+// 사용 예시
+@CircuitBreaker(name = "upbitApi", fallbackMethod = "getHistoricalPricesFallback")
+@Cacheable(value = "cryptoHistoricalData",
+           key = "#symbol + '_' + #baseCurrency + '_' + #startDate + '_' + #endDate",
+           sync = true)
+public List<HistoricalPriceData> getHistoricalPrices(
+        String symbol, String baseCurrency,
+        LocalDate startDate, LocalDate endDate)
+```
+
+**특징**:
+- Upbit Candles API 사용 (`/candles/days`)
+- 7일 캐시 TTL
+- Circuit Breaker fallback (캐시 데이터 반환)
+- CryptoPriceDto → HistoricalPriceData 변환
+
+**HistoricalDataFacade 라우팅**:
+```
+HistoricalDataFacade
+├── 한국 주식 (6자리: 005930) → KisHistoricalDataService
+├── 미국 주식 (AAPL, GOOGL)   → HistoricalDataService (AlphaVantage)
+└── 암호화폐 (BTC, ETH)       → CryptoHistoricalDataService (Upbit)
+```
 
 ---
 
 ## Error Handling
 
-### Common Errors
-
-**400 Bad Request**:
-```json
-{
-  "error": "INVALID_SYMBOL",
-  "message": "Invalid cryptocurrency symbol: INVALID"
-}
-```
-
-**404 Not Found**:
-```json
-{
-  "error": "CRYPTO_NOT_FOUND",
-  "message": "Cryptocurrency not found: XYZ"
-}
-```
-
-**500 Internal Server Error**:
-```json
-{
-  "error": "PROVIDER_ERROR",
-  "message": "All crypto data providers are unavailable"
-}
-```
-
-**503 Service Unavailable**:
-```json
-{
-  "error": "RATE_LIMIT_EXCEEDED",
-  "message": "Rate limit exceeded, try again later"
-}
-```
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `INVALID_SYMBOL` | 잘못된 심볼 |
+| 404 | `CRYPTO_NOT_FOUND` | 암호화폐 없음 |
+| 500 | `PROVIDER_ERROR` | 모든 Provider 장애 |
+| 503 | `RATE_LIMIT_EXCEEDED` | Rate limit 초과 |
 
 ---
 
-## Testing
-
-### Manual Testing
-1. **Price Lookup**: http://localhost:8080/api/v1/crypto/price/BTC?baseCurrency=KRW
-2. **Search**: http://localhost:8080/api/v1/crypto/search?query=bitcoin
-3. **Trending**: http://localhost:8080/api/v1/crypto/trending?limit=5
-4. **Status**: http://localhost:8080/api/v1/crypto/status
-5. **Streaming**: http://localhost:3000/test-streaming
-
-### E2E Tests (Playwright)
-- `frontend/e2e/crypto-holdings.spec.ts` (8 tests)
-- Portfolio crypto addition flow
-- Search functionality
-- Currency selection (KRW/USD)
-
----
-
-**Last Updated**: 2025-10-17
-**Status**: Phase 4 - 90% Complete (Week 3 완료)
-**Next**: Week 4 - Testing & Documentation
+**Last Updated**: 2025-12-14
+**Maintainer**: Claude Code

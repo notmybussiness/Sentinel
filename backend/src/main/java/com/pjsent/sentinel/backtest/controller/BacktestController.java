@@ -2,10 +2,12 @@ package com.pjsent.sentinel.backtest.controller;
 
 import com.pjsent.sentinel.backtest.dto.BacktestRequest;
 import com.pjsent.sentinel.backtest.dto.BacktestResponse;
+import com.pjsent.sentinel.backtest.dto.BacktestValidationResponse;
 import com.pjsent.sentinel.backtest.dto.HistoricalPriceResponse;
 import com.pjsent.sentinel.backtest.dto.HistoricalPriceData;
 import com.pjsent.sentinel.backtest.service.BacktestEngine;
-import com.pjsent.sentinel.backtest.service.HistoricalDataService;
+import com.pjsent.sentinel.backtest.service.HistoricalDataFacade;
+import com.pjsent.sentinel.portfolio.entity.PortfolioHolding;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,7 @@ import java.util.List;
 public class BacktestController {
 
     private final BacktestEngine backtestEngine;
-    private final HistoricalDataService historicalDataService;
+    private final HistoricalDataFacade historicalDataFacade;
 
     /**
      * 백테스팅 실행
@@ -55,11 +57,37 @@ public class BacktestController {
     }
 
     /**
+     * 백테스팅 요청 유효성 검증
+     *
+     * 백테스트 실행 전 파라미터 유효성 및 데이터 가용성을 검증합니다.
+     * API 호출 없이 캐시 상태만 확인하므로 빠른 응답이 가능합니다.
+     *
+     * @param request 백테스팅 요청
+     * @return 유효성 검증 결과
+     */
+    @PostMapping("/validate")
+    public ResponseEntity<BacktestValidationResponse> validateBacktest(
+            @Valid @RequestBody BacktestRequest request) {
+        log.info("Validating backtest request for portfolio: {}", request.getPortfolioId());
+
+        BacktestValidationResponse response = backtestEngine.validateBacktestRequest(request);
+
+        log.info("Validation result for portfolio {}: valid={}, errors={}, warnings={}",
+                request.getPortfolioId(),
+                response.isValid(),
+                response.getErrors().size(),
+                response.getWarnings().size());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 특정 종목의 과거 가격 데이터 조회
      *
      * API_BACKTEST.md 스펙에 정의된 엔드포인트
-     * - Redis 캐시 적용 (7일 TTL via HistoricalDataService)
-     * - AlphaVantage API rate limit 대응
+     * - Redis 캐시 적용 (7일 TTL)
+     * - 한국 주식 (6자리 숫자): KIS API
+     * - 미국 주식: AlphaVantage API
      *
      * @param symbol 종목 심볼
      * @param startDate 시작일 (YYYY-MM-DD)
@@ -84,9 +112,13 @@ public class BacktestController {
             throw new IllegalArgumentException("Date range must not exceed 10 years");
         }
 
-        // Fetch historical data (cached via HistoricalDataService)
-        List<HistoricalPriceData> prices = historicalDataService.getHistoricalPrices(
-                symbol.toUpperCase(), startDate, endDate);
+        // Fetch historical data via Facade (routes to KIS or AlphaVantage based on symbol)
+        List<HistoricalPriceData> prices = historicalDataFacade.getHistoricalPrices(
+                symbol.toUpperCase(),
+                PortfolioHolding.AssetType.STOCK,
+                "KRW",  // default base currency
+                startDate,
+                endDate);
 
         // Build response matching API spec
         HistoricalPriceResponse response = HistoricalPriceResponse.builder()
