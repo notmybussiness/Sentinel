@@ -1,4 +1,4 @@
-import { MarketIndex, CryptoPrice, Portfolio, AiAnalysisResult, PortfolioHistoryPoint, AssetAllocation, User, AuthTokens } from './types';
+import { MarketIndex, CryptoPrice, Portfolio, AiAnalysisResult, PortfolioHistoryPoint, AssetAllocation, User, AuthTokens, ChartData, PriceHistoryDto, AssetType, AiAnalysisRequest, AiAnalysisResponse, AiServiceStatus } from './types';
 import { MOCK_MARKET_INDICES, MOCK_CRYPTO_PRICES, MOCK_PORTFOLIOS, MOCK_AI_ANALYSIS, MOCK_PORTFOLIO_HISTORY, MOCK_ASSET_ALLOCATION } from './mock-data';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -339,6 +339,81 @@ export const api = {
         getAllocation: () => delay<AssetAllocation[]>(MOCK_ASSET_ALLOCATION),
     },
     ai: {
-        analyze: (portfolioId: number) => delay<AiAnalysisResult>(MOCK_AI_ANALYSIS),
-    }
+        analyze: async (request: AiAnalysisRequest): Promise<AiAnalysisResponse | null> => {
+            try {
+                const response = await fetchWithAuth('/api/v1/ai/analyze', {
+                    method: 'POST',
+                    body: JSON.stringify(request),
+                });
+                if (!response.ok) {
+                    console.error('AI analysis failed');
+                    return null;
+                }
+                return response.json();
+            } catch (error) {
+                console.error('Error analyzing portfolio:', error);
+                return null;
+            }
+        },
+        getStatus: async (): Promise<AiServiceStatus | null> => {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/ai/status`);
+                if (!response.ok) return null;
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching AI status:', error);
+                return null;
+            }
+        },
+        // Legacy mock method for backward compatibility
+        analyzeMock: (portfolioId: number) => delay<AiAnalysisResult>(MOCK_AI_ANALYSIS),
+    },
+    priceHistory: {
+        getChartData: async (symbol: string, startTime: string, endTime: string): Promise<ChartData | null> => {
+            try {
+                const response = await fetch(
+                    `${API_URL}/api/v1/price-history/chart?symbol=${encodeURIComponent(symbol)}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`
+                );
+                if (response.status === 404) return null;
+                if (!response.ok) throw new Error('Failed to fetch chart data');
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching chart data:', error);
+                return null;
+            }
+        },
+        getLatestPrice: async (symbol: string): Promise<PriceHistoryDto | null> => {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/price-history/latest/${encodeURIComponent(symbol)}`);
+                if (response.status === 404) return null;
+                if (!response.ok) throw new Error('Failed to fetch latest price');
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching latest price:', error);
+                return null;
+            }
+        },
+        getLatestPrices: async (symbols: string[], assetType: AssetType): Promise<PriceHistoryDto[]> => {
+            try {
+                const response = await fetch(
+                    `${API_URL}/api/v1/price-history/latest?symbols=${symbols.join(',')}&assetType=${assetType}`
+                );
+                if (!response.ok) throw new Error('Failed to fetch latest prices');
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching latest prices:', error);
+                return [];
+            }
+        },
+        getSymbolsByAssetType: async (assetType: AssetType): Promise<string[]> => {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/price-history/symbols?assetType=${assetType}`);
+                if (!response.ok) throw new Error('Failed to fetch symbols');
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching symbols:', error);
+                return [];
+            }
+        },
+    },
 };

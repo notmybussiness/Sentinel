@@ -48,6 +48,32 @@ export interface AiAnalysisResult {
     recommendations: string[];
 }
 
+// AI Analysis Types (Backend API)
+export type AiAnalysisType = 'OVERVIEW' | 'DIVERSIFICATION' | 'RISK' | 'PERFORMANCE' | 'RECOMMENDATION';
+
+export interface AiAnalysisRequest {
+    portfolioId: number;
+    analysisType: AiAnalysisType;
+    includeMarketContext?: boolean;
+}
+
+export interface AiAnalysisResponse {
+    summary: string;
+    insights: string[];
+    recommendations: string[];
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+    diversificationScore: number;
+    analysisType: AiAnalysisType;
+    analyzedAt: string;
+}
+
+export interface AiServiceStatus {
+    available: boolean;
+    provider: string;
+    model: string;
+    features: string[];
+}
+
 export interface PortfolioHistoryPoint {
     date: string;
     value: number;
@@ -72,4 +98,44 @@ export interface AuthTokens {
     accessToken: string;
     refreshToken: string;
     expiresIn: number;
+}
+
+// Price History Types
+export type AssetType = 'STOCK' | 'CRYPTO' | 'ETF' | 'INDEX';
+
+export interface ChartDataPoint {
+    time: string;
+    value: number;
+    open?: number;
+    high?: number;
+    low?: number;
+    volume?: number;
+}
+
+export interface ChartStatistics {
+    changePercent: number;
+    changeAmount: number;
+    highestPrice: number;
+    lowestPrice: number;
+    averageVolume: number;
+}
+
+export interface ChartData {
+    symbol: string;
+    baseCurrency: string;
+    data: ChartDataPoint[];
+    statistics: ChartStatistics;
+}
+
+export interface PriceHistoryDto {
+    id: number;
+    symbol: string;
+    assetType: AssetType;
+    baseCurrency: string;
+    timestamp: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
 }
