@@ -59,3 +59,17 @@ export interface AssetAllocation {
     value: number;
     color: string;
 }
+
+// Auth Types
+export interface User {
+    id: number;
+    email: string;
+    nickname: string;
+    profileImage?: string;
+}
+
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+}

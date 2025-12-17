@@ -109,7 +109,7 @@ kakao:
   oauth:
     client-id: ${KAKAO_CLIENT_ID:}
     client-secret: ${KAKAO_CLIENT_SECRET:}
-    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/v1/auth/kakao/callback}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:3000/auth/kakao/callback}
     scope: profile_nickname,account_email,profile_image
 
 # Stock Market API 기본 설정 (API 키는 secret에서 주입)
