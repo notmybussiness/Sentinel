@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export function Header() {
-    const { user, isLoading, isAuthenticated, login, logout } = useAuth();
+    const { user, isLoading, isAuthenticated, login, devLogin, logout } = useAuth();
 
     return (
         <header className="flex h-16 items-center justify-between border-b border-[#1E293B] bg-[#0B0F19]/50 px-6 backdrop-blur-xl">
@@ -52,13 +52,22 @@ export function Header() {
                         </Button>
                     </div>
                 ) : (
-                    <Button
-                        onClick={login}
-                        className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835]"
-                    >
-                        <LogIn className="mr-2 h-4 w-4" />
-                        카카오 로그인
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={devLogin}
+                            variant="outline"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        >
+                            Dev 로그인
+                        </Button>
+                        <Button
+                            onClick={login}
+                            className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835]"
+                        >
+                            <LogIn className="mr-2 h-4 w-4" />
+                            카카오 로그인
+                        </Button>
+                    </div>
                 )}
             </div>
         </header>

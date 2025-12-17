@@ -167,6 +167,12 @@ export const api = {
             if (!response.ok) throw new Error('Failed to get Kakao login URL');
             return response.text();
         },
+        // 개발용 자동 로그인
+        devLogin: async (): Promise<{ accessToken: string; refreshToken: string; user: User }> => {
+            const response = await fetch(`${API_URL}/api/v1/auth/dev-login`, { method: 'POST' });
+            if (!response.ok) throw new Error('Dev login failed');
+            return response.json();
+        },
         getMe: async (): Promise<User | null> => {
             try {
                 const response = await fetchWithAuth('/api/v1/auth/me');

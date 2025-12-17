@@ -9,6 +9,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: () => Promise<void>;
+    devLogin: () => Promise<void>;
     logout: () => void;
     refreshUser: () => Promise<void>;
 }
@@ -40,6 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const devLogin = async () => {
+        try {
+            const data = await api.auth.devLogin();
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+        } catch (error) {
+            console.error('Dev login failed:', error);
+        }
+    };
+
     const handleLogout = async () => {
         await api.auth.logout();
         setUser(null);
@@ -51,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout: handleLogout, refreshUser }}>
+        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, devLogin, logout: handleLogout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
