@@ -114,9 +114,9 @@ interface BackendPortfolioHolding {
     symbol: string;
     assetType: 'STOCK' | 'CRYPTO' | 'CASH';
     quantity: number;
-    averagePrice: number;
+    averageCost: number;      // Backend field name
     currentPrice: number;
-    totalValue: number;
+    marketValue: number;      // Backend field name
     gainLoss: number;
     gainLossPercent: number;
 }
@@ -148,9 +148,9 @@ function mapPortfolio(item: BackendPortfolio): Portfolio {
             id: h.id,
             symbol: h.symbol,
             quantity: h.quantity,
-            averagePrice: h.averagePrice,
+            averagePrice: h.averageCost,     // BE: averageCost → FE: averagePrice
             currentPrice: h.currentPrice,
-            totalValue: h.totalValue,
+            totalValue: h.marketValue,       // BE: marketValue → FE: totalValue
             profit: h.gainLoss,
             profitRate: h.gainLossPercent,
             assetType: h.assetType,
@@ -319,9 +319,16 @@ export const api = {
             if (!response.ok) throw new Error('Failed to delete portfolio');
         },
         addHolding: async (portfolioId: number, data: { symbol: string; quantity: number; averagePrice: number; assetType: string }): Promise<Portfolio> => {
+            // Backend expects averageCost instead of averagePrice
+            const backendData = {
+                symbol: data.symbol,
+                quantity: data.quantity,
+                averageCost: data.averagePrice,
+                assetType: data.assetType,
+            };
             const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/holdings`, {
                 method: 'POST',
-                body: JSON.stringify(data),
+                body: JSON.stringify(backendData),
             });
             if (!response.ok) throw new Error('Failed to add holding');
             const result: BackendPortfolio = await response.json();
