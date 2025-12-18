@@ -47,7 +47,7 @@ export function CryptoList() {
                                     coin.changePercent >= 0 ? "text-green-500" : "text-red-500"
                                 )}>
                                     {coin.changePercent >= 0 ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-                                    {Math.abs(coin.changePercent)}%
+                                    {Math.abs(coin.changePercent).toFixed(2)}%
                                 </div>
                             </div>
                         </div>

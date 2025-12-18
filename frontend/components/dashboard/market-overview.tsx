@@ -53,7 +53,7 @@ export function MarketOverview() {
                                         idx.change >= 0 ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
                                     )}>
                                         {idx.change >= 0 ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-                                        {Math.abs(idx.changePercent)}%
+                                        {Math.abs(idx.changePercent).toFixed(2)}%
                                     </div>
                                 </div>
                             </CardContent>
@@ -78,7 +78,7 @@ export function MarketOverview() {
                                         coin.changePercent >= 0 ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
                                     )}>
                                         {coin.changePercent >= 0 ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-                                        {Math.abs(coin.changePercent)}%
+                                        {Math.abs(coin.changePercent).toFixed(2)}%
                                     </div>
                                 </div>
                             </CardContent>

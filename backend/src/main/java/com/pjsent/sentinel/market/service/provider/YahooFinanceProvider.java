@@ -163,7 +163,15 @@ public class YahooFinanceProvider implements MarketDataProvider {
 
             // 현재 가격과 이전 종가
             double currentPrice = metaNode.path("regularMarketPrice").asDouble(0.0);
+            // Yahoo Finance는 여러 필드명을 사용할 수 있음
             double previousClose = metaNode.path("previousClose").asDouble(0.0);
+            if (previousClose <= 0) {
+                previousClose = metaNode.path("chartPreviousClose").asDouble(0.0);
+            }
+            if (previousClose <= 0) {
+                previousClose = metaNode.path("regularMarketPreviousClose").asDouble(0.0);
+            }
+            log.debug("Yahoo Finance meta 파싱. 심볼: {}, currentPrice: {}, previousClose: {}", symbol, currentPrice, previousClose);
 
             if (currentPrice <= 0) {
                 throw new RuntimeException("유효하지 않은 가격 데이터: " + currentPrice);
