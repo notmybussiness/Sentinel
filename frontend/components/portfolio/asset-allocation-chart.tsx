@@ -43,7 +43,9 @@ export function AssetAllocationChart() {
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#0F172A', borderColor: '#1E293B', color: '#F8FAFC' }}
+                                contentStyle={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}
+                                itemStyle={{ color: '#F8FAFC' }}
+                                labelStyle={{ color: '#94A3B8' }}
                                 formatter={(value: number) => [`${total > 0 ? ((value / total) * 100).toFixed(1) : 0}%`, '비중']}
                             />
                         </PieChart>

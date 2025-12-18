@@ -1,11 +1,22 @@
 'use client';
 
-import { Bell, Search, LogIn, LogOut, User } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, Search, LogIn, LogOut, User, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth/auth-context';
 
 export function Header() {
     const { user, isLoading, isAuthenticated, login, devLogin, logout } = useAuth();
+    const [loginLoading, setLoginLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const handleDevLogin = async () => {
+        setLoginLoading(true);
+        await devLogin();
+        setLoginLoading(false);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+    };
 
     return (
         <header className="flex h-16 items-center justify-between border-b border-[#1E293B] bg-[#0B0F19]/50 px-6 backdrop-blur-xl">
@@ -54,19 +65,32 @@ export function Header() {
                 ) : (
                     <div className="flex gap-2">
                         <Button
-                            onClick={devLogin}
+                            onClick={handleDevLogin}
                             variant="outline"
                             className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                            disabled={loginLoading}
                         >
+                            {loginLoading ? (
+                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            ) : null}
                             Dev 로그인
                         </Button>
                         <Button
                             onClick={login}
                             className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835]"
+                            disabled={loginLoading}
                         >
                             <LogIn className="mr-2 h-4 w-4" />
                             카카오 로그인
                         </Button>
+                    </div>
+                )}
+
+                {/* 로그인 성공 토스트 */}
+                {showSuccess && (
+                    <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                        <CheckCircle className="h-5 w-5" />
+                        로그인 성공!
                     </div>
                 )}
             </div>
