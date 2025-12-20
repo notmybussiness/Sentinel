@@ -183,7 +183,7 @@ resilience4j:
     instances:
       # KIS API Circuit Breaker
       kisApi:
-        enabled: false  # Experiment 3a: 순수 TTL 효과 테스트를 위해 비활성화
+        enabled: true  # Phase 8: Circuit Breaker 활성화 (HA)
         failure-rate-threshold: 50
         slow-call-rate-threshold: 70
         slow-call-duration-threshold: 3000

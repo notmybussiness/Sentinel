@@ -3,6 +3,7 @@ package com.pjsent.sentinel.crypto.service.provider;
 import com.pjsent.sentinel.crypto.dto.CryptoPriceDto;
 import com.pjsent.sentinel.crypto.dto.CryptoSearchResultDto;
 import com.pjsent.sentinel.crypto.dto.TrendingCoinDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,7 @@ public class UpbitProvider implements CryptoDataProvider {
     private int timeout;
 
     @Override
+    @CircuitBreaker(name = "upbitApi", fallbackMethod = "getCryptoPriceFallback")
     @Cacheable(value = "cryptoPrice", key = "#symbol + '_' + #baseCurrency", sync = true)
     public CryptoPriceDto getCryptoPrice(String symbol, String baseCurrency) {
         if (!isAvailable()) {
@@ -70,6 +72,7 @@ public class UpbitProvider implements CryptoDataProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "upbitApi", fallbackMethod = "getBatchCryptoPricesFallback")
     public List<CryptoPriceDto> getBatchCryptoPrices(List<String> symbols, String baseCurrency) {
         if (!isAvailable()) {
             throw new IllegalStateException("Upbit API가 사용 불가능합니다.");
@@ -109,6 +112,7 @@ public class UpbitProvider implements CryptoDataProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "upbitApi", fallbackMethod = "searchCryptoFallback")
     @Cacheable(value = "cryptoSearch", key = "#query", sync = true)
     public List<CryptoSearchResultDto> searchCrypto(String query) {
         if (!isAvailable()) {
@@ -156,6 +160,7 @@ public class UpbitProvider implements CryptoDataProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "upbitApi", fallbackMethod = "getTrendingCoinsFallback")
     @Cacheable(value = "trendingCoins", key = "#baseCurrency + '_' + #limit", sync = true)
     public List<TrendingCoinDto> getTrendingCoins(String baseCurrency, int limit) {
         if (!isAvailable()) {
@@ -242,6 +247,7 @@ public class UpbitProvider implements CryptoDataProvider {
     }
 
     @Override
+    @CircuitBreaker(name = "upbitApi", fallbackMethod = "getHistoricalDataFallback")
     public List<CryptoPriceDto> getHistoricalData(String symbol, String baseCurrency, int days) {
         if (!isAvailable()) {
             throw new IllegalStateException("Upbit API가 사용 불가능합니다.");
@@ -418,5 +424,53 @@ public class UpbitProvider implements CryptoDataProvider {
             log.warn("숫자 변환 실패: {}", value);
             return 0.0;
         }
+    }
+
+    // ==================== Circuit Breaker Fallback Methods ====================
+
+    /**
+     * getCryptoPrice Fallback
+     * Circuit Breaker OPEN 시 예외를 던져 상위 레이어에서 다른 Provider 시도하도록 함
+     */
+    private CryptoPriceDto getCryptoPriceFallback(String symbol, String baseCurrency, Throwable t) {
+        log.warn("Upbit Circuit Breaker OPEN. Symbol: {}, BaseCurrency: {}, Error: {}",
+                symbol, baseCurrency, t.getMessage());
+        throw new RuntimeException("Upbit API 일시적 사용 불가: " + t.getMessage(), t);
+    }
+
+    /**
+     * getBatchCryptoPrices Fallback
+     */
+    private List<CryptoPriceDto> getBatchCryptoPricesFallback(List<String> symbols, String baseCurrency, Throwable t) {
+        log.warn("Upbit Circuit Breaker OPEN (Batch). Symbols: {}, Error: {}",
+                symbols.size(), t.getMessage());
+        return Collections.emptyList();
+    }
+
+    /**
+     * searchCrypto Fallback
+     */
+    private List<CryptoSearchResultDto> searchCryptoFallback(String query, Throwable t) {
+        log.warn("Upbit Circuit Breaker OPEN (Search). Query: {}, Error: {}",
+                query, t.getMessage());
+        return Collections.emptyList();
+    }
+
+    /**
+     * getTrendingCoins Fallback
+     */
+    private List<TrendingCoinDto> getTrendingCoinsFallback(String baseCurrency, int limit, Throwable t) {
+        log.warn("Upbit Circuit Breaker OPEN (Trending). BaseCurrency: {}, Error: {}",
+                baseCurrency, t.getMessage());
+        return Collections.emptyList();
+    }
+
+    /**
+     * getHistoricalData Fallback
+     */
+    private List<CryptoPriceDto> getHistoricalDataFallback(String symbol, String baseCurrency, int days, Throwable t) {
+        log.warn("Upbit Circuit Breaker OPEN (Historical). Symbol: {}, Days: {}, Error: {}",
+                symbol, days, t.getMessage());
+        return Collections.emptyList();
     }
 }
