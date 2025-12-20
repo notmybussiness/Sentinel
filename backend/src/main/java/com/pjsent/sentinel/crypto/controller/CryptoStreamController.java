@@ -41,6 +41,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CryptoStreamController {
 
+        // Maximum connection duration to prevent zombie connections (5 minutes)
+        private static final Duration MAX_CONNECTION_DURATION = Duration.ofMinutes(5);
+        // Heartbeat interval for keep-alive
+        private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
+
         // Spring이 자동으로 모든 StreamingService 구현체를 주입
         private final List<StreamingService> streamingServices;
         private final WebSocketMetrics metrics;
@@ -79,6 +84,9 @@ public class CryptoStreamController {
 
                 log.info("✅ {} 스트리밍 시작. 심볼: {}, 기준 통화: {}", service.getStreamingMethod(), symbolList, baseCurrency);
 
+                // Connection lifecycle tracking
+                final long connectionStartTime = System.currentTimeMillis();
+
                 // 1. Price Stream (Upstream)
                 Flux<ServerSentEvent<CryptoPriceDto>> priceStream = service.startStreaming(symbolList, baseCurrency)
                                 .timeout(Duration.ofSeconds(60)) // Upstream Timeout (60s)
@@ -91,18 +99,39 @@ public class CryptoStreamController {
                                                 .data(price)
                                                 .build());
 
-                // 2. Heartbeat Stream (10s) - 좀비 연결 감지용
-                Flux<ServerSentEvent<CryptoPriceDto>> heartbeatStream = Flux.interval(Duration.ofSeconds(10))
+                // 2. Heartbeat Stream - keep-alive for zombie connection detection
+                Flux<ServerSentEvent<CryptoPriceDto>> heartbeatStream = Flux.interval(HEARTBEAT_INTERVAL)
                                 .map(tick -> ServerSentEvent.<CryptoPriceDto>builder()
-                                                .event("ping")
-                                                .comment("keep-alive")
+                                                .event("heartbeat")
+                                                .comment("keep-alive:" + tick)
                                                 .build());
 
-                // 3. Merge & Return
+                // 3. Merge & Apply connection lifecycle management
                 return Flux.merge(priceStream, heartbeatStream)
-                                .doOnSubscribe(sub -> log.info("📡 {} 구독 시작. 클라이언트 연결됨", method))
-                                .doFinally(signal -> log.info("🔴 {} 구독 종료. Signal: {}", method, signal))
-                                .doOnError(error -> log.error("❌ {} 스트리밍 오류: {}", method, error.getMessage()));
+                                // Max connection duration to prevent eternal zombie connections
+                                .take(MAX_CONNECTION_DURATION)
+                                // Track connection start
+                                .doOnSubscribe(sub -> {
+                                        metrics.recordConnectionStart();
+                                        log.info("📡 {} 구독 시작. 클라이언트 연결됨. Active: {}",
+                                                method, metrics.getActiveConnections().get());
+                                })
+                                // Track connection end with duration
+                                .doFinally(signal -> {
+                                        long durationMs = System.currentTimeMillis() - connectionStartTime;
+                                        metrics.recordConnectionEnd(durationMs);
+                                        log.info("🔴 {} 구독 종료. Signal: {}, Duration: {}ms, Active: {}",
+                                                method, signal, durationMs, metrics.getActiveConnections().get());
+                                })
+                                // Error handling
+                                .doOnError(error -> {
+                                        metrics.recordError();
+                                        log.error("❌ {} 스트리밍 오류: {}", method, error.getMessage());
+                                })
+                                // Cancel handling for client disconnect
+                                .doOnCancel(() -> {
+                                        log.info("🔌 {} 클라이언트 연결 해제 감지", method);
+                                });
         }
 
         /**
