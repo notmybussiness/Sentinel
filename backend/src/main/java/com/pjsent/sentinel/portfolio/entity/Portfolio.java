@@ -29,6 +29,10 @@ public class Portfolio {
     @Column(name = "id")
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
