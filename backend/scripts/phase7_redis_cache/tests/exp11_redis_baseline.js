@@ -106,9 +106,16 @@ const tokens = new SharedArray('tokens', function () {
     const data = open(TOKENS_FILE).split('\n').slice(1);
     return data.map(line => {
         const [userId, email, nickname, accessToken, refreshToken] = line.split(',');
-        return { userId, accessToken: accessToken ? accessToken.trim() : '' };
+        return {
+            userId,
+            accessToken: accessToken ? accessToken.trim() : '',
+            refreshToken: refreshToken ? refreshToken.trim() : ''
+        };
     }).filter(t => t.accessToken);
 });
+
+// Token Refresh 메트릭
+const tokenRefreshCounter = new Counter('token_refreshes');
 
 // ========================================
 // Test Configuration
@@ -141,6 +148,70 @@ function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
+/**
+ * 토큰 갱신 (TOKEN_EXPIRED 응답 시 호출)
+ * @param {string} refreshToken - 리프레시 토큰
+ * @returns {object|null} - 새 토큰 정보 또는 null
+ */
+function refreshAccessToken(refreshToken) {
+    const payload = JSON.stringify({ refreshToken: refreshToken });
+    const res = http.post(`${BASE_URL}/api/v1/auth/refresh`, payload, {
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (res.status === 200) {
+        const data = res.json();
+        return {
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken
+        };
+    }
+    return null;
+}
+
+/**
+ * 인증된 요청 실행 (토큰 만료 시 자동 갱신)
+ * @param {string} method - HTTP 메서드 (GET, POST, etc.)
+ * @param {string} url - 요청 URL
+ * @param {object} user - 사용자 토큰 정보 { accessToken, refreshToken }
+ * @param {string|null} body - 요청 바디 (POST/PUT)
+ * @returns {object} - { response, tokenRefreshed }
+ */
+function authenticatedRequest(method, url, user, body = null) {
+    let res;
+    if (method === 'GET') {
+        res = http.get(url, { headers: getHeaders(user.accessToken) });
+    } else if (method === 'POST') {
+        res = http.post(url, body, { headers: getHeaders(user.accessToken) });
+    }
+
+    // 토큰 만료 시 갱신 시도
+    if (res.status === 401) {
+        try {
+            const errorBody = res.json();
+            if (errorBody.code === 'TOKEN_EXPIRED' && user.refreshToken) {
+                const newTokens = refreshAccessToken(user.refreshToken);
+                if (newTokens) {
+                    // 토큰 갱신 성공 - 재시도
+                    user.accessToken = newTokens.accessToken;
+                    user.refreshToken = newTokens.refreshToken;
+
+                    if (method === 'GET') {
+                        res = http.get(url, { headers: getHeaders(user.accessToken) });
+                    } else if (method === 'POST') {
+                        res = http.post(url, body, { headers: getHeaders(user.accessToken) });
+                    }
+                    return { response: res, tokenRefreshed: true };
+                }
+            }
+        } catch (e) {
+            // JSON 파싱 실패 시 무시
+        }
+    }
+
+    return { response: res, tokenRefreshed: false };
+}
+
 // ========================================
 // API Operations
 // ========================================
@@ -150,8 +221,16 @@ function getRandomElement(array) {
  * - Read-Only
  * - Cache: 현재 구현에 따라 다름 (개별 Portfolio는 캐싱, List는 비캐싱 가능)
  */
-function getPortfolioList(token) {
-    const res = http.get(`${BASE_URL}/api/v1/portfolios`, { headers: getHeaders(token) });
+function getPortfolioList(user) {
+    const { response: res, tokenRefreshed } = authenticatedRequest(
+        'GET',
+        `${BASE_URL}/api/v1/portfolios`,
+        user
+    );
+
+    if (tokenRefreshed) {
+        tokenRefreshCounter.add(1);
+    }
 
     const success = check(res, { 'list retrieved': (r) => r.status === 200 });
     errorRate.add(!success);
@@ -166,8 +245,16 @@ function getPortfolioList(token) {
  * - Cache: portfolios (TTL: 5초)
  * - 🎯 Main Target: Cache Hit Rate 측정
  */
-function getPortfolio(token, portfolioId) {
-    const res = http.get(`${BASE_URL}/api/v1/portfolios/${portfolioId}`, { headers: getHeaders(token) });
+function getPortfolio(user, portfolioId) {
+    const { response: res, tokenRefreshed } = authenticatedRequest(
+        'GET',
+        `${BASE_URL}/api/v1/portfolios/${portfolioId}`,
+        user
+    );
+
+    if (tokenRefreshed) {
+        tokenRefreshCounter.add(1);
+    }
 
     const success = check(res, { 'portfolio retrieved': (r) => r.status === 200 });
     errorRate.add(!success);
@@ -188,13 +275,23 @@ function getPortfolio(token, portfolioId) {
  * - Write Operation
  * - Cache: Evict (해당 사용자의 portfolios 캐시 무효화)
  */
-function createPortfolio(token) {
+function createPortfolio(user) {
     const payload = JSON.stringify({
         name: `RedisTest ${Date.now()}`,
         description: 'Testing Redis Cache Eviction'
     });
 
-    const res = http.post(`${BASE_URL}/api/v1/portfolios`, payload, { headers: getHeaders(token) });
+    const { response: res, tokenRefreshed } = authenticatedRequest(
+        'POST',
+        `${BASE_URL}/api/v1/portfolios`,
+        user,
+        payload
+    );
+
+    if (tokenRefreshed) {
+        tokenRefreshCounter.add(1);
+    }
+
     const success = check(res, { 'portfolio created': (r) => r.status === 201 });
     errorRate.add(!success);
     portfolioCreateTrend.add(res.timings.duration);
@@ -204,31 +301,38 @@ function createPortfolio(token) {
 // Main Test Function
 // ========================================
 export default function () {
-    const user = getRandomElement(tokens);
+    // 사용자 객체 복사 (토큰 갱신 시 원본 수정 방지)
+    const originalUser = getRandomElement(tokens);
+    const user = {
+        userId: originalUser.userId,
+        accessToken: originalUser.accessToken,
+        refreshToken: originalUser.refreshToken
+    };
+
     const operation = Math.random();
 
     // 10%: Write (Create Portfolio)
     if (operation < 0.10) {
-        createPortfolio(user.accessToken);
+        createPortfolio(user);
     }
     // 10%: Write (Add Holding - 생략, Create로 대체하여 단순화)
     else if (operation < 0.20) {
-        createPortfolio(user.accessToken);
+        createPortfolio(user);
     }
     // 80%: Read Operations
     else {
         // Portfolio 목록 조회
-        const portfolios = getPortfolioList(user.accessToken);
+        const portfolios = getPortfolioList(user);
 
         if (portfolios.length > 0) {
             const pid = getRandomElement(portfolios).id;
 
             // ✅ 반복 조회로 Cache Hit 효과 확인
             // 첫 조회: Cache Miss (또는 이전 요청에서 캐싱됨)
-            getPortfolio(user.accessToken, pid);
+            getPortfolio(user, pid);
 
             // 두 번째 조회: Cache Hit 예상 (TTL 5초 이내)
-            getPortfolio(user.accessToken, pid);
+            getPortfolio(user, pid);
         }
     }
 

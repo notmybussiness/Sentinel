@@ -112,25 +112,45 @@ public class PerfTestSecurityConfig {
                 String token = authHeader.substring(7);
 
                 // 토큰 검증 (DB 조회 없이 서명만 검증)
-                if (jwtService.validateToken(token)) {
-                    // 토큰에서 사용자 정보 추출
-                    String email = jwtService.getEmailFromToken(token);
-                    Long userId = jwtService.getUserIdFromToken(token);
-
-                    // 간소화된 Authentication 객체 생성 (DB 조회 없음)
-                    // ⚠️ principal은 userId(Long)여야 함 - PortfolioController에서 (Long) casting 사용
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userId, // principal (Long - PortfolioController 호환)
-                            null, // credentials
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-
-                    // SecurityContext에 설정
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    log.debug("✅ [PERF TEST] JWT 인증 성공: userId={}, email={}", userId, email);
+                if (!jwtService.validateToken(token)) {
+                    log.warn("⚠️ [PERF TEST] JWT 서명 검증 실패");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Invalid token signature\"}");
+                    return;
                 }
+
+                // 토큰 만료 확인
+                if (jwtService.isTokenExpired(token)) {
+                    log.warn("⚠️ [PERF TEST] JWT 토큰 만료됨");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Token expired\",\"code\":\"TOKEN_EXPIRED\"}");
+                    return;
+                }
+
+                // 토큰에서 사용자 정보 추출
+                String email = jwtService.getEmailFromToken(token);
+                Long userId = jwtService.getUserIdFromToken(token);
+
+                // 간소화된 Authentication 객체 생성 (DB 조회 없음)
+                // ⚠️ principal은 userId(Long)여야 함 - PortfolioController에서 (Long) casting 사용
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userId, // principal (Long - PortfolioController 호환)
+                        null, // credentials
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+
+                // SecurityContext에 설정
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                log.debug("✅ [PERF TEST] JWT 인증 성공: userId={}, email={}", userId, email);
+
             } catch (Exception e) {
                 log.warn("⚠️ [PERF TEST] JWT 검증 실패: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+                return;
             }
 
             filterChain.doFilter(request, response);
