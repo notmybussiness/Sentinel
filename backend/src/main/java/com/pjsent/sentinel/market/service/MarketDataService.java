@@ -154,9 +154,9 @@ public class MarketDataService {
         // ^GSPC = S&P 500, ^IXIC = NASDAQ, ^DJI = DOW, ^KS11 = KOSPI
         List<String> indexSymbols = List.of("^GSPC", "^IXIC", "^DJI", "^KS11");
 
-        // 각 지수별로 데이터 조회 후 DTO 변환
+        // 각 지수별로 병렬 조회 후 DTO 변환 (타임아웃 방지)
         // null인 경우 제외 (조회 실패)
-        return indexSymbols.stream()
+        return indexSymbols.parallelStream()
                 .map(this::fetchIndexData)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

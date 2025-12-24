@@ -139,3 +139,79 @@ export interface PriceHistoryDto {
     close: number;
     volume: number;
 }
+
+// Re-export Backtest types
+export * from './backtest-types';
+
+// Rebalancing Types
+export type RebalancingStrategy = 'EQUAL_WEIGHT' | 'TARGET_ALLOCATION' | 'MIN_VARIANCE';
+
+export interface RebalancingRequest {
+    portfolioId: number;
+    strategy: RebalancingStrategy;
+    thresholdPercent?: number;
+    considerTaxes?: boolean;
+}
+
+export interface RebalancingRecommendation {
+    symbol: string;
+    assetType: string;
+    currentWeight: number;
+    targetWeight: number;
+    currentValue: number;
+    targetValue: number;
+    action: 'BUY' | 'SELL' | 'HOLD';
+    quantity: number;
+    estimatedCost: number;
+}
+
+export interface RebalancingResponse {
+    portfolioId: number;
+    portfolioName: string;
+    strategy: string;
+    currentValue: number;
+    needsRebalancing: boolean;
+    recommendations: RebalancingRecommendation[];
+    totalTransactionCost: number;
+    estimatedTaxImpact: number;
+    analyzedAt: string;
+}
+
+export interface PortfolioState {
+    totalValue: number;
+    holdings: {
+        symbol: string;
+        weight: number;
+        value: number;
+    }[];
+}
+
+export interface Transaction {
+    symbol: string;
+    action: 'BUY' | 'SELL';
+    quantity: number;
+    price: number;
+    value: number;
+    fee: number;
+}
+
+export interface RebalancingSimulationResponse {
+    portfolioId: number;
+    portfolioName: string;
+    beforeRebalancing: PortfolioState;
+    afterRebalancing: PortfolioState;
+    transactions: Transaction[];
+    totalTransactionCost: number;
+    netChange: number;
+}
+
+export interface StrategyInfo {
+    name: string;
+    displayName: string;
+    description: string;
+    supported: boolean;
+}
+
+export interface StrategyInfoResponse {
+    strategies: StrategyInfo[];
+}

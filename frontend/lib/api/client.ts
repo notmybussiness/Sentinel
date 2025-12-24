@@ -1,4 +1,4 @@
-import { MarketIndex, CryptoPrice, Portfolio, AiAnalysisResult, PortfolioHistoryPoint, AssetAllocation, User, AuthTokens, ChartData, PriceHistoryDto, AssetType, AiAnalysisRequest, AiAnalysisResponse, AiServiceStatus } from './types';
+import { MarketIndex, CryptoPrice, Portfolio, AiAnalysisResult, PortfolioHistoryPoint, AssetAllocation, User, AuthTokens, ChartData, PriceHistoryDto, AssetType, AiAnalysisRequest, AiAnalysisResponse, AiServiceStatus, BacktestRequest, BacktestResponse, BacktestValidationResponse, BacktestStatus, HistoricalPriceData, RebalancingRequest, RebalancingResponse, RebalancingSimulationResponse, StrategyInfoResponse } from './types';
 import { MOCK_MARKET_INDICES, MOCK_CRYPTO_PRICES, MOCK_PORTFOLIOS, MOCK_AI_ANALYSIS, MOCK_PORTFOLIO_HISTORY, MOCK_ASSET_ALLOCATION } from './mock-data';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -89,6 +89,7 @@ interface BackendCryptoPrice {
     koreanName: string;
     marketCode: string;
     price: number;
+    change: number;
     changePercent: number;
     volume: number;
     tradeValue: number;
@@ -101,8 +102,8 @@ function mapCryptoPrice(item: BackendCryptoPrice): CryptoPrice {
         symbol: item.symbol,
         name: item.koreanName || item.name,
         price: item.price,
-        change: 0, // Backend에서 제공하지 않음
-        changePercent: item.changePercent,
+        change: item.change || 0, // 전일 대비 가격 변동
+        changePercent: item.changePercent, // 전일 대비 변동률 (%)
         volume: item.volume,
         marketCap: item.tradeValue, // tradeValue를 marketCap으로 대체
     };
@@ -334,6 +335,36 @@ export const api = {
             const result: BackendPortfolio = await response.json();
             return mapPortfolio(result);
         },
+        // Holding 수정
+        updateHolding: async (portfolioId: number, holdingId: number, data: { quantity?: number; averagePrice?: number }): Promise<Portfolio> => {
+            const backendData = {
+                quantity: data.quantity,
+                averageCost: data.averagePrice,
+            };
+            const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/holdings/${holdingId}`, {
+                method: 'PUT',
+                body: JSON.stringify(backendData),
+            });
+            if (!response.ok) throw new Error('Failed to update holding');
+            const result: BackendPortfolio = await response.json();
+            return mapPortfolio(result);
+        },
+        // Holding 삭제
+        deleteHolding: async (portfolioId: number, holdingId: number): Promise<void> => {
+            const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/holdings/${holdingId}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete holding');
+        },
+        // 포트폴리오 재계산
+        recalculate: async (portfolioId: number): Promise<Portfolio> => {
+            const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/recalculate`, {
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to recalculate portfolio');
+            const result: BackendPortfolio = await response.json();
+            return mapPortfolio(result);
+        },
         // 아래는 아직 Backend에서 제공하지 않음 - Mock 유지
         getHistory: () => delay<PortfolioHistoryPoint[]>(MOCK_PORTFOLIO_HISTORY),
         getAllocation: () => delay<AssetAllocation[]>(MOCK_ASSET_ALLOCATION),
@@ -413,6 +444,89 @@ export const api = {
             } catch (error) {
                 console.error('Error fetching symbols:', error);
                 return [];
+            }
+        },
+    },
+    backtest: {
+        // 백테스트 실행
+        run: async (request: BacktestRequest): Promise<BacktestResponse> => {
+            const response = await fetchWithAuth('/api/v1/backtest/run', {
+                method: 'POST',
+                body: JSON.stringify(request),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Backtest failed: ${errorText}`);
+            }
+            return response.json();
+        },
+        // 백테스트 검증
+        validate: async (request: BacktestRequest): Promise<BacktestValidationResponse> => {
+            const response = await fetchWithAuth('/api/v1/backtest/validate', {
+                method: 'POST',
+                body: JSON.stringify(request),
+            });
+            if (!response.ok) throw new Error('Validation failed');
+            return response.json();
+        },
+        // 히스토리컬 데이터 조회
+        getHistorical: async (symbol: string, startDate: string, endDate: string): Promise<HistoricalPriceData | null> => {
+            try {
+                const response = await fetchWithAuth(`/api/v1/backtest/historical/${encodeURIComponent(symbol)}?startDate=${startDate}&endDate=${endDate}`);
+                if (response.status === 404) return null;
+                if (!response.ok) throw new Error('Failed to fetch historical data');
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching historical data:', error);
+                return null;
+            }
+        },
+        // 백테스트 서비스 상태
+        getStatus: async (): Promise<BacktestStatus | null> => {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/backtest/status`);
+                if (!response.ok) return null;
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching backtest status:', error);
+                return null;
+            }
+        },
+    },
+    rebalancing: {
+        // 리밸런싱 추천
+        getRecommendations: async (request: RebalancingRequest): Promise<RebalancingResponse> => {
+            const response = await fetchWithAuth('/api/v1/rebalancing/recommend', {
+                method: 'POST',
+                body: JSON.stringify(request),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Rebalancing recommendation failed: ${errorText}`);
+            }
+            return response.json();
+        },
+        // 리밸런싱 시뮬레이션
+        simulate: async (request: RebalancingRequest): Promise<RebalancingSimulationResponse> => {
+            const response = await fetchWithAuth('/api/v1/rebalancing/simulate', {
+                method: 'POST',
+                body: JSON.stringify(request),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Rebalancing simulation failed: ${errorText}`);
+            }
+            return response.json();
+        },
+        // 사용 가능한 전략 목록
+        getStrategies: async (): Promise<StrategyInfoResponse | null> => {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/rebalancing/strategies`);
+                if (!response.ok) return null;
+                return response.json();
+            } catch (error) {
+                console.error('Error fetching strategies:', error);
+                return null;
             }
         },
     },
