@@ -126,6 +126,7 @@ public class CacheConfig {
         cacheConfigurations.put("historicalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (AlphaVantage 미국 주식)
         cacheConfigurations.put("kisHistoricalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (KIS 한국 주식)
         cacheConfigurations.put("cryptoHistoricalData", defaultConfig.entryTtl(Duration.ofDays(7))); // 7일 (Upbit 암호화폐)
+        cacheConfigurations.put("newsSearch", defaultConfig.entryTtl(Duration.ofHours(1))); // 1시간 (RAG 뉴스 검색)
 
         RedisCacheManager cacheManager = RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
