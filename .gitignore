@@ -1,5 +1,92 @@
-# IDE
+# ====================
+# IDE & Editor
+# ====================
 .idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
 
-# Claude local settings
-.claude/settings.local.json
+# ====================
+# Local Development Settings
+# ====================
+.claude/
+.serena/
+.claude-orchestrator/
+
+# ====================
+# Secrets & Environment
+# ====================
+.env
+.env.*
+!.env.example
+**/application-secret.yml
+**/application-local.yml
+**/secrets/
+*.key
+*.pem
+credentials.json
+
+# ====================
+# Build Artifacts
+# ====================
+# Java/Gradle
+build/
+bin/
+out/
+target/
+*.class
+*.jar
+*.war
+
+# Node.js
+node_modules/
+.next/
+dist/
+.turbo/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+
+# ====================
+# Logs & Temp Files
+# ====================
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# ====================
+# OS Generated
+# ====================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ====================
+# Test & Coverage
+# ====================
+coverage/
+.nyc_output/
+*.lcov
+htmlcov/
+.coverage
+
+# ====================
+# Documentation (keep only essential)
+# ====================
+**/docs/
+!README.md
+!CHANGELOG.md
