@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # Spring Boot Actuator (same server as monitoring stack)
+  - job_name: 'spring-boot'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']  # Docker -> Host
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'sentinel-backend'
+
+  # Alternative: Use actual host IP if host.docker.internal doesn't work
+  # - job_name: 'spring-boot'
+  #   metrics_path: '/actuator/prometheus'
+  #   static_configs:
+  #     - targets: ['192.168.x.x:8080']
