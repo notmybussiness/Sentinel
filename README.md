@@ -21,7 +21,8 @@
 ## System Architecture
 
 ```
-![Uploading Sentinel_전체구조.png…]()
+<img width="1116" height="652" alt="image" src="https://github.com/user-attachments/assets/4a5275fa-15b3-4694-871a-499a281461cd" />
+
 
 ```
 
