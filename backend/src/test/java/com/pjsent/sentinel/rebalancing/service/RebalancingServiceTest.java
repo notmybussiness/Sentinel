@@ -128,7 +128,7 @@ class RebalancingServiceTest {
         // Given
         RebalancingRequest request = new RebalancingRequest();
         request.setPortfolioId(TEST_PORTFOLIO_ID);
-        request.setStrategy(RebalancingStrategy.RISK_PARITY);  // Not supported
+        request.setStrategy(RebalancingStrategy.DIVIDEND_FOCUSED);  // Not supported
 
         PortfolioDto mockPortfolio = createDummyPortfolio(
                 TEST_PORTFOLIO_ID,
