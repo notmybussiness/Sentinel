@@ -1,0 +1,149 @@
+# =====================================================
+# Backend CD - Deploy to Home Server
+# =====================================================
+# Triggers: Push to main on backend/** changes
+# Uses: Self-hosted runner on home server
+# =====================================================
+
+name: CD - Backend (Home Server)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'python-rag/**'
+      - '.github/workflows/cd-backend.yml'
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deploy target (blue/green/update)'
+        required: false
+        default: 'update'
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  # =====================================================
+  # Build Job (on GitHub-hosted runner)
+  # =====================================================
+  build:
+    name: Build JAR
+    runs-on: ubuntu-latest
+    outputs:
+      jar_path: ${{ steps.build.outputs.jar_path }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x backend/gradlew
+
+      - name: Build JAR
+        id: build
+        working-directory: backend
+        run: |
+          ./gradlew bootJar -x test --no-daemon
+          JAR_PATH=$(ls build/libs/*.jar | head -1)
+          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "Built: $JAR_PATH"
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-backend-jar
+          path: backend/build/libs/*.jar
+          retention-days: 1
+
+  # =====================================================
+  # Deploy Job (on Self-hosted runner)
+  # =====================================================
+  deploy:
+    name: Deploy to Home Server
+    needs: build
+    runs-on: [self-hosted, Linux, X64]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sentinel-backend-jar
+          path: ./backend/build/libs/
+
+      - name: Create .env file
+        run: |
+          cat > ./infra/docker/.env << EOF
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
+
+      - name: Deploy with Blue-Green
+        working-directory: ./infra/scripts
+        run: |
+          chmod +x blue-green-switch.sh
+          ./blue-green-switch.sh ${{ github.event.inputs.deploy_target || 'update' }}
+
+      - name: Verify Deployment
+        run: |
+          echo "Waiting for service to stabilize..."
+          sleep 10
+          
+          # Check health
+          if curl -sf http://localhost:8081/actuator/health || curl -sf http://localhost:8082/actuator/health; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed - no healthy instance"
+            exit 1
+          fi
+
+      - name: Generate Deployment Summary
+        run: |
+          echo "## 🚀 Backend Deployed to Home Server" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy Target:** ${{ github.event.inputs.deploy_target || 'update' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Health Status" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          curl -s http://localhost:8081/actuator/health || echo "Blue: DOWN"
+          curl -s http://localhost:8082/actuator/health || echo "Green: DOWN"
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # =====================================================
+  # Rollback Job (manual trigger only)
+  # =====================================================
+  rollback:
+    name: Rollback Deployment
+    if: failure()
+    needs: deploy
+    runs-on: [self-hosted, Linux, X64]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Execute Rollback
+        working-directory: ./infra/scripts
+        run: |
+          chmod +x blue-green-switch.sh
+          ./blue-green-switch.sh rollback
+
+      - name: Notify Rollback
+        run: |
+          echo "## ⚠️ Rollback Executed" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment failed, rolled back to previous version." >> $GITHUB_STEP_SUMMARY
