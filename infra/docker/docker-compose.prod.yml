@@ -1,0 +1,136 @@
+# =====================================================
+# Sentinel Production Docker Compose
+# =====================================================
+# WAS x2 (Blue-Green) + RAG Service
+# DB는 홈서버 (192.168.123.101)에서 별도 실행
+# =====================================================
+
+version: '3.8'
+
+services:
+  # =====================================================
+  # WAS Blue (Primary)
+  # =====================================================
+  was-blue:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: sentinel-was-blue
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod,secret
+      - SERVER_PORT=8080
+      # DB 연결 (홈서버)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.123.101:5432/sentinel
+      - SPRING_DATASOURCE_USERNAME=sentinel
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      # Redis 연결 (홈서버)
+      - SPRING_DATA_REDIS_HOST=192.168.123.101
+      - SPRING_DATA_REDIS_PORT=6379
+      # Kafka 연결 (홈서버)
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=192.168.123.101:9092
+      # RAG 서비스 연결
+      - RAG_SERVICE_URL=http://rag:8000
+      - RAG_SERVICE_ENABLED=true
+      # JVM 최적화
+      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - sentinel-network
+    labels:
+      - "sentinel.deployment=blue"
+
+  # =====================================================
+  # WAS Green (Standby for Blue-Green Deployment)
+  # =====================================================
+  was-green:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: sentinel-was-green
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod,secret
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.123.101:5432/sentinel
+      - SPRING_DATASOURCE_USERNAME=sentinel
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=192.168.123.101
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=192.168.123.101:9092
+      - RAG_SERVICE_URL=http://rag:8000
+      - RAG_SERVICE_ENABLED=true
+      - JAVA_OPTS=-Xmx1g -Xms512m -XX:+UseG1GC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - sentinel-network
+    labels:
+      - "sentinel.deployment=green"
+    profiles:
+      - blue-green  # 기본적으로 시작하지 않음, --profile blue-green으로 실행
+
+  # =====================================================
+  # Python RAG Service
+  # =====================================================
+  rag:
+    build:
+      context: ../../python-rag
+      dockerfile: Dockerfile
+    container_name: sentinel-rag
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - POSTGRES_HOST=192.168.123.101
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=sentinel
+      - POSTGRES_USER=sentinel
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=192.168.123.101
+      - REDIS_PORT=6379
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - sentinel-network
+
+  # =====================================================
+  # Nginx Load Balancer (Optional - for local LB)
+  # =====================================================
+  nginx:
+    image: nginx:alpine
+    container_name: sentinel-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - was-blue
+    restart: unless-stopped
+    networks:
+      - sentinel-network
+    profiles:
+      - with-lb  # --profile with-lb로 실행
+
+networks:
+  sentinel-network:
+    driver: bridge
