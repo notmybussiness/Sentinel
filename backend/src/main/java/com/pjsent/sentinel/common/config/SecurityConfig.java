@@ -1,7 +1,9 @@
 package com.pjsent.sentinel.common.config;
 
+import com.pjsent.sentinel.common.filter.RateLimitFilter;
 import com.pjsent.sentinel.user.service.JwtService;
 import com.pjsent.sentinel.user.service.UserDetailsServiceImpl;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +34,7 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
+    private final RateLimiterRegistry rateLimiterRegistry;
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
@@ -39,40 +42,45 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF 비활성화 (JWT 사용 시 불필요)
-            .csrf(AbstractHttpConfigurer::disable)
-            
-            // CORS 설정
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // 세션 비활성화 (JWT 사용)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // 요청 권한 설정
-            .authorizeHttpRequests(authz -> authz
-                // 메인페이지 및 정적 리소스 허용
-                .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                // 인증 엔드포인트는 모두 허용
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                // Swagger UI 허용 (개발용)
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                // Actuator 엔드포인트 허용 (모니터링용)
-                .requestMatchers("/actuator/**").permitAll()
-                // H2 Console 허용 (개발용)
-                .requestMatchers("/h2-console/**").permitAll()
-                // 개발용 토큰 생성 API 허용
-                .requestMatchers("/api/dev/**").permitAll()
-                // Market API는 누구나 접근 가능 (공개 시장 데이터)
-                .requestMatchers("/api/v1/market/**").permitAll()
-                // Portfolio API는 인증 필요 (개인 데이터)
-                .requestMatchers("/api/v1/portfolios/**").authenticated()
-                // 기타 모든 요청 허용 (개발용)
-                .anyRequest().permitAll()
-            )
-            
-            // JWT 필터 추가
-            .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+                // CSRF 비활성화 (JWT 사용 시 불필요)
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // CORS 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 세션 비활성화 (JWT 사용)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // 요청 권한 설정
+                .authorizeHttpRequests(authz -> authz
+                        // 메인페이지 및 정적 리소스 허용
+                        .requestMatchers("/", "/index.html", "/favicon.ico").permitAll()
+                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        // 인증 엔드포인트는 모두 허용
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        // RAG API 허용 (Rate Limit 적용됨)
+                        .requestMatchers("/api/v1/rag/**").permitAll()
+                        // Swagger UI 허용 (개발용)
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Actuator 엔드포인트 허용 (모니터링용)
+                        .requestMatchers("/actuator/**").permitAll()
+                        // H2 Console 허용 (개발용)
+                        .requestMatchers("/h2-console/**").permitAll()
+                        // 개발용 토큰 생성 API 허용
+                        .requestMatchers("/api/dev/**").permitAll()
+                        // Market API는 누구나 접근 가능 (공개 시장 데이터)
+                        .requestMatchers("/api/v1/market/**").permitAll()
+                        // Portfolio API는 인증 필요 (개인 데이터)
+                        .requestMatchers("/api/v1/portfolios/**").authenticated()
+                        // 기타 모든 요청 허용 (개발용)
+                        .anyRequest().permitAll())
+
+                // Rate Limit 필터 추가
+                .addFilterBefore(new RateLimitFilter(rateLimiterRegistry),
+                        UsernamePasswordAuthenticationFilter.class)
+                // JWT 필터 추가
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -86,22 +94,22 @@ public class SecurityConfig {
 
         // 허용할 Origin 설정 (application.yml의 cors.allowed-origins에서 읽어옴)
         configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
-        
+
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        
+
         // 허용할 헤더
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        
+
         // 인증 정보 포함 허용
         configuration.setAllowCredentials(true);
-        
+
         // Preflight 요청 캐시 시간
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
+
         return source;
     }
 }
