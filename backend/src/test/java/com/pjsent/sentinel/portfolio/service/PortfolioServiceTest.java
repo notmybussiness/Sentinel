@@ -126,7 +126,7 @@ class PortfolioServiceTest {
         @DisplayName("특정 포트폴리오 조회 성공")
         void should_ReturnPortfolio_When_GetPortfolioById() {
                 // Given
-                when(portfolioRepository.findByIdAndUserId(portfolioId, userId))
+                when(portfolioRepository.findByIdAndUserIdWithHoldings(portfolioId, userId))
                                 .thenReturn(Optional.of(portfolio));
 
                 // When
