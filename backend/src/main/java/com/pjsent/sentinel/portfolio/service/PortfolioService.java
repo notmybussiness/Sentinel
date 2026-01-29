@@ -8,6 +8,7 @@ import com.pjsent.sentinel.portfolio.dto.*;
 import com.pjsent.sentinel.portfolio.entity.Portfolio;
 import com.pjsent.sentinel.portfolio.entity.PortfolioHolding;
 import com.pjsent.sentinel.portfolio.entity.PortfolioHolding.AssetType;
+import com.pjsent.sentinel.portfolio.mapper.PortfolioMapper;
 import com.pjsent.sentinel.portfolio.repository.PortfolioHoldingRepository;
 import com.pjsent.sentinel.portfolio.repository.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
 /**
  * 포트폴리오 서비스
  * 포트폴리오 및 보유 종목 관리를 담당하는 비즈니스 로직 서비스
+ * 
+ * 리팩토링 (TDD Phase 3):
+ * - PortfolioMapper 컴포넌트로 매핑 로직 분리
  */
 @Service
 @Slf4j
@@ -35,6 +39,7 @@ public class PortfolioService {
     private final PortfolioHoldingRepository holdingRepository;
     private final MarketDataService marketDataService;
     private final CryptoDataService cryptoDataService;
+    private final PortfolioMapper portfolioMapper;
 
     /**
      * 사용자의 모든 포트폴리오 조회
@@ -45,7 +50,7 @@ public class PortfolioService {
         List<Portfolio> portfolios = portfolioRepository.findByUserIdOrderByCreatedAtDescWithHoldings(userId);
 
         return portfolios.stream()
-                .map(this::convertToDto)
+                .map(portfolioMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -70,7 +75,7 @@ public class PortfolioService {
                 .orElseThrow(() -> new ResourceNotFoundException("포트폴리오", portfolioId));
 
         // ✅ 순수 DB 조회만 수행 (외부 API 호출 없음)
-        return convertToDto(portfolio);
+        return portfolioMapper.toDto(portfolio);
     }
 
     /**
@@ -125,7 +130,7 @@ public class PortfolioService {
         Portfolio savedPortfolio = portfolioRepository.save(portfolio);
         log.info("포트폴리오 생성 완료. ID: {}, 이름: {}", savedPortfolio.getId(), savedPortfolio.getName());
 
-        return convertToDto(savedPortfolio);
+        return portfolioMapper.toDto(savedPortfolio);
     }
 
     /**
@@ -149,7 +154,7 @@ public class PortfolioService {
         Portfolio savedPortfolio = portfolioRepository.save(portfolio);
 
         log.info("포트폴리오 수정 완료. ID: {}, 이름: {}", savedPortfolio.getId(), savedPortfolio.getName());
-        return convertToDto(savedPortfolio);
+        return portfolioMapper.toDto(savedPortfolio);
     }
 
     /**
@@ -216,7 +221,7 @@ public class PortfolioService {
         portfolioRepository.save(portfolio);
 
         log.info("보유 종목 추가 완료. ID: {}, 심볼: {}", savedHolding.getId(), savedHolding.getSymbol());
-        return convertToHoldingDto(savedHolding);
+        return portfolioMapper.toHoldingDto(savedHolding);
     }
 
     /**
@@ -252,7 +257,7 @@ public class PortfolioService {
         portfolioRepository.save(portfolio);
 
         log.info("보유 종목 수정 완료. ID: {}, 심볼: {}", savedHolding.getId(), savedHolding.getSymbol());
-        return convertToHoldingDto(savedHolding);
+        return portfolioMapper.toHoldingDto(savedHolding);
     }
 
     /**
@@ -316,51 +321,6 @@ public class PortfolioService {
         log.info("포트폴리오 재계산 완료. ID: {}, 총 가치: {}",
                 savedPortfolio.getId(), savedPortfolio.getTotalValue());
 
-        return convertToDto(savedPortfolio);
-    }
-
-    /**
-     * Portfolio 엔티티를 DTO로 변환
-     */
-    private PortfolioDto convertToDto(Portfolio portfolio) {
-        List<PortfolioHoldingDto> holdingDtos = portfolio.getHoldings().stream()
-                .map(this::convertToHoldingDto)
-                .collect(Collectors.toList());
-
-        return PortfolioDto.builder()
-                .id(portfolio.getId())
-                .userId(portfolio.getUserId())
-                .name(portfolio.getName())
-                .description(portfolio.getDescription())
-                .totalValue(portfolio.getTotalValue())
-                .totalCost(portfolio.getTotalCost())
-                .totalGainLoss(portfolio.getTotalGainLoss())
-                .totalGainLossPercent(portfolio.getTotalGainLossPercent())
-                .createdAt(portfolio.getCreatedAt())
-                .updatedAt(portfolio.getUpdatedAt())
-                .holdings(holdingDtos)
-                .build();
-    }
-
-    /**
-     * PortfolioHolding 엔티티를 DTO로 변환
-     */
-    private PortfolioHoldingDto convertToHoldingDto(PortfolioHolding holding) {
-        return PortfolioHoldingDto.builder()
-                .id(holding.getId())
-                .portfolioId(holding.getPortfolio().getId())
-                .symbol(holding.getSymbol())
-                .quantity(holding.getQuantity())
-                .averageCost(holding.getAverageCost())
-                .currentPrice(holding.getCurrentPrice())
-                .marketValue(holding.getMarketValue())
-                .totalCost(holding.getTotalCost())
-                .gainLoss(holding.getGainLoss())
-                .gainLossPercent(holding.getGainLossPercent())
-                .assetType(holding.getAssetType().name())
-                .baseCurrency(holding.getBaseCurrency())
-                .createdAt(holding.getCreatedAt())
-                .updatedAt(holding.getUpdatedAt())
-                .build();
+        return portfolioMapper.toDto(savedPortfolio);
     }
 }
