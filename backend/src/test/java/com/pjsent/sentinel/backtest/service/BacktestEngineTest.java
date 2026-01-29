@@ -63,10 +63,10 @@ class BacktestEngineTest {
     void setUp() {
         // Create test portfolio with stock holdings
         testPortfolio = Portfolio.builder()
-            .userId(1L)
-            .name("Test Portfolio")
-            .description("Test Description")
-            .build();
+                .userId(1L)
+                .name("Test Portfolio")
+                .description("Test Description")
+                .build();
 
         // Add stock holdings
         List<PortfolioHolding> holdings = new ArrayList<>();
@@ -89,12 +89,12 @@ class BacktestEngineTest {
 
         // Create test request
         testRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
 
         // Create test historical data
         testHistoricalData = createTestHistoricalData();
@@ -109,11 +109,11 @@ class BacktestEngineTest {
     void should_ReturnBacktestResponse_When_ValidRequest() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -136,23 +136,41 @@ class BacktestEngineTest {
     void should_ThrowResourceNotFoundException_When_PortfolioNotFound() {
         // Given
         when(portfolioRepository.findById(999L))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
         BacktestRequest invalidRequest = BacktestRequest.builder()
-            .portfolioId(999L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(999L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         // When & Then
         assertThatThrownBy(() -> backtestEngine.runBacktest(invalidRequest))
-            .isInstanceOf(ResourceNotFoundException.class)
-            .hasMessageContaining("Portfolio not found");
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Portfolio not found");
 
         verify(portfolioRepository, times(1)).findById(999L);
         verify(historicalDataService, never()).getBatchHistoricalPrices(anyList(), any(), any());
+    }
+
+    @Test
+    @DisplayName("runBacktest: Negative initial capital throws IllegalArgumentException")
+    void should_ThrowIllegalArgumentException_When_NegativeInitialCapital() {
+        // Given
+        BacktestRequest negativeCapitalRequest = BacktestRequest.builder()
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(-1000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
+
+        // When & Then
+        assertThatThrownBy(() -> backtestEngine.runBacktest(negativeCapitalRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Initial capital must be positive");
     }
 
     @Test
@@ -160,10 +178,10 @@ class BacktestEngineTest {
     void should_ThrowIllegalArgumentException_When_NoHoldings() {
         // Given: Portfolio with empty holdings
         Portfolio emptyPortfolio = Portfolio.builder()
-            .userId(1L)
-            .name("Empty Portfolio")
-            .description("No holdings")
-            .build();
+                .userId(1L)
+                .name("Empty Portfolio")
+                .description("No holdings")
+                .build();
 
         try {
             var holdingsField = Portfolio.class.getDeclaredField("holdings");
@@ -178,20 +196,20 @@ class BacktestEngineTest {
         }
 
         when(portfolioRepository.findById(2L))
-            .thenReturn(Optional.of(emptyPortfolio));
+                .thenReturn(Optional.of(emptyPortfolio));
 
         BacktestRequest emptyRequest = BacktestRequest.builder()
-            .portfolioId(2L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(2L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         // When & Then
         assertThatThrownBy(() -> backtestEngine.runBacktest(emptyRequest))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("no holdings");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no holdings");
     }
 
     @Test
@@ -199,10 +217,10 @@ class BacktestEngineTest {
     void should_IncludeAllAssetTypes_When_MixedPortfolio() {
         // Given: Portfolio with mixed STOCK and CRYPTO holdings
         Portfolio mixedPortfolio = Portfolio.builder()
-            .userId(1L)
-            .name("Mixed Portfolio")
-            .description("Stocks and Crypto")
-            .build();
+                .userId(1L)
+                .name("Mixed Portfolio")
+                .description("Stocks and Crypto")
+                .build();
 
         List<PortfolioHolding> mixedHoldings = new ArrayList<>();
         mixedHoldings.add(createStockHolding(mixedPortfolio, "AAPL", 10.0, 150.0));
@@ -222,7 +240,7 @@ class BacktestEngineTest {
         }
 
         when(portfolioRepository.findById(3L))
-            .thenReturn(Optional.of(mixedPortfolio));
+                .thenReturn(Optional.of(mixedPortfolio));
 
         // Now includes all asset types (STOCK + CRYPTO)
         Map<String, List<HistoricalPriceData>> mixedData = new HashMap<>();
@@ -231,17 +249,17 @@ class BacktestEngineTest {
         mixedData.put("GOOGL", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 2800.0));
 
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(mixedData);
+                .thenReturn(mixedData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         BacktestRequest mixedRequest = BacktestRequest.builder()
-            .portfolioId(3L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(3L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(mixedRequest);
@@ -260,11 +278,11 @@ class BacktestEngineTest {
     void should_AllocateEqualWeight_When_InitializingPortfolio() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -285,11 +303,11 @@ class BacktestEngineTest {
         incompleteData.put("MSFT", new ArrayList<>()); // Empty price list
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(incompleteData);
+                .thenReturn(incompleteData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -304,19 +322,18 @@ class BacktestEngineTest {
     void should_CalculateCorrectQuantities_When_InitializingPortfolio() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
 
         // Then: Quantities should be positive
         assertThat(response.getHoldingsSummary()).allMatch(
-            holding -> holding.getFinalQuantity() > 0
-        );
+                holding -> holding.getFinalQuantity() > 0);
     }
 
     // ========================================
@@ -328,11 +345,11 @@ class BacktestEngineTest {
     void should_GenerateEquityCurve_When_Simulating() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -340,7 +357,7 @@ class BacktestEngineTest {
         // Then: Equity curve should have entries for each trading day
         assertThat(response.getEquityCurve()).isNotEmpty();
         assertThat(response.getEquityCurve().get(0).getDate())
-            .isEqualTo(LocalDate.of(2023, 1, 2)); // First Monday
+                .isEqualTo(LocalDate.of(2023, 1, 2)); // First Monday
     }
 
     @Test
@@ -348,11 +365,11 @@ class BacktestEngineTest {
     void should_SkipWeekends_When_Simulating() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -361,7 +378,7 @@ class BacktestEngineTest {
         assertThat(response.getEquityCurve()).noneMatch(point -> {
             var dayOfWeek = point.getDate().getDayOfWeek();
             return dayOfWeek == java.time.DayOfWeek.SATURDAY ||
-                   dayOfWeek == java.time.DayOfWeek.SUNDAY;
+                    dayOfWeek == java.time.DayOfWeek.SUNDAY;
         });
     }
 
@@ -370,19 +387,18 @@ class BacktestEngineTest {
     void should_CalculateReturns_When_Simulating() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
 
         // Then: All equity points should have daily and cumulative returns
         assertThat(response.getEquityCurve()).allMatch(
-            point -> point.getDailyReturn() != null && point.getCumulativeReturn() != null
-        );
+                point -> point.getDailyReturn() != null && point.getCumulativeReturn() != null);
     }
 
     @Test
@@ -395,11 +411,11 @@ class BacktestEngineTest {
         dataWithGaps.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 30, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(dataWithGaps);
+                .thenReturn(dataWithGaps);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -414,18 +430,18 @@ class BacktestEngineTest {
     void should_MatchFinalValue_When_SimulationCompletes() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
 
         // Then: Final value should match last equity point
         double lastEquityValue = response.getEquityCurve()
-            .get(response.getEquityCurve().size() - 1).getValue();
+                .get(response.getEquityCurve().size() - 1).getValue();
         assertThat(response.getFinalValue()).isCloseTo(lastEquityValue, within(0.01));
     }
 
@@ -438,19 +454,19 @@ class BacktestEngineTest {
     void should_NotRebalance_When_FrequencyIsNone() {
         // Given
         BacktestRequest noneRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 12, 31)) // 1 year
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31)) // 1 year
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(noneRequest);
@@ -464,12 +480,12 @@ class BacktestEngineTest {
     void should_RebalanceMonthly_When_FrequencyIsMonthly() {
         // Given
         BacktestRequest monthlyRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 6, 30)) // 6 months
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 6, 30)) // 6 months
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
 
         Map<String, List<HistoricalPriceData>> sixMonthData = new HashMap<>();
         sixMonthData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 180, 150.0));
@@ -477,16 +493,17 @@ class BacktestEngineTest {
         sixMonthData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 180, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(sixMonthData);
+                .thenReturn(sixMonthData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(monthlyRequest);
 
-        // Then: Backtest should complete successfully (rebalancing may or may not occur)
+        // Then: Backtest should complete successfully (rebalancing may or may not
+        // occur)
         assertThat(response).isNotNull();
         assertThat(response.getRebalanceEvents()).isNotNull();
     }
@@ -496,12 +513,12 @@ class BacktestEngineTest {
     void should_RebalanceQuarterly_When_FrequencyIsQuarterly() {
         // Given
         BacktestRequest quarterlyRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 12, 31)) // 1 year
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.QUARTERLY)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31)) // 1 year
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.QUARTERLY)
+                .build();
 
         Map<String, List<HistoricalPriceData>> oneYearData = new HashMap<>();
         oneYearData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 365, 150.0));
@@ -509,16 +526,17 @@ class BacktestEngineTest {
         oneYearData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 365, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(oneYearData);
+                .thenReturn(oneYearData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(quarterlyRequest);
 
-        // Then: Backtest should complete successfully (rebalancing may or may not occur)
+        // Then: Backtest should complete successfully (rebalancing may or may not
+        // occur)
         assertThat(response).isNotNull();
         assertThat(response.getRebalanceEvents()).isNotNull();
     }
@@ -528,12 +546,12 @@ class BacktestEngineTest {
     void should_RebalanceYearly_When_FrequencyIsYearly() {
         // Given
         BacktestRequest yearlyRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2021, 1, 1))
-            .endDate(LocalDate.of(2023, 12, 31)) // 3 years
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.YEARLY)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2021, 1, 1))
+                .endDate(LocalDate.of(2023, 12, 31)) // 3 years
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.YEARLY)
+                .build();
 
         Map<String, List<HistoricalPriceData>> threeYearData = new HashMap<>();
         threeYearData.put("AAPL", createPriceDataList(LocalDate.of(2021, 1, 1), 1095, 150.0));
@@ -541,11 +559,11 @@ class BacktestEngineTest {
         threeYearData.put("MSFT", createPriceDataList(LocalDate.of(2021, 1, 1), 1095, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(threeYearData);
+                .thenReturn(threeYearData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(yearlyRequest);
@@ -559,11 +577,11 @@ class BacktestEngineTest {
     void should_RebalanceToEqualWeight_When_Triggered() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -571,8 +589,8 @@ class BacktestEngineTest {
         // Then: Final holdings should be roughly equal weight
         if (!response.getRebalanceEvents().isEmpty()) {
             double totalValue = response.getHoldingsSummary().stream()
-                .mapToDouble(HoldingSummary::getFinalValue)
-                .sum();
+                    .mapToDouble(HoldingSummary::getFinalValue)
+                    .sum();
 
             response.getHoldingsSummary().forEach(holding -> {
                 double weight = (holding.getFinalValue() / totalValue) * 100.0;
@@ -587,11 +605,11 @@ class BacktestEngineTest {
     void should_GenerateTrades_When_Rebalancing() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -612,19 +630,19 @@ class BacktestEngineTest {
     void should_ReturnNull_When_NoTradesNeeded() {
         // Given: Short period with NONE rebalancing
         BacktestRequest shortRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 10))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 10))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(shortRequest);
@@ -642,12 +660,12 @@ class BacktestEngineTest {
     void should_ApplyDefaultTransactionCost_When_Rebalancing() {
         // Given: Monthly rebalancing request without explicit transaction cost
         BacktestRequest monthlyRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 3, 31)) // 3 months = at least 2 rebalancing events
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 3, 31)) // 3 months = at least 2 rebalancing events
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .build();
 
         Map<String, List<HistoricalPriceData>> threeMonthData = new HashMap<>();
         threeMonthData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 150.0));
@@ -655,11 +673,11 @@ class BacktestEngineTest {
         threeMonthData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(threeMonthData);
+                .thenReturn(threeMonthData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(monthlyRequest);
@@ -675,13 +693,13 @@ class BacktestEngineTest {
     void should_ApplyCustomTransactionCost_When_Specified() {
         // Given: Request with custom 0.5% transaction cost
         BacktestRequest customCostRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 3, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-            .transactionCostPercent(0.005) // 0.5%
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 3, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                .transactionCostPercent(0.005) // 0.5%
+                .build();
 
         Map<String, List<HistoricalPriceData>> threeMonthData = new HashMap<>();
         threeMonthData.put("AAPL", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 150.0));
@@ -689,11 +707,11 @@ class BacktestEngineTest {
         threeMonthData.put("MSFT", createPriceDataList(LocalDate.of(2023, 1, 1), 90, 300.0));
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(threeMonthData);
+                .thenReturn(threeMonthData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(customCostRequest);
@@ -707,19 +725,19 @@ class BacktestEngineTest {
     void should_HaveZeroTransactionCost_When_NoRebalancing() {
         // Given: Request with NONE rebalancing
         BacktestRequest noneRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 1))
-            .endDate(LocalDate.of(2023, 1, 31))
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 1))
+                .endDate(LocalDate.of(2023, 1, 31))
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(noneRequest);
@@ -738,19 +756,19 @@ class BacktestEngineTest {
     void should_CalculateTotalValue_When_MultipleHoldings() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
 
         // Then: Final value should be sum of all holdings
         double sumOfHoldings = response.getHoldingsSummary().stream()
-            .mapToDouble(HoldingSummary::getFinalValue)
-            .sum();
+                .mapToDouble(HoldingSummary::getFinalValue)
+                .sum();
         assertThat(response.getFinalValue()).isCloseTo(sumOfHoldings, within(0.01));
     }
 
@@ -768,11 +786,11 @@ class BacktestEngineTest {
     void should_ReturnClosePrice_When_DateExists() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -787,11 +805,11 @@ class BacktestEngineTest {
     void should_GenerateHoldingsSummary_When_SimulationEnds() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -800,8 +818,8 @@ class BacktestEngineTest {
         assertThat(response.getHoldingsSummary()).isNotNull();
         if (!response.getHoldingsSummary().isEmpty()) {
             double totalWeight = response.getHoldingsSummary().stream()
-                .mapToDouble(HoldingSummary::getFinalWeight)
-                .sum();
+                    .mapToDouble(HoldingSummary::getFinalWeight)
+                    .sum();
             assertThat(totalWeight).isCloseTo(100.0, within(0.1)); // Sum to 100%
         }
     }
@@ -815,19 +833,19 @@ class BacktestEngineTest {
     void should_HandleEmptyEquityCurve_When_NoTradingDays() {
         // Given: Start and end on same weekend (no trading days)
         BacktestRequest weekendRequest = BacktestRequest.builder()
-            .portfolioId(1L)
-            .startDate(LocalDate.of(2023, 1, 7)) // Saturday
-            .endDate(LocalDate.of(2023, 1, 8))   // Sunday
-            .initialCapital(10000.0)
-            .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
-            .build();
+                .portfolioId(1L)
+                .startDate(LocalDate.of(2023, 1, 7)) // Saturday
+                .endDate(LocalDate.of(2023, 1, 8)) // Sunday
+                .initialCapital(10000.0)
+                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.NONE)
+                .build();
 
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(weekendRequest);
@@ -851,11 +869,11 @@ class BacktestEngineTest {
     void should_ReturnTrue_When_DateIsWeekend() {
         // Given
         when(portfolioRepository.findById(1L))
-            .thenReturn(Optional.of(testPortfolio));
+                .thenReturn(Optional.of(testPortfolio));
         when(historicalDataFacade.getBatchHistoricalPrices(anyList(), any(), any()))
-            .thenReturn(testHistoricalData);
+                .thenReturn(testHistoricalData);
         when(performanceCalculator.calculatePerformance(anyList(), anyDouble(), any(), any()))
-            .thenReturn(createTestPerformanceMetrics());
+                .thenReturn(createTestPerformanceMetrics());
 
         // When
         BacktestResponse response = backtestEngine.runBacktest(testRequest);
@@ -864,7 +882,7 @@ class BacktestEngineTest {
         assertThat(response.getEquityCurve()).noneMatch(point -> {
             var dayOfWeek = point.getDate().getDayOfWeek();
             return dayOfWeek == java.time.DayOfWeek.SATURDAY ||
-                   dayOfWeek == java.time.DayOfWeek.SUNDAY;
+                    dayOfWeek == java.time.DayOfWeek.SUNDAY;
         });
     }
 
@@ -874,24 +892,24 @@ class BacktestEngineTest {
 
     private PortfolioHolding createStockHolding(Portfolio portfolio, String symbol, double quantity, double price) {
         return PortfolioHolding.builder()
-            .portfolio(portfolio)
-            .symbol(symbol)
-            .quantity(BigDecimal.valueOf(quantity))
-            .averageCost(BigDecimal.valueOf(price))
-            .assetType(PortfolioHolding.AssetType.STOCK)
-            .baseCurrency("USD")
-            .build();
+                .portfolio(portfolio)
+                .symbol(symbol)
+                .quantity(BigDecimal.valueOf(quantity))
+                .averageCost(BigDecimal.valueOf(price))
+                .assetType(PortfolioHolding.AssetType.STOCK)
+                .baseCurrency("USD")
+                .build();
     }
 
     private PortfolioHolding createCryptoHolding(Portfolio portfolio, String symbol, double quantity, double price) {
         return PortfolioHolding.builder()
-            .portfolio(portfolio)
-            .symbol(symbol)
-            .quantity(BigDecimal.valueOf(quantity))
-            .averageCost(BigDecimal.valueOf(price))
-            .assetType(PortfolioHolding.AssetType.CRYPTO)
-            .baseCurrency("USD")
-            .build();
+                .portfolio(portfolio)
+                .symbol(symbol)
+                .quantity(BigDecimal.valueOf(quantity))
+                .averageCost(BigDecimal.valueOf(price))
+                .assetType(PortfolioHolding.AssetType.CRYPTO)
+                .baseCurrency("USD")
+                .build();
     }
 
     private Map<String, List<HistoricalPriceData>> createTestHistoricalData() {
@@ -908,7 +926,7 @@ class BacktestEngineTest {
             LocalDate date = startDate.plusDays(i);
             // Skip weekends
             if (date.getDayOfWeek() == java.time.DayOfWeek.SATURDAY ||
-                date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+                    date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
                 continue;
             }
 
@@ -916,14 +934,14 @@ class BacktestEngineTest {
             double close = basePrice + dailyChange;
 
             prices.add(HistoricalPriceData.builder()
-                .date(date)
-                .open(close - 2.0)
-                .high(close + 3.0)
-                .low(close - 3.0)
-                .close(close)
-                .volume(1000000L)
-                .adjustedClose(close)
-                .build());
+                    .date(date)
+                    .open(close - 2.0)
+                    .high(close + 3.0)
+                    .low(close - 3.0)
+                    .close(close)
+                    .volume(1000000L)
+                    .adjustedClose(close)
+                    .build());
         }
         return prices;
     }
@@ -938,33 +956,33 @@ class BacktestEngineTest {
 
             LocalDate date = startDate.plusDays(i);
             if (date.getDayOfWeek() == java.time.DayOfWeek.SATURDAY ||
-                date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+                    date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
                 continue;
             }
 
             prices.add(HistoricalPriceData.builder()
-                .date(date)
-                .open(basePrice)
-                .high(basePrice + 5.0)
-                .low(basePrice - 5.0)
-                .close(basePrice)
-                .volume(1000000L)
-                .adjustedClose(basePrice)
-                .build());
+                    .date(date)
+                    .open(basePrice)
+                    .high(basePrice + 5.0)
+                    .low(basePrice - 5.0)
+                    .close(basePrice)
+                    .volume(1000000L)
+                    .adjustedClose(basePrice)
+                    .build());
         }
         return prices;
     }
 
     private PerformanceMetrics createTestPerformanceMetrics() {
         return PerformanceMetrics.builder()
-            .totalReturn(15.5)
-            .cagr(14.2)
-            .sharpeRatio(1.25)
-            .sortinoRatio(1.45)
-            .maxDrawdown(-8.5)
-            .volatility(12.3)
-            .winRate(65.0)
-            .build();
+                .totalReturn(15.5)
+                .cagr(14.2)
+                .sharpeRatio(1.25)
+                .sortinoRatio(1.45)
+                .maxDrawdown(-8.5)
+                .volatility(12.3)
+                .winRate(65.0)
+                .build();
     }
 
     // ========================================
@@ -980,11 +998,11 @@ class BacktestEngineTest {
         void should_ReturnValid_When_RequestIsValid() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
             when(cacheManager.getCache("historicalData"))
-                .thenReturn(historicalDataCache);
+                    .thenReturn(historicalDataCache);
             when(historicalDataCache.get(anyString()))
-                .thenReturn(() -> testHistoricalData.get("AAPL"));
+                    .thenReturn(() -> testHistoricalData.get("AAPL"));
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(testRequest);
@@ -1001,15 +1019,15 @@ class BacktestEngineTest {
         void should_ReturnError_When_PortfolioNotFound() {
             // Given
             when(portfolioRepository.findById(999L))
-                .thenReturn(Optional.empty());
+                    .thenReturn(Optional.empty());
 
             BacktestRequest invalidRequest = BacktestRequest.builder()
-                .portfolioId(999L)
-                .startDate(LocalDate.of(2023, 1, 1))
-                .endDate(LocalDate.of(2023, 12, 31))
-                .initialCapital(10000.0)
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(999L)
+                    .startDate(LocalDate.of(2023, 1, 1))
+                    .endDate(LocalDate.of(2023, 12, 31))
+                    .initialCapital(10000.0)
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
@@ -1024,15 +1042,15 @@ class BacktestEngineTest {
         void should_ReturnError_When_StartDateAfterEndDate() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
 
             BacktestRequest invalidRequest = BacktestRequest.builder()
-                .portfolioId(1L)
-                .startDate(LocalDate.of(2023, 12, 31))
-                .endDate(LocalDate.of(2023, 1, 1)) // End before start
-                .initialCapital(10000.0)
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(1L)
+                    .startDate(LocalDate.of(2023, 12, 31))
+                    .endDate(LocalDate.of(2023, 1, 1)) // End before start
+                    .initialCapital(10000.0)
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
@@ -1047,15 +1065,15 @@ class BacktestEngineTest {
         void should_ReturnError_When_EndDateInFuture() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
 
             BacktestRequest invalidRequest = BacktestRequest.builder()
-                .portfolioId(1L)
-                .startDate(LocalDate.of(2023, 1, 1))
-                .endDate(LocalDate.now().plusYears(1)) // Future date
-                .initialCapital(10000.0)
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(1L)
+                    .startDate(LocalDate.of(2023, 1, 1))
+                    .endDate(LocalDate.now().plusYears(1)) // Future date
+                    .initialCapital(10000.0)
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
@@ -1070,15 +1088,15 @@ class BacktestEngineTest {
         void should_ReturnError_When_PeriodExceedsTenYears() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
 
             BacktestRequest invalidRequest = BacktestRequest.builder()
-                .portfolioId(1L)
-                .startDate(LocalDate.of(2010, 1, 1))
-                .endDate(LocalDate.of(2023, 12, 31)) // > 10 years
-                .initialCapital(10000.0)
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(1L)
+                    .startDate(LocalDate.of(2010, 1, 1))
+                    .endDate(LocalDate.of(2023, 12, 31)) // > 10 years
+                    .initialCapital(10000.0)
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
@@ -1093,15 +1111,15 @@ class BacktestEngineTest {
         void should_ReturnError_When_InitialCapitalNegative() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
 
             BacktestRequest invalidRequest = BacktestRequest.builder()
-                .portfolioId(1L)
-                .startDate(LocalDate.of(2023, 1, 1))
-                .endDate(LocalDate.of(2023, 12, 31))
-                .initialCapital(-1000.0) // Negative
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(1L)
+                    .startDate(LocalDate.of(2023, 1, 1))
+                    .endDate(LocalDate.of(2023, 12, 31))
+                    .initialCapital(-1000.0) // Negative
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(invalidRequest);
@@ -1116,10 +1134,10 @@ class BacktestEngineTest {
         void should_ReturnValid_When_MixedPortfolioWithCrypto() throws Exception {
             // Given: Portfolio with mixed holdings (Stock + Crypto)
             Portfolio mixedPortfolio = Portfolio.builder()
-                .userId(1L)
-                .name("Mixed Portfolio")
-                .description("Test Description")
-                .build();
+                    .userId(1L)
+                    .name("Mixed Portfolio")
+                    .description("Test Description")
+                    .build();
 
             List<PortfolioHolding> mixedHoldings = new ArrayList<>();
             mixedHoldings.add(createStockHolding(mixedPortfolio, "AAPL", 10.0, 150.0));
@@ -1134,21 +1152,21 @@ class BacktestEngineTest {
             idField.set(mixedPortfolio, 2L);
 
             when(portfolioRepository.findById(2L))
-                .thenReturn(Optional.of(mixedPortfolio));
+                    .thenReturn(Optional.of(mixedPortfolio));
             when(cacheManager.getCache("historicalData"))
-                .thenReturn(historicalDataCache);
+                    .thenReturn(historicalDataCache);
             when(cacheManager.getCache("cryptoHistoricalData"))
-                .thenReturn(historicalDataCache);
+                    .thenReturn(historicalDataCache);
             when(historicalDataCache.get(anyString()))
-                .thenReturn(null);
+                    .thenReturn(null);
 
             BacktestRequest mixedRequest = BacktestRequest.builder()
-                .portfolioId(2L)
-                .startDate(LocalDate.of(2023, 1, 1))
-                .endDate(LocalDate.of(2023, 12, 31))
-                .initialCapital(10000.0)
-                .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
-                .build();
+                    .portfolioId(2L)
+                    .startDate(LocalDate.of(2023, 1, 1))
+                    .endDate(LocalDate.of(2023, 12, 31))
+                    .initialCapital(10000.0)
+                    .rebalanceFrequency(BacktestRequest.RebalanceFrequency.MONTHLY)
+                    .build();
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(mixedRequest);
@@ -1164,11 +1182,11 @@ class BacktestEngineTest {
         void should_ReturnWarning_When_DataNotCached() {
             // Given
             when(portfolioRepository.findById(1L))
-                .thenReturn(Optional.of(testPortfolio));
+                    .thenReturn(Optional.of(testPortfolio));
             when(cacheManager.getCache("historicalData"))
-                .thenReturn(historicalDataCache);
+                    .thenReturn(historicalDataCache);
             when(historicalDataCache.get(anyString()))
-                .thenReturn(null); // Not cached
+                    .thenReturn(null); // Not cached
 
             // When
             BacktestValidationResponse response = backtestEngine.validateBacktestRequest(testRequest);

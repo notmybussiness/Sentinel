@@ -34,13 +34,12 @@ class PerformanceCalculatorTest {
     void should_CalculateTotalReturn_When_ValidInputs() {
         // Given
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 12, 31), 11000.0, 1.0, 10.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 12, 31), 11000.0, 1.0, 10.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
 
         // Then
         assertThat(result.getTotalReturn()).isCloseTo(10.0, within(0.01));
@@ -53,13 +52,12 @@ class PerformanceCalculatorTest {
         LocalDate startDate = LocalDate.of(2023, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 1, 1); // Exactly 1 year (365 days)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(startDate, 10000.0, 0.0, 0.0),
-            createEquityPoint(endDate, 11000.0, 1.0, 10.0)
-        );
+                createEquityPoint(startDate, 10000.0, 0.0, 0.0),
+                createEquityPoint(endDate, 11000.0, 1.0, 10.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, startDate, endDate);
+                equityCurve, 10000.0, startDate, endDate);
 
         // Then: CAGR = ((11000 / 10000)^(1/1) - 1) * 100 = 10%
         assertThat(result.getCagr()).isCloseTo(10.0, within(0.1));
@@ -73,7 +71,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
 
         // Then: Sharpe Ratio should be positive for positive returns
         assertThat(result.getSharpeRatio()).isNotNaN();
@@ -87,7 +85,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10));
 
         // Then: Sortino Ratio should be calculated (not NaN)
         assertThat(result.getSortinoRatio()).isNotNaN();
@@ -98,16 +96,15 @@ class PerformanceCalculatorTest {
     void should_CalculateMaxDrawdown_When_MultipleDrawdowns() {
         // Given: Equity curve with peak at 11000, trough at 9500
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 11000.0, 10.0, 10.0),  // Peak
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10500.0, -4.55, 5.0),
-            createEquityPoint(LocalDate.of(2023, 1, 4), 9500.0, -9.52, -5.0),  // Trough
-            createEquityPoint(LocalDate.of(2023, 1, 5), 10000.0, 5.26, 0.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 11000.0, 10.0, 10.0), // Peak
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10500.0, -4.55, 5.0),
+                createEquityPoint(LocalDate.of(2023, 1, 4), 9500.0, -9.52, -5.0), // Trough
+                createEquityPoint(LocalDate.of(2023, 1, 5), 10000.0, 5.26, 0.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 5));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 5));
 
         // Then: Max Drawdown = (9500 - 11000) / 11000 * 100 = -13.64%
         assertThat(result.getMaxDrawdown()).isCloseTo(-13.64, within(0.1));
@@ -121,7 +118,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
 
         // Then: Volatility should be positive and annualized
         assertThat(result.getVolatility()).isPositive();
@@ -132,21 +129,21 @@ class PerformanceCalculatorTest {
     void should_CalculateWinRate_When_MixedReturns() {
         // Given: 10 days with 6 positive returns (excluding day 0 which has 0.0 return)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0),  // Day 0 (filtered out)
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),   // + (1)
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10050.0, -0.5, 0.5),  // - (2)
-            createEquityPoint(LocalDate.of(2023, 1, 4), 10150.0, 1.0, 1.5),   // + (3)
-            createEquityPoint(LocalDate.of(2023, 1, 5), 10100.0, -0.5, 1.0),  // - (4)
-            createEquityPoint(LocalDate.of(2023, 1, 6), 10200.0, 1.0, 2.0),   // + (5)
-            createEquityPoint(LocalDate.of(2023, 1, 7), 10250.0, 0.5, 2.5),   // + (6)
-            createEquityPoint(LocalDate.of(2023, 1, 8), 10200.0, -0.5, 2.0),  // - (7)
-            createEquityPoint(LocalDate.of(2023, 1, 9), 10300.0, 1.0, 3.0),   // + (8)
-            createEquityPoint(LocalDate.of(2023, 1, 10), 10350.0, 0.5, 3.5)   // + (9)
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0), // Day 0 (filtered out)
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0), // + (1)
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10050.0, -0.5, 0.5), // - (2)
+                createEquityPoint(LocalDate.of(2023, 1, 4), 10150.0, 1.0, 1.5), // + (3)
+                createEquityPoint(LocalDate.of(2023, 1, 5), 10100.0, -0.5, 1.0), // - (4)
+                createEquityPoint(LocalDate.of(2023, 1, 6), 10200.0, 1.0, 2.0), // + (5)
+                createEquityPoint(LocalDate.of(2023, 1, 7), 10250.0, 0.5, 2.5), // + (6)
+                createEquityPoint(LocalDate.of(2023, 1, 8), 10200.0, -0.5, 2.0), // - (7)
+                createEquityPoint(LocalDate.of(2023, 1, 9), 10300.0, 1.0, 3.0), // + (8)
+                createEquityPoint(LocalDate.of(2023, 1, 10), 10350.0, 0.5, 3.5) // + (9)
         );
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10));
 
         // Then: 6 positive / 9 total returns (null filtered out) = 66.67%
         assertThat(result.getWinRate()).isCloseTo(66.67, within(1.0));
@@ -157,15 +154,14 @@ class PerformanceCalculatorTest {
     void should_CalculateStandardDeviation_When_ValidValues() {
         // Given: Equity curve with known variance
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0),  // Filtered
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10010.0, 0.1, 0.1),
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10020.0, 0.1, 0.2),
-            createEquityPoint(LocalDate.of(2023, 1, 4), 10030.0, 0.1, 0.3)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0), // Filtered
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10010.0, 0.1, 0.1),
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10020.0, 0.1, 0.2),
+                createEquityPoint(LocalDate.of(2023, 1, 4), 10030.0, 0.1, 0.3));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
 
         // Then: Volatility should be very small (consistent returns)
         // With only 3 identical returns of 0.1%, std dev ≈ 0, volatility ≈ 0
@@ -182,7 +178,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, startDate, endDate);
+                equityCurve, 10000.0, startDate, endDate);
 
         // Then: All metrics should be calculated
         assertThat(result.getTotalReturn()).isNotZero();
@@ -199,6 +195,19 @@ class PerformanceCalculatorTest {
     // ========================================
 
     @Test
+    @DisplayName("Null equity curve throws IllegalArgumentException")
+    void should_ThrowIllegalArgumentException_When_NullEquityCurve() {
+        // Given
+        List<EquityPoint> nullEquityCurve = null;
+
+        // When & Then
+        assertThatThrownBy(() -> calculator.calculatePerformance(
+                nullEquityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Equity curve cannot be null");
+    }
+
+    @Test
     @DisplayName("Empty equity curve returns zero metrics")
     void should_ReturnZeroMetrics_When_EmptyEquityCurve() {
         // Given
@@ -206,7 +215,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            emptyEquityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
+                emptyEquityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
 
         // Then
         assertThat(result.getTotalReturn()).isZero();
@@ -223,12 +232,11 @@ class PerformanceCalculatorTest {
     void should_HandleSingleDataPoint_When_CalculatingMetrics() {
         // Given: Only one equity point (no daily returns)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, null, 0.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 1));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 1));
 
         // Then: Metrics should handle single point gracefully
         assertThat(result.getTotalReturn()).isZero();
@@ -242,15 +250,14 @@ class PerformanceCalculatorTest {
     void should_ReturnMaxSortinoRatio_When_NoDownsideRisk() {
         // Given: Only positive returns (no downside deviation)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0),
-            createEquityPoint(LocalDate.of(2023, 1, 4), 10300.0, 0.98, 3.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0),
+                createEquityPoint(LocalDate.of(2023, 1, 4), 10300.0, 0.98, 3.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
 
         // Then: Sortino Ratio should be MAX_VALUE (no downside risk)
         assertThat(result.getSortinoRatio()).isEqualTo(Double.MAX_VALUE);
@@ -261,14 +268,13 @@ class PerformanceCalculatorTest {
     void should_ReturnZeroSharpeRatio_When_ZeroVolatility() {
         // Given: Constant value (zero volatility)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10000.0, 0.0, 0.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10000.0, 0.0, 0.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 3));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 3));
 
         // Then: Sharpe Ratio should be zero (division by zero protection)
         assertThat(result.getSharpeRatio()).isZero();
@@ -280,12 +286,11 @@ class PerformanceCalculatorTest {
         // Given: Same start and end date (0 years)
         LocalDate sameDate = LocalDate.of(2023, 1, 1);
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(sameDate, 10000.0, 0.0, 0.0)
-        );
+                createEquityPoint(sameDate, 10000.0, 0.0, 0.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, sameDate, sameDate);
+                equityCurve, 10000.0, sameDate, sameDate);
 
         // Then: CAGR should be zero (avoid division by zero)
         assertThat(result.getCagr()).isZero();
@@ -296,14 +301,13 @@ class PerformanceCalculatorTest {
     void should_FilterNaNReturns_When_CalculatingMetrics() {
         // Given: Equity curve with NaN returns
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, Double.NaN, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, Double.NaN, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 3));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 3));
 
         // Then: Should filter NaN and calculate with valid returns only
         assertThat(result.getWinRate()).isCloseTo(100.0, within(1.0)); // 2 positive returns
@@ -314,15 +318,14 @@ class PerformanceCalculatorTest {
     void should_ReturnZeroDrawdown_When_OnlyGains() {
         // Given: Only upward equity curve (no drawdown)
         List<EquityPoint> equityCurve = List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0),
-            createEquityPoint(LocalDate.of(2023, 1, 4), 10300.0, 0.98, 3.0)
-        );
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10200.0, 0.99, 2.0),
+                createEquityPoint(LocalDate.of(2023, 1, 4), 10300.0, 0.98, 3.0));
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 4));
 
         // Then: Max drawdown should be zero
         assertThat(result.getMaxDrawdown()).isZero();
@@ -343,7 +346,7 @@ class PerformanceCalculatorTest {
         // When
         long startTime = System.currentTimeMillis();
         PerformanceMetrics result = calculator.calculatePerformance(
-            largeEquityCurve, 10000.0, startDate, endDate);
+                largeEquityCurve, 10000.0, startDate, endDate);
         long duration = System.currentTimeMillis() - startTime;
 
         // Then: Should complete in < 100ms
@@ -359,7 +362,7 @@ class PerformanceCalculatorTest {
 
         // When
         PerformanceMetrics result = calculator.calculatePerformance(
-            equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
+                equityCurve, 10000.0, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 30));
 
         // Then: Verify metrics are calculated (constants used internally)
         // This test verifies the calculator runs with expected constants
@@ -373,11 +376,11 @@ class PerformanceCalculatorTest {
 
     private EquityPoint createEquityPoint(LocalDate date, Double value, Double dailyReturn, Double cumulativeReturn) {
         return EquityPoint.builder()
-            .date(date)
-            .value(value)
-            .dailyReturn(dailyReturn)
-            .cumulativeReturn(cumulativeReturn)
-            .build();
+                .date(date)
+                .value(value)
+                .dailyReturn(dailyReturn)
+                .cumulativeReturn(cumulativeReturn)
+                .build();
     }
 
     private List<EquityPoint> createThirtyDayEquityCurve() {
@@ -398,16 +401,16 @@ class PerformanceCalculatorTest {
 
     private List<EquityPoint> createMixedReturnsEquityCurve() {
         return List.of(
-            createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
-            createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0),   // Positive
-            createEquityPoint(LocalDate.of(2023, 1, 3), 10050.0, -0.5, 0.5),  // Negative
-            createEquityPoint(LocalDate.of(2023, 1, 4), 10150.0, 1.0, 1.5),   // Positive
-            createEquityPoint(LocalDate.of(2023, 1, 5), 10100.0, -0.5, 1.0),  // Negative
-            createEquityPoint(LocalDate.of(2023, 1, 6), 10200.0, 1.0, 2.0),   // Positive
-            createEquityPoint(LocalDate.of(2023, 1, 7), 10150.0, -0.5, 1.5),  // Negative
-            createEquityPoint(LocalDate.of(2023, 1, 8), 10250.0, 1.0, 2.5),   // Positive
-            createEquityPoint(LocalDate.of(2023, 1, 9), 10200.0, -0.5, 2.0),  // Negative
-            createEquityPoint(LocalDate.of(2023, 1, 10), 10300.0, 1.0, 3.0)   // Positive
+                createEquityPoint(LocalDate.of(2023, 1, 1), 10000.0, 0.0, 0.0),
+                createEquityPoint(LocalDate.of(2023, 1, 2), 10100.0, 1.0, 1.0), // Positive
+                createEquityPoint(LocalDate.of(2023, 1, 3), 10050.0, -0.5, 0.5), // Negative
+                createEquityPoint(LocalDate.of(2023, 1, 4), 10150.0, 1.0, 1.5), // Positive
+                createEquityPoint(LocalDate.of(2023, 1, 5), 10100.0, -0.5, 1.0), // Negative
+                createEquityPoint(LocalDate.of(2023, 1, 6), 10200.0, 1.0, 2.0), // Positive
+                createEquityPoint(LocalDate.of(2023, 1, 7), 10150.0, -0.5, 1.5), // Negative
+                createEquityPoint(LocalDate.of(2023, 1, 8), 10250.0, 1.0, 2.5), // Positive
+                createEquityPoint(LocalDate.of(2023, 1, 9), 10200.0, -0.5, 2.0), // Negative
+                createEquityPoint(LocalDate.of(2023, 1, 10), 10300.0, 1.0, 3.0) // Positive
         );
     }
 

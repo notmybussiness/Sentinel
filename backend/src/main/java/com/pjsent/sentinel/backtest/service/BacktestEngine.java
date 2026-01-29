@@ -47,6 +47,10 @@ public class BacktestEngine {
         log.info("Running backtest for portfolio {}: {} to {}",
                 request.getPortfolioId(), request.getStartDate(), request.getEndDate());
 
+        if (request.getInitialCapital() == null || request.getInitialCapital() <= 0) {
+            throw new IllegalArgumentException("Initial capital must be positive");
+        }
+
         // 1. Load portfolio
         Portfolio portfolio = portfolioRepository.findById(request.getPortfolioId())
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found"));
@@ -79,7 +83,8 @@ public class BacktestEngine {
 
         // 4. Run simulation
         double transactionCostPercent = request.getTransactionCostPercent() != null
-                ? request.getTransactionCostPercent() : 0.001; // Default 0.1%
+                ? request.getTransactionCostPercent()
+                : 0.001; // Default 0.1%
         SimulationResult simulation = runSimulation(
                 allHoldings,
                 historicalData,
@@ -88,16 +93,14 @@ public class BacktestEngine {
                 request.getEndDate(),
                 request.getRebalanceFrequency(),
                 hasCryptoOnly,
-                transactionCostPercent
-        );
+                transactionCostPercent);
 
         // 5. Calculate performance metrics
         PerformanceMetrics performance = performanceCalculator.calculatePerformance(
                 simulation.getEquityCurve(),
                 request.getInitialCapital(),
                 request.getStartDate(),
-                request.getEndDate()
-        );
+                request.getEndDate());
 
         // 6. Build response
         double costImpact = (simulation.getTotalTransactionCosts() / request.getInitialCapital()) * 100.0;
@@ -209,13 +212,15 @@ public class BacktestEngine {
                 boolean isCached = false;
 
                 if (holding.getAssetType() == PortfolioHolding.AssetType.STOCK) {
-                    String cacheKey = symbol + "_" + request.getStartDate().toString() + "_" + request.getEndDate().toString();
+                    String cacheKey = symbol + "_" + request.getStartDate().toString() + "_"
+                            + request.getEndDate().toString();
                     if (stockCache != null) {
                         Cache.ValueWrapper cached = stockCache.get(cacheKey);
                         isCached = (cached != null);
                     }
                 } else if (holding.getAssetType() == PortfolioHolding.AssetType.CRYPTO) {
-                    String cacheKey = symbol + "_" + holding.getBaseCurrency() + "_" + request.getStartDate().toString() + "_" + request.getEndDate().toString();
+                    String cacheKey = symbol + "_" + holding.getBaseCurrency() + "_" + request.getStartDate().toString()
+                            + "_" + request.getEndDate().toString();
                     if (cryptoCache != null) {
                         Cache.ValueWrapper cached = cryptoCache.get(cacheKey);
                         isCached = (cached != null);
@@ -267,13 +272,13 @@ public class BacktestEngine {
     /**
      * 백테스팅 시뮬레이션 실행
      *
-     * @param holdings 포트폴리오 보유 자산
-     * @param historicalData 과거 가격 데이터
-     * @param initialCapital 초기 자본
-     * @param startDate 시작일
-     * @param endDate 종료일
-     * @param rebalanceFrequency 리밸런싱 빈도
-     * @param hasCryptoOnly Crypto만 있는 포트폴리오 여부 (주말 거래 허용)
+     * @param holdings               포트폴리오 보유 자산
+     * @param historicalData         과거 가격 데이터
+     * @param initialCapital         초기 자본
+     * @param startDate              시작일
+     * @param endDate                종료일
+     * @param rebalanceFrequency     리밸런싱 빈도
+     * @param hasCryptoOnly          Crypto만 있는 포트폴리오 여부 (주말 거래 허용)
      * @param transactionCostPercent 거래 비용 비율 (0.001 = 0.1%)
      */
     private SimulationResult runSimulation(
@@ -314,13 +319,15 @@ public class BacktestEngine {
                 if (event != null) {
                     rebalanceEvents.add(event);
                     totalTransactionCosts += event.getTotalTransactionCost() != null
-                            ? event.getTotalTransactionCost() : 0.0;
+                            ? event.getTotalTransactionCost()
+                            : 0.0;
                 }
 
                 nextRebalanceDate = calculateNextRebalanceDate(currentDate, rebalanceFrequency);
             }
 
-            // Calculate portfolio value for the day (includes cash which is reduced by transaction costs)
+            // Calculate portfolio value for the day (includes cash which is reduced by
+            // transaction costs)
             double portfolioValue = calculatePortfolioValue(state, historicalData, currentDate);
 
             // Calculate daily return
@@ -404,9 +411,9 @@ public class BacktestEngine {
     /**
      * 리밸런싱 실행
      *
-     * @param state 현재 포트폴리오 상태
-     * @param historicalData 과거 가격 데이터
-     * @param date 리밸런싱 날짜
+     * @param state                  현재 포트폴리오 상태
+     * @param historicalData         과거 가격 데이터
+     * @param date                   리밸런싱 날짜
      * @param transactionCostPercent 거래 비용 비율 (0.001 = 0.1%)
      */
     private RebalanceEvent executeRebalancing(

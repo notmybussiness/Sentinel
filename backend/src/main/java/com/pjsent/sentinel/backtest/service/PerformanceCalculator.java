@@ -22,10 +22,10 @@ public class PerformanceCalculator {
     /**
      * 모든 성과 지표를 계산합니다.
      *
-     * @param equityCurve 포트폴리오 가치 추이
+     * @param equityCurve    포트폴리오 가치 추이
      * @param initialCapital 초기 투자 금액
-     * @param startDate 시작일
-     * @param endDate 종료일
+     * @param startDate      시작일
+     * @param endDate        종료일
      * @return 성과 지표
      */
     public PerformanceMetrics calculatePerformance(
@@ -33,6 +33,10 @@ public class PerformanceCalculator {
             double initialCapital,
             LocalDate startDate,
             LocalDate endDate) {
+
+        if (equityCurve == null) {
+            throw new IllegalArgumentException("Equity curve cannot be null");
+        }
 
         if (equityCurve.isEmpty()) {
             log.warn("Empty equity curve, returning zero metrics");
