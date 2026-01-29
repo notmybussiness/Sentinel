@@ -210,8 +210,10 @@ class GeminiServiceTest {
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+
+        // Use doReturn to avoid Generic Type Capture issues
+        doReturn(requestHeadersSpec).when(requestBodySpec).bodyValue(any());
+        doReturn(responseSpec).when(requestHeadersSpec).retrieve();
     }
 
     private GeminiResponse createMockGeminiResponse(String text) {
