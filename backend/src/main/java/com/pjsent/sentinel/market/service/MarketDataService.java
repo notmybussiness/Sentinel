@@ -1,5 +1,6 @@
 package com.pjsent.sentinel.market.service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -17,7 +18,7 @@ import com.pjsent.sentinel.market.producer.MarketPriceProducer;
 import com.pjsent.sentinel.common.event.PriceUpdateEvent;
 import com.pjsent.sentinel.portfolio.entity.PortfolioHolding.AssetType;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,11 +28,27 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class MarketDataService {
 
     private final MarketDataProviderFactory providerFactory;
     private final MarketPriceProducer marketPriceProducer;
+    private final Clock clock;
+
+    // Constructor for production.
+    @Autowired
+    public MarketDataService(MarketDataProviderFactory providerFactory,
+            MarketPriceProducer marketPriceProducer) {
+        this(providerFactory, marketPriceProducer, Clock.systemDefaultZone());
+    }
+
+    // Constructor for tests.
+    public MarketDataService(MarketDataProviderFactory providerFactory,
+            MarketPriceProducer marketPriceProducer,
+            Clock clock) {
+        this.providerFactory = providerFactory;
+        this.marketPriceProducer = marketPriceProducer;
+        this.clock = clock;
+    }
 
     /**
      * 주식 가격 데이터를 가져옵니다.
@@ -69,19 +86,6 @@ public class MarketDataService {
                 if (result != null && result.getPrice() > 0) {
                     log.info("주식 가격 데이터 조회 성공. 심볼: {}, 가격: {}, 프로바이더: {}",
                             symbol, result.getPrice(), provider.getProviderName());
-
-                    // EDA: Publish Price Update Event
-                    try {
-                        marketPriceProducer.publishPriceUpdate(new PriceUpdateEvent(
-                                symbol,
-                                java.math.BigDecimal.valueOf(result.getPrice()),
-                                AssetType.STOCK,
-                                LocalDateTime.now()));
-                    } catch (Exception e) {
-                        log.error("Failed to publish price update event for symbol: {}", symbol, e);
-                        // Don't fail the request if event publishing fails
-                    }
-
                     return result;
                 } else {
                     log.warn("프로바이더 {}에서 유효하지 않은 데이터 반환. 심볼: {}",
@@ -97,6 +101,26 @@ public class MarketDataService {
 
         log.error("모든 프로바이더 실패. 심볼: {}", symbol);
         throw new RuntimeException("모든 시장 데이터 프로바이더가 실패했습니다. 심볼: " + symbol, lastException);
+    }
+
+    /**
+     * Explicit write path: fetch latest stock price and publish event.
+     */
+    public StockPriceDto refreshStockPriceAndPublish(String symbol) {
+        StockPriceDto result = getStockPrice(symbol);
+
+        try {
+            marketPriceProducer.publishPriceUpdate(new PriceUpdateEvent(
+                    symbol,
+                    java.math.BigDecimal.valueOf(result.getPrice()),
+                    AssetType.STOCK,
+                    LocalDateTime.now(clock)));
+        } catch (Exception e) {
+            // Keep read result successful even when event publishing fails.
+            log.error("Failed to publish price update event for symbol: {}", symbol, e);
+        }
+
+        return result;
     }
 
     /**
@@ -185,7 +209,7 @@ public class MarketDataService {
                     .value(price.getPrice()) // 현재 지수 값
                     .change(price.getChange()) // 전일 대비 변동
                     .changePercent(price.getChangePercent()) // 변동률(%)
-                    .timestamp(LocalDateTime.now()) // 조회 시각
+                    .timestamp(LocalDateTime.now(clock)) // 조회 시각
                     .build();
         } catch (Exception e) {
             // 개별 지수 조회 실패는 warning으로 처리 (전체 실패 아님)
@@ -239,6 +263,10 @@ public class MarketDataService {
         List<MarketDataProvider> providers = providerFactory.getAvailableProviders();
 
         for (MarketDataProvider provider : providers) {
+            if (!provider.supportsSearch()) {
+                log.debug("프로바이더 {}는 search를 지원하지 않아 건너뜁니다.", provider.getProviderName());
+                continue;
+            }
             try {
                 log.debug("프로바이더 {}로 검색 중. 키워드: {}", provider.getProviderName(), query);
 

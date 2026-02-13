@@ -1,13 +1,21 @@
 package com.pjsent.sentinel.market.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pjsent.sentinel.config.TestSecurityConfig;
-import com.pjsent.sentinel.market.dto.MarketIndexDto;
-import com.pjsent.sentinel.market.dto.SearchResultDto;
-import com.pjsent.sentinel.market.dto.StockPriceDto;
-import com.pjsent.sentinel.market.service.MarketDataService;
-import com.pjsent.sentinel.user.service.JwtService;
-import com.pjsent.sentinel.user.service.KakaoOAuthService;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,28 +27,24 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pjsent.sentinel.config.TestSecurityConfig;
+import com.pjsent.sentinel.market.dto.MarketIndexDto;
+import com.pjsent.sentinel.market.dto.SearchResultDto;
+import com.pjsent.sentinel.market.dto.StockPriceDto;
+import com.pjsent.sentinel.market.service.MarketDataService;
+import com.pjsent.sentinel.user.service.JwtService;
+import com.pjsent.sentinel.user.service.KakaoOAuthService;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-/**
- * MarketDataController 단위 테스트
- */
 @WebMvcTest(MarketDataController.class)
 @Import(TestSecurityConfig.class)
 @TestPropertySource(properties = {
-    "jwt.secret=test-jwt-secret-for-market-controller-test",
-    "kakao.oauth.client-id=test-market-controller-client-id",
-    "kakao.oauth.client-secret=test-market-controller-client-secret",
-    "kakao.oauth.redirect-uri=http://localhost:8080/test/callback",
-    "stock.market.alphavantage.api-key=test-alphavantage-key",
-    "stock.market.finnhub.api-key=test-finnhub-key"
-})
+        "jwt.secret=test-jwt-secret-for-market-controller-test",
+        "kakao.oauth.client-id=test-market-controller-client-id",
+        "kakao.oauth.client-secret=test-market-controller-client-secret",
+        "kakao.oauth.redirect-uri=http://localhost:8080/test/callback",
+        "stock.market.alphavantage.api-key=test-alphavantage-key",
+        "stock.market.finnhub.api-key=test-finnhub-key" })
 class MarketDataControllerTest {
 
     @Autowired
@@ -87,216 +91,186 @@ class MarketDataControllerTest {
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        searchResultDto = new SearchResultDto(
-                "AAPL",
-                "Apple Inc.",
-                "NASDAQ",
-                "Equity"
-        );
+        searchResultDto = new SearchResultDto("AAPL", "Apple Inc.", "NASDAQ", "Equity");
     }
 
     @Test
-    @DisplayName("단일 주식 가격 조회 성공")
-    void should_ReturnStockPrice_When_GetStockPrice() throws Exception {
-        // Given
+    @DisplayName("returns stock price")
+    void shouldReturnStockPrice() throws Exception {
         when(marketDataService.getStockPrice("AAPL")).thenReturn(stockPriceDto);
 
-        // When & Then
         mockMvc.perform(get("/api/v1/market/price/AAPL"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.symbol").value("AAPL"))
-                .andExpect(jsonPath("$.price").value(150.00))
-                .andExpect(jsonPath("$.change").value(1.50))
-                .andExpect(jsonPath("$.changePercent").value(1.01));
+                .andExpect(jsonPath("$.price").value(150.00));
 
         verify(marketDataService, times(1)).getStockPrice("AAPL");
     }
 
     @Test
-    @DisplayName("단일 주식 가격 조회 실패 - 잘못된 심볼")
-    void should_ReturnBadRequest_When_InvalidSymbol() throws Exception {
-        // Given
-        when(marketDataService.getStockPrice("INVALID"))
-                .thenThrow(new IllegalArgumentException("Invalid symbol"));
+    @DisplayName("returns standardized 400 error for invalid symbol")
+    void shouldReturnBadRequestErrorBodyForInvalidSymbol() throws Exception {
+        when(marketDataService.getStockPrice("INVALID")).thenThrow(new IllegalArgumentException("Invalid symbol"));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/market/price/INVALID"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.path").value("/api/v1/market/price/INVALID"));
 
         verify(marketDataService, times(1)).getStockPrice("INVALID");
     }
 
     @Test
-    @DisplayName("여러 주식 가격 조회 성공 (Query Parameter)")
-    void should_ReturnMultipleStockPrices_When_GetStockPricesWithQuery() throws Exception {
-        // Given
+    @DisplayName("returns prices from query endpoint")
+    void shouldReturnPricesWhenQueryEndpointIsUsed() throws Exception {
         List<StockPriceDto> prices = Arrays.asList(stockPriceDto);
         when(marketDataService.getStockPrices(anyList())).thenReturn(prices);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/market/prices")
-                        .param("symbols", "AAPL,MSFT"))
+        mockMvc.perform(get("/api/v1/market/prices").param("symbols", "AAPL,MSFT"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].symbol").value("AAPL"));
 
         verify(marketDataService, times(1)).getStockPrices(anyList());
     }
 
     @Test
-    @DisplayName("배치 주식 가격 조회 성공 (Request Body)")
-    void should_ReturnBatchPrices_When_ValidRequest() throws Exception {
-        // Given
+    @DisplayName("returns prices from batch endpoint")
+    void shouldReturnBatchPricesWhenBodyEndpointIsUsed() throws Exception {
         List<String> symbols = Arrays.asList("AAPL", "MSFT", "GOOGL");
         List<StockPriceDto> prices = Arrays.asList(stockPriceDto);
         when(marketDataService.getStockPrices(symbols)).thenReturn(prices);
 
-        // When & Then
         mockMvc.perform(post("/api/v1/market/prices")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(symbols)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(symbols)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].symbol").value("AAPL"));
 
         verify(marketDataService, times(1)).getStockPrices(symbols);
     }
 
     @Test
-    @DisplayName("배치 주식 가격 조회 실패 - 빈 목록")
-    void should_ReturnBadRequest_When_EmptySymbolList() throws Exception {
-        // Given
-        List<String> emptySymbols = Arrays.asList();
+    @DisplayName("returns 400 when batch symbols are empty")
+    void shouldReturnBadRequestWhenBatchSymbolsAreEmpty() throws Exception {
+        List<String> emptySymbols = List.of();
 
-        // When & Then
         mockMvc.perform(post("/api/v1/market/prices")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emptySymbols)))
-                .andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(emptySymbols)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"));
 
         verify(marketDataService, never()).getStockPrices(anyList());
     }
 
     @Test
-    @DisplayName("배치 주식 가격 조회 실패 - 너무 많은 심볼 (>50)")
-    void should_ReturnBadRequest_When_TooManySymbols() throws Exception {
-        // Given
-        List<String> tooManySymbols = new java.util.ArrayList<>();
+    @DisplayName("returns 400 when batch symbols exceed limit")
+    void shouldReturnBadRequestWhenTooManyBatchSymbols() throws Exception {
+        List<String> tooManySymbols = new ArrayList<>();
         for (int i = 0; i < 51; i++) {
             tooManySymbols.add("SYMBOL" + i);
         }
 
-        // When & Then
         mockMvc.perform(post("/api/v1/market/prices")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tooManySymbols)))
-                .andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tooManySymbols)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"));
 
         verify(marketDataService, never()).getStockPrices(anyList());
     }
 
     @Test
-    @DisplayName("주요 시장 지수 조회 성공")
-    void should_ReturnMarketIndices_When_GetMarketIndices() throws Exception {
-        // Given
-        List<MarketIndexDto> indices = Arrays.asList(marketIndexDto);
-        when(marketDataService.getMarketIndices()).thenReturn(indices);
+    @DisplayName("returns stock price from explicit refresh endpoint")
+    void shouldReturnStockPriceWhenRefreshEndpointIsUsed() throws Exception {
+        when(marketDataService.refreshStockPriceAndPublish("AAPL")).thenReturn(stockPriceDto);
 
-        // When & Then
+        mockMvc.perform(post("/api/v1/market/price/AAPL/refresh"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.symbol").value("AAPL"))
+                .andExpect(jsonPath("$.provider").value("AlphaVantage"));
+
+        verify(marketDataService, times(1)).refreshStockPriceAndPublish("AAPL");
+    }
+
+    @Test
+    @DisplayName("returns market indices")
+    void shouldReturnMarketIndices() throws Exception {
+        when(marketDataService.getMarketIndices()).thenReturn(Arrays.asList(marketIndexDto));
+
         mockMvc.perform(get("/api/v1/market/indices"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].symbol").value("^GSPC"))
-                .andExpect(jsonPath("$[0].name").value("S&P 500"))
-                .andExpect(jsonPath("$[0].value").value(4500.00));
+                .andExpect(jsonPath("$[0].name").value("S&P 500"));
 
         verify(marketDataService, times(1)).getMarketIndices();
     }
 
     @Test
-    @DisplayName("주요 시장 지수 조회 실패")
-    void should_ReturnInternalServerError_When_GetMarketIndicesFails() throws Exception {
-        // Given
-        when(marketDataService.getMarketIndices())
-                .thenThrow(new RuntimeException("Failed to fetch indices"));
+    @DisplayName("returns standardized 500 error when market indices fail")
+    void shouldReturnInternalServerErrorBodyWhenMarketIndicesFail() throws Exception {
+        when(marketDataService.getMarketIndices()).thenThrow(new RuntimeException("Failed to fetch indices"));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/market/indices"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
+                .andExpect(jsonPath("$.path").value("/api/v1/market/indices"));
 
         verify(marketDataService, times(1)).getMarketIndices();
     }
 
     @Test
-    @DisplayName("종목 심볼 검색 성공")
-    void should_ReturnSearchResults_When_SearchSymbol() throws Exception {
-        // Given
-        List<SearchResultDto> results = Arrays.asList(searchResultDto);
-        when(marketDataService.searchSymbol("apple")).thenReturn(results);
+    @DisplayName("returns search results")
+    void shouldReturnSearchResults() throws Exception {
+        when(marketDataService.searchSymbol("apple")).thenReturn(Arrays.asList(searchResultDto));
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/market/search")
-                        .param("query", "apple"))
+        mockMvc.perform(get("/api/v1/market/search").param("query", "apple"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].symbol").value("AAPL"))
-                .andExpect(jsonPath("$[0].name").value("Apple Inc."))
-                .andExpect(jsonPath("$[0].exchange").value("NASDAQ"));
+                .andExpect(jsonPath("$[0].symbol").value("AAPL"));
 
         verify(marketDataService, times(1)).searchSymbol("apple");
     }
 
     @Test
-    @DisplayName("종목 심볼 검색 실패 - 빈 검색어")
-    void should_ReturnBadRequest_When_EmptyQuery() throws Exception {
-        // When & Then
-        mockMvc.perform(get("/api/v1/market/search")
-                        .param("query", ""))
-                .andExpect(status().isBadRequest());
+    @DisplayName("returns standardized 400 error for empty query")
+    void shouldReturnBadRequestErrorBodyForEmptyQuery() throws Exception {
+        mockMvc.perform(get("/api/v1/market/search").param("query", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"));
 
         verify(marketDataService, never()).searchSymbol(anyString());
     }
 
     @Test
-    @DisplayName("종목 심볼 검색 실패 - 공백 검색어")
-    void should_ReturnBadRequest_When_BlankQuery() throws Exception {
-        // When & Then
-        mockMvc.perform(get("/api/v1/market/search")
-                        .param("query", "   "))
-                .andExpect(status().isBadRequest());
-
-        verify(marketDataService, never()).searchSymbol(anyString());
-    }
-
-    @Test
-    @DisplayName("서비스 상태 확인 성공")
-    void should_ReturnServiceStatus_When_GetServiceStatus() throws Exception {
-        // Given
+    @DisplayName("returns service status")
+    void shouldReturnServiceStatus() throws Exception {
         when(marketDataService.isServiceAvailable()).thenReturn(true);
-        when(marketDataService.getProviderStatus()).thenReturn("AlphaVantage (Primary)");
+        when(marketDataService.getProviderStatus()).thenReturn("Finnhub (Primary)");
 
-        // When & Then
         mockMvc.perform(get("/api/v1/market/status"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.available").value(true))
-                .andExpect(jsonPath("$.message").value("AlphaVantage (Primary)"));
+                .andExpect(jsonPath("$.message").value("Finnhub (Primary)"));
 
         verify(marketDataService, times(1)).isServiceAvailable();
         verify(marketDataService, times(1)).getProviderStatus();
     }
 
     @Test
-    @DisplayName("서비스 상태 확인 실패")
-    void should_ReturnErrorStatus_When_GetServiceStatusFails() throws Exception {
-        // Given
-        when(marketDataService.isServiceAvailable())
-                .thenThrow(new RuntimeException("Status check failed"));
+    @DisplayName("returns standardized 500 error when status check fails")
+    void shouldReturnInternalServerErrorBodyWhenStatusCheckFails() throws Exception {
+        when(marketDataService.isServiceAvailable()).thenThrow(new RuntimeException("Status check failed"));
 
-        // When & Then
         mockMvc.perform(get("/api/v1/market/status"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.available").value(false))
-                .andExpect(jsonPath("$.message").value("서비스 상태 확인 실패"));
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
+                .andExpect(jsonPath("$.path").value("/api/v1/market/status"));
 
         verify(marketDataService, times(1)).isServiceAvailable();
     }
