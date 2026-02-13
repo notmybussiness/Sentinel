@@ -170,11 +170,20 @@ class BacktestControllerTest {
     @Test
     @DisplayName("백테스팅 서비스 상태 확인 성공")
     void should_ReturnServiceStatus_When_GetStatus() throws Exception {
+        // Given
+        when(historicalDataFacade.getAvailableProviderNames())
+                .thenReturn(List.of("KIS", "AlphaVantage", "Upbit"));
+
         // When & Then
         mockMvc.perform(get("/api/v1/backtest/status"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.available").value(true))
-                .andExpect(jsonPath("$.provider").value("AlphaVantage"))
+                .andExpect(jsonPath("$.providers").isArray())
+                .andExpect(jsonPath("$.providers.length()").value(3))
+                .andExpect(jsonPath("$.providers[0]").value("KIS"))
+                .andExpect(jsonPath("$.providers[1]").value("AlphaVantage"))
+                .andExpect(jsonPath("$.providers[2]").value("Upbit"))
+                .andExpect(jsonPath("$.provider").doesNotExist())
                 .andExpect(jsonPath("$.supportedFrequencies").isArray())
                 .andExpect(jsonPath("$.supportedFrequencies.length()").value(4))
                 .andExpect(jsonPath("$.supportedFrequencies[0]").value("NONE"))

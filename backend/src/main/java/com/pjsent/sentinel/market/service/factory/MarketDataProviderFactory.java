@@ -1,8 +1,10 @@
 package com.pjsent.sentinel.market.service.factory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.stereotype.Component;
 
 import com.pjsent.sentinel.market.service.provider.MarketDataProvider;
@@ -32,6 +34,7 @@ public class MarketDataProviderFactory {
         List<MarketDataProvider> availableProviders = providers.stream()
                 .filter(MarketDataProvider::isAvailable)
                 .collect(Collectors.toList());
+        AnnotationAwareOrderComparator.sort(availableProviders);
         
         log.debug("사용 가능한 프로바이더 수: {}, 전체 프로바이더 수: {}", 
                  availableProviders.size(), providers.size());
@@ -57,7 +60,10 @@ public class MarketDataProviderFactory {
      * @return 해당 프로바이더 또는 null
      */
     public MarketDataProvider getProvider(String providerName) {
-        return providers.stream()
+        List<MarketDataProvider> sortedProviders = new ArrayList<>(providers);
+        AnnotationAwareOrderComparator.sort(sortedProviders);
+
+        return sortedProviders.stream()
                 .filter(provider -> provider.getProviderName().equalsIgnoreCase(providerName))
                 .filter(MarketDataProvider::isAvailable)
                 .findFirst()

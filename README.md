@@ -14,7 +14,7 @@
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Problem & Solve](#problem--solve)
+- [Problem & Solution](#problem--solution)
 
 ---
 
@@ -352,7 +352,7 @@ npm run dev
 
 ---
 
-## Problem & Solve
+## Problem & Solution
 
 > 체계적인 문제 해결을 위한 과학적 실험 방법론 적용
 

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * 과거 가격 데이터 통합 Facade
@@ -104,5 +105,25 @@ public class HistoricalDataFacade {
         }
 
         return result;
+    }
+
+    /**
+     * 백테스트에서 사용 가능한 히스토리컬 데이터 provider 목록을 반환합니다.
+     * 순서: KIS -> AlphaVantage -> Upbit
+     */
+    public List<String> getAvailableProviderNames() {
+        List<String> providers = new ArrayList<>();
+
+        if (kisService.isApiAvailable()) {
+            providers.add("KIS");
+        }
+        if (stockService.isApiAvailable()) {
+            providers.add("AlphaVantage");
+        }
+        if (cryptoService.isApiAvailable()) {
+            providers.add("Upbit");
+        }
+
+        return providers;
     }
 }
