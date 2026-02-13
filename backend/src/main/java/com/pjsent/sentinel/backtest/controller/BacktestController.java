@@ -141,9 +141,11 @@ public class BacktestController {
      */
     @GetMapping("/status")
     public ResponseEntity<BacktestStatusResponse> getStatus() {
+        List<String> providers = historicalDataFacade.getAvailableProviderNames();
+
         return ResponseEntity.ok(BacktestStatusResponse.builder()
-                .available(true)
-                .provider("AlphaVantage")
+                .available(!providers.isEmpty())
+                .providers(providers)
                 .supportedFrequencies(new String[]{"NONE", "MONTHLY", "QUARTERLY", "YEARLY"})
                 .maxDateRange("10 years")
                 .build());
@@ -156,7 +158,7 @@ public class BacktestController {
     @lombok.Data
     private static class BacktestStatusResponse {
         private boolean available;
-        private String provider;
+        private List<String> providers;
         private String[] supportedFrequencies;
         private String maxDateRange;
     }
