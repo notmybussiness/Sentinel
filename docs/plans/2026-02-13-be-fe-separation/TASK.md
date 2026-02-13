@@ -1,30 +1,39 @@
 # TASK
 
-## ¸ñÇ¥
-- BE/FE¸¦ OpenAPI °è¾à ±âÁØÀ¸·Î ºĞ¸®ÇÑ´Ù.
-- FE´Â BE ·±Å¸ÀÓ ¾øÀÌ generated client + mock server¸¸À¸·Î °³¹ß °¡´ÉÇØ¾ß ÇÑ´Ù.
-- market/auth/portfolio¸¦ 1Â÷ ¹üÀ§·Î Ç¥ÁØ ¿¡·¯ ÀÀ´ä°ú ÄÁÆ®·Ñ·¯ °è¾àÀ» °íÁ¤ÇÑ´Ù.
+## UseCase
+- FEëŠ” BE ë°°í¬/ê¸°ë™ ìƒíƒœì™€ ë¬´ê´€í•˜ê²Œ ê¸°ëŠ¥ ê°œë°œì„ ì§„í–‰í•´ì•¼ í•œë‹¤.
+- ì¡°íšŒ APIëŠ” ìƒíƒœ ë³€ê²½ì„ ë§Œë“¤ì§€ ì•Šì•„ì•¼ í•˜ë©°, ìƒíƒœ ë³€ê²½ì€ ëª…ì‹œì  write APIë¡œ ì œí•œí•´ì•¼ í•œë‹¤.
+- ì—ëŸ¬ ì‘ë‹µì€ FEê°€ ì˜ˆì¸¡ ê°€ëŠ¥í•œ í˜•íƒœë¡œ ìˆ˜ì‹ í•´ì•¼ í•œë‹¤.
 
-## Wave 1 ¹üÀ§
+## ëª©í‘œ
+- BE/FEë¥¼ OpenAPI ê³„ì•½ ê¸°ì¤€ìœ¼ë¡œ ë¶„ë¦¬í•œë‹¤.
+- FEëŠ” BE ëŸ°íƒ€ì„ ì—†ì´ generated client + mock serverë§Œìœ¼ë¡œ ê°œë°œ ê°€ëŠ¥í•´ì•¼ í•œë‹¤.
+- market/auth/portfolioë¥¼ 1ì°¨ ë²”ìœ„ë¡œ í‘œì¤€ ì—ëŸ¬ ì‘ë‹µê³¼ ì»¨íŠ¸ë¡¤ëŸ¬ ê³„ì•½ì„ ê³ ì •í•œë‹¤.
+
+## Wave 1 ë²”ìœ„
 - Backend
-  - Ç¥ÁØ ¿¡·¯ ÀÀ´ä `ApiErrorResponse` µµÀÔ
-  - `GlobalExceptionHandler` ÅëÀÏ
-  - `AuthController`, `MarketDataController`, `PortfolioController` OpenAPI ÁÖ¼® Àû¿ë
+  - í‘œì¤€ ì—ëŸ¬ ì‘ë‹µ `ApiErrorResponse` ë„ì…
+  - `GlobalExceptionHandler` í†µì¼
+  - `AuthController`, `MarketDataController`, `PortfolioController` OpenAPI ì£¼ì„ ì ìš©
   - `GET /api/v1/market/prices` deprecated
-  - `POST /api/v1/market/price/{symbol}/refresh` Ãß°¡
-  - `ServiceStatusResponse` DTO ºĞ¸®
-  - °è¾à Å×½ºÆ® `OpenApiContractTest` Ãß°¡
-  - OpenAPI »êÃâ¹° `docs/specs/api/openapi.json`, `docs/specs/api/openapi.yaml` »ı¼º
+  - `POST /api/v1/market/price/{symbol}/refresh` ì¶”ê°€
+  - `ServiceStatusResponse` DTO ë¶„ë¦¬
+  - ê³„ì•½ í…ŒìŠ¤íŠ¸ `OpenApiContractTest` ì¶”ê°€
+  - OpenAPI ì‚°ì¶œë¬¼ `docs/specs/api/openapi.json`, `docs/specs/api/openapi.yaml` ìƒì„±
 - Frontend
-  - `orval` ±â¹İ generated client Ã¼ÀÎ Ãß°¡
-  - `frontend/lib/api/generated/*` »ı¼º
-  - ±âÁ¸ `client.ts`ÀÇ auth/portfolio/market ÇÙ½É °æ·Î¸¦ generated È£Ãâ·Î ÀüÈ¯
-  - `npm run api:generate` ½ºÅ©¸³Æ® Ãß°¡
+  - `orval` ê¸°ë°˜ generated client ì²´ì¸ ì¶”ê°€
+  - `frontend/lib/api/generated/*` ìƒì„±
+  - ê¸°ì¡´ `client.ts`ì˜ auth/portfolio/market í•µì‹¬ ê²½ë¡œë¥¼ generated í˜¸ì¶œë¡œ ì „í™˜
+  - `npm run api:generate` ìŠ¤í¬ë¦½íŠ¸ ì¶”ê°€
 - Perf/Mock
-  - Prism mock ±âÁØ k6 ½Ã³ª¸®¿À `k6/contract-mock-load.js` Ãß°¡
+  - Prism mock ê¸°ì¤€ k6 ì‹œë‚˜ë¦¬ì˜¤ `k6/contract-mock-load.js` ì¶”ê°€
 
-## ¼º°ø ±âÁØ
-- Backend Å¸±ê Å×½ºÆ® Åë°ú
-- OpenAPI °è¾à Å×½ºÆ® Åë°ú
-- Frontend build Åë°ú
-- Lint´Â error 0 (warning Çã¿ë)
+## ì„±ê³µ ê¸°ì¤€
+- Backend íƒ€ê¹ƒ í…ŒìŠ¤íŠ¸ í†µê³¼
+- OpenAPI ê³„ì•½ í…ŒìŠ¤íŠ¸ í†µê³¼
+- Frontend build í†µê³¼
+- LintëŠ” error 0 (warning í—ˆìš©)
+
+## ë¹„ëª©í‘œ(ì´ë²ˆ Wave ì œì™¸)
+- backtest/ai/crypto ìƒì„¸ ë¦¬íŒ©í† ë§
+- breaking change ê¸°ë°˜ ëŒ€ê·œëª¨ API ì¬ì„¤ê³„

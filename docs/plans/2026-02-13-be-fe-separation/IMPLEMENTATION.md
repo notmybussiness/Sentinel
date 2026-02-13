@@ -1,59 +1,65 @@
 # IMPLEMENTATION
 
-## 1) °è¾à/¿¡·¯ Ç¥ÁØÈ­
-- Ãß°¡: `backend/src/main/java/com/pjsent/sentinel/common/exception/ApiErrorResponse.java`
-- º¯°æ: `backend/src/main/java/com/pjsent/sentinel/common/exception/GlobalExceptionHandler.java`
-  - ¸ğµç ÁÖ¿ä ¿¹¿Ü¸¦ `ApiErrorResponse`·Î ÅëÀÏ
-  - `status/error/message/path/details` ±¸Á¶ °íÁ¤
+## ì„¤ê³„ ê²°ì • ìš”ì•½
+- Contract-first: API ê³„ì•½ì„ ë¨¼ì € ê³ ì •í•˜ê³  êµ¬í˜„ì€ ê³„ì•½ì„ ë”°ë¼ê°„ë‹¤.
+- Read/Write ë¶„ë¦¬: ì¡°íšŒëŠ” pure read, ê°±ì‹ /ë°œí–‰ì€ explicit write pathë¡œ ë¶„ë¦¬í•œë‹¤.
+- Error í‘œì¤€í™”: ëª¨ë“  ì˜ˆì™¸ ì‘ë‹µì„ `ApiErrorResponse`ë¡œ í†µì¼í•œë‹¤.
+- FE íƒ€ì… ë‹¨ì¼í™”: ìˆ˜ë™ íƒ€ì… ëŒ€ì‹  generated modelì„ ê¸°ì¤€ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
 
-## 2) ÄÁÆ®·Ñ·¯ ¸®ÆÑÅä¸µ
-- º¯°æ: `backend/src/main/java/com/pjsent/sentinel/user/controller/AuthController.java`
-  - °úµµÇÑ try-catch Á¦°Å
-  - bearer token ÆÄ½Ì °ËÁõ Ãß°¡
-  - OpenAPI ÁÖ¼® Àû¿ë
-- º¯°æ: `backend/src/main/java/com/pjsent/sentinel/market/controller/MarketDataController.java`
-  - °úµµÇÑ try-catch Á¦°Å
-  - ¹èÄ¡ ÀÔ·Â °ËÁõÀ» ¿¹¿Ü ±â¹İÀ¸·Î ÅëÀÏ
+## 1) ê³„ì•½/ì—ëŸ¬ í‘œì¤€í™”
+- ì¶”ê°€: `backend/src/main/java/com/pjsent/sentinel/common/exception/ApiErrorResponse.java`
+- ë³€ê²½: `backend/src/main/java/com/pjsent/sentinel/common/exception/GlobalExceptionHandler.java`
+  - ì£¼ìš” ì˜ˆì™¸ë¥¼ `ApiErrorResponse`ë¡œ í†µì¼
+  - `status/error/message/path/details` êµ¬ì¡° ê³ ì •
+
+## 2) ì»¨íŠ¸ë¡¤ëŸ¬ ë¦¬íŒ©í† ë§
+- ë³€ê²½: `backend/src/main/java/com/pjsent/sentinel/user/controller/AuthController.java`
+  - ê³¼ë„í•œ try-catch ì œê±°
+  - bearer token íŒŒì‹± ê²€ì¦ ì¶”ê°€
+  - OpenAPI ì£¼ì„ ì ìš©
+- ë³€ê²½: `backend/src/main/java/com/pjsent/sentinel/market/controller/MarketDataController.java`
+  - ê³¼ë„í•œ try-catch ì œê±°
+  - ë°°ì¹˜ ì…ë ¥ ê²€ì¦ì„ ì˜ˆì™¸ ê¸°ë°˜ìœ¼ë¡œ í†µì¼
   - `GET /market/prices` deprecated
-  - `POST /market/price/{symbol}/refresh` Ãß°¡
-  - OpenAPI ÁÖ¼® Àû¿ë
-- º¯°æ: `backend/src/main/java/com/pjsent/sentinel/portfolio/controller/PortfolioController.java`
-  - OpenAPI ÁÖ¼® Àû¿ë
-- Ãß°¡: `backend/src/main/java/com/pjsent/sentinel/market/dto/ServiceStatusResponse.java`
+  - `POST /market/price/{symbol}/refresh` ì¶”ê°€
+  - OpenAPI ì£¼ì„ ì ìš©
+- ë³€ê²½: `backend/src/main/java/com/pjsent/sentinel/portfolio/controller/PortfolioController.java`
+  - OpenAPI ì£¼ì„ ì ìš©
+- ì¶”ê°€: `backend/src/main/java/com/pjsent/sentinel/market/dto/ServiceStatusResponse.java`
 
-## 3) ¼­ºñ½º ·¹ÀÌ¾î(TDD)
-- º¯°æ: `backend/src/main/java/com/pjsent/sentinel/market/service/MarketDataService.java`
-  - read path side-effect Á¦°Å (`getStockPrice`¿¡¼­ publish Á¦°Å)
-  - write path ºĞ¸® (`refreshStockPriceAndPublish` Ãß°¡)
-  - `Clock` ÁÖÀÔ °¡´É ±¸Á¶
-  - search provider filter (`supportsSearch`) ¹İ¿µ
+## 3) ì„œë¹„ìŠ¤ ë ˆì´ì–´(TDD)
+- ë³€ê²½: `backend/src/main/java/com/pjsent/sentinel/market/service/MarketDataService.java`
+  - read path side-effect ì œê±° (`getStockPrice`ì—ì„œ publish ì œê±°)
+  - write path ë¶„ë¦¬ (`refreshStockPriceAndPublish` ì¶”ê°€)
+  - `Clock` ì£¼ì… ê°€ëŠ¥ êµ¬ì¡°
+  - search provider filter (`supportsSearch`) ë°˜ì˜
 
-## 4) Å×½ºÆ®
-- º¯°æ: `backend/src/test/java/com/pjsent/sentinel/common/exception/GlobalExceptionHandlerTest.java`
-- º¯°æ: `backend/src/test/java/com/pjsent/sentinel/user/controller/AuthControllerTest.java`
-- º¯°æ: `backend/src/test/java/com/pjsent/sentinel/market/controller/MarketDataControllerTest.java`
-- º¯°æ: `backend/src/test/java/com/pjsent/sentinel/portfolio/controller/PortfolioControllerTest.java`
-- º¯°æ: `backend/src/test/java/com/pjsent/sentinel/market/service/MarketDataServiceTest.java`
-- Ãß°¡: `backend/src/test/java/com/pjsent/sentinel/contract/OpenApiContractTest.java`
-  - deprecated °è¾à °ËÁõ
-  - `ApiErrorResponse` ½ºÅ°¸¶ ³ëÃâ °ËÁõ
-  - OpenAPI json/yaml ½º³À¼¦ export
+## 4) í…ŒìŠ¤íŠ¸
+- ë³€ê²½: `backend/src/test/java/com/pjsent/sentinel/common/exception/GlobalExceptionHandlerTest.java`
+- ë³€ê²½: `backend/src/test/java/com/pjsent/sentinel/user/controller/AuthControllerTest.java`
+- ë³€ê²½: `backend/src/test/java/com/pjsent/sentinel/market/controller/MarketDataControllerTest.java`
+- ë³€ê²½: `backend/src/test/java/com/pjsent/sentinel/portfolio/controller/PortfolioControllerTest.java`
+- ë³€ê²½: `backend/src/test/java/com/pjsent/sentinel/market/service/MarketDataServiceTest.java`
+- ì¶”ê°€: `backend/src/test/java/com/pjsent/sentinel/contract/OpenApiContractTest.java`
+  - deprecated ê³„ì•½ ê²€ì¦
+  - `ApiErrorResponse` ìŠ¤í‚¤ë§ˆ ë…¸ì¶œ ê²€ì¦
+  - OpenAPI json/yaml ìŠ¤ëƒ…ìƒ· export
 
 ## 5) FE generated client
-- º¯°æ: `frontend/package.json`
-  - `api:generate` ½ºÅ©¸³Æ® Ãß°¡
-  - `orval` dev dependency Ãß°¡
-- Ãß°¡: `frontend/orval.config.ts`
-- Ãß°¡: `frontend/lib/api/generated/mutator.ts`
-- »ı¼º: `frontend/lib/api/generated/sdk.ts`
-- »ı¼º: `frontend/lib/api/generated/model/*`
-- º¯°æ: `frontend/lib/api/client.ts`
-  - auth/market/portfolio ÇÙ½É °æ·Î¸¦ generated SDK È£Ãâ·Î ÀüÈ¯
+- ë³€ê²½: `frontend/package.json`
+  - `api:generate` ìŠ¤í¬ë¦½íŠ¸ ì¶”ê°€
+  - `orval` dev dependency ì¶”ê°€
+- ì¶”ê°€: `frontend/orval.config.ts`
+- ì¶”ê°€: `frontend/lib/api/generated/mutator.ts`
+- ìƒì„±: `frontend/lib/api/generated/sdk.ts`
+- ìƒì„±: `frontend/lib/api/generated/model/*`
+- ë³€ê²½: `frontend/lib/api/client.ts`
+  - auth/market/portfolio í•µì‹¬ ê²½ë¡œë¥¼ generated SDK í˜¸ì¶œë¡œ ì „í™˜
 
 ## 6) Mock perf
-- Ãß°¡: `k6/contract-mock-load.js`
-  - BASE_URLÀÌ ·ÎÄÃ mockÀÌ ¾Æ´Ï¸é ½ÇÆĞÇÏµµ·Ï ¾ÈÀüÀåÄ¡ Æ÷ÇÔ
+- ì¶”ê°€: `k6/contract-mock-load.js`
+  - BASE_URLì´ ë¡œì»¬ mockì´ ì•„ë‹ˆë©´ ì‹¤íŒ¨í•˜ë„ë¡ ì•ˆì „ì¥ì¹˜ í¬í•¨
 
-## 7) OpenAPI »êÃâ¹°
-- »ı¼º: `docs/specs/api/openapi.json`
-- »ı¼º: `docs/specs/api/openapi.yaml`
+## 7) OpenAPI ì‚°ì¶œë¬¼
+- ìƒì„±: `docs/specs/api/openapi.json`
+- ìƒì„±: `docs/specs/api/openapi.yaml`

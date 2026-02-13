@@ -1,17 +1,29 @@
 # 2026-02-13 Weekly Dev Log
 
+## ì´ë²ˆ ì£¼ í•µì‹¬ ëª©í‘œ
+- BE/FEë¥¼ ê³„ì•½ ì¤‘ì‹¬ìœ¼ë¡œ ë¶„ë¦¬í•´ì„œ íŒ€ ë³‘ë ¬ ê°œë°œ ì†ë„ë¥¼ ë†’ì´ëŠ” ê²ƒ
+- market read/write ê²½ê³„ë¥¼ ëª…í™•íˆ í•´ì„œ ìš´ì˜ ë¦¬ìŠ¤í¬ë¥¼ ì¤„ì´ëŠ” ê²ƒ
+
 ## Done
-- BE/FE contract-first Àü·«À¸·Î auth/portfolio/market OpenAPI °è¾à °íÁ¤
-- `ApiErrorResponse` µµÀÔ ¹× GlobalExceptionHandler Ç¥ÁØÈ­
-- Market read side-effect Á¦°Å + explicit refresh write path Ãß°¡
-- FE orval generated client Ã¼ÀÎ µµÀÔ (`api:generate`)
-- Prism mock ±âÁØ k6 ½Ã³ª¸®¿À Ãß°¡
+- auth/portfolio/market OpenAPI ê³„ì•½ ê³ ì •
+- `ApiErrorResponse` ë„ì… ë° GlobalExceptionHandler í‘œì¤€í™”
+- Market read side-effect ì œê±° + explicit refresh write path ì¶”ê°€
+- FE `orval` generated client ì²´ì¸ ë„ì… (`api:generate`)
+- Prism mock ê¸°ì¤€ k6 ì‹œë‚˜ë¦¬ì˜¤ ì¶”ê°€
+
+## ë‚´ê°€ ì˜ë„ì ìœ¼ë¡œ ì„ íƒí•œ ì„¤ê³„
+- ê³„ì•½ ë¨¼ì € ê³ ì •:
+  - FE ê°œë°œì´ BE ëŸ°íƒ€ì„ ì¼ì •ê³¼ ì¶©ëŒí•˜ì§€ ì•Šê²Œ í•˜ë ¤ëŠ” ì„ íƒ
+- read/write ë¶„ë¦¬:
+  - ì¡°íšŒ íŠ¸ë˜í”½ì´ ì‹œìŠ¤í…œ ìƒíƒœë¥¼ ë°”ê¾¸ì§€ ì•Šë„ë¡ ë³´ì¥
+- ë‹¨ì¼ ì—ëŸ¬ ìŠ¤í‚¤ë§ˆ:
+  - FEì˜ ì˜ˆì™¸ ë¶„ê¸° ë¹„ìš©ê³¼ ë””ë²„ê¹… ì‹œê°„ì„ ì¤„ì´ê¸° ìœ„í•œ ì„ íƒ
 
 ## Verification
-- backend: ÇÙ½É °è¾à/ÄÁÆ®·Ñ·¯/¼­ºñ½º Å×½ºÆ® Åë°ú
-- frontend: `npm run lint` (error 0, warnings only), `npm run build` Åë°ú
+- backend: ê³„ì•½/ì»¨íŠ¸ë¡¤ëŸ¬/ì„œë¹„ìŠ¤ í•µì‹¬ í…ŒìŠ¤íŠ¸ í†µê³¼
+- frontend: `npm run lint` (error 0, warnings only), `npm run build` í†µê³¼
 
 ## Next
-- provider ¼³Á¤ÀÇ `@Value`¸¦ `@ConfigurationProperties`·Î Áı¾à (DI/IoC °­È­)
-- FE¿¡¼­ generated model alias·Î ¼öµ¿ Å¸ÀÔ ´Ü°èÀû Á¦°Å
-- branch ºĞÇÒ Àü·«À¸·Î ÈÄ¼Ó PR(Refactor/Perf/Docs) º´·Ä ÁøÇà
+- provider ì„¤ì •ì˜ `@Value`ë¥¼ `@ConfigurationProperties`ë¡œ ì§‘ì•½ (DI/IoC ê°•í™”)
+- ê³µê¸‰ì ìš°ì„ ìˆœìœ„/ì¿¼í„° ì •ì±…ì„ factoryì— ëª…ì‹œì ìœ¼ë¡œ ë°˜ì˜
+- Stream D(perf-mock) ë¶„ë¦¬ PRë¡œ ë¶€í•˜í…ŒìŠ¤íŠ¸ íŒŒì´í”„ë¼ì¸ ë…ë¦½í™”
