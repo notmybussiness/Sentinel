@@ -64,7 +64,7 @@ class MarketDataServiceTest {
         StockPriceDto expectedData = createMockStockPriceDto(symbol, "TestProvider");
         List<MarketDataProvider> providers = Arrays.asList(mockProvider);
 
-        when(providerFactory.getAvailableProviders()).thenReturn(providers);
+        when(providerFactory.getQuoteProviders(symbol)).thenReturn(providers);
         when(mockProvider.getMarketData(symbol)).thenReturn(expectedData);
 
         StockPriceDto result = marketDataService.getStockPrice(symbol);
@@ -72,6 +72,7 @@ class MarketDataServiceTest {
         assertNotNull(result);
         assertEquals(symbol, result.getSymbol());
         assertEquals("TestProvider", result.getProvider());
+        verify(providerFactory, times(1)).getQuoteProviders(symbol);
         verify(mockProvider).getMarketData(symbol);
         verifyNoInteractions(marketPriceProducer);
     }
@@ -83,12 +84,13 @@ class MarketDataServiceTest {
         StockPriceDto expectedData = createMockStockPriceDto(symbol, "TestProvider");
         List<MarketDataProvider> providers = Arrays.asList(mockProvider);
 
-        when(providerFactory.getAvailableProviders()).thenReturn(providers);
+        when(providerFactory.getQuoteProviders(symbol)).thenReturn(providers);
         when(mockProvider.getMarketData(symbol)).thenReturn(expectedData);
 
         StockPriceDto result = marketDataService.getStockPrice(symbol);
 
         assertNotNull(result);
+        verify(providerFactory, times(1)).getQuoteProviders(symbol);
         verify(mockProvider, times(1)).getMarketData(symbol);
         verifyNoInteractions(marketPriceProducer);
     }
@@ -102,12 +104,13 @@ class MarketDataServiceTest {
 
         when(clock.instant()).thenReturn(Instant.now());
         when(clock.getZone()).thenReturn(ZoneId.systemDefault());
-        when(providerFactory.getAvailableProviders()).thenReturn(providers);
+        when(providerFactory.getQuoteProviders(symbol)).thenReturn(providers);
         when(mockProvider.getMarketData(symbol)).thenReturn(expectedData);
 
         StockPriceDto result = marketDataService.refreshStockPriceAndPublish(symbol);
 
         assertNotNull(result);
+        verify(providerFactory, times(1)).getQuoteProviders(symbol);
         verify(mockProvider, times(1)).getMarketData(symbol);
         verify(marketPriceProducer, times(1)).publishPriceUpdate(any());
     }
@@ -117,13 +120,9 @@ class MarketDataServiceTest {
     void shouldUseOnlySupportsSearchProviders() {
         String query = "apple";
         List<SearchResultDto> expected = List.of(new SearchResultDto("AAPL", "Apple Inc", "US", "STOCK"));
-        List<MarketDataProvider> providers = Arrays.asList(nonSearchProvider, searchProvider);
+        List<MarketDataProvider> providers = Arrays.asList(searchProvider);
 
-        when(providerFactory.getAvailableProviders()).thenReturn(providers);
-        when(nonSearchProvider.getProviderName()).thenReturn("NoSearch");
-        when(nonSearchProvider.supportsSearch()).thenReturn(false);
-        when(searchProvider.getProviderName()).thenReturn("SearchProvider");
-        when(searchProvider.supportsSearch()).thenReturn(true);
+        when(providerFactory.getSearchProviders()).thenReturn(providers);
         when(searchProvider.searchSymbol(query)).thenReturn(expected);
 
         List<SearchResultDto> result = marketDataService.searchSymbol(query);
@@ -131,7 +130,8 @@ class MarketDataServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("AAPL", result.get(0).getSymbol());
-        verify(nonSearchProvider, never()).searchSymbol(any());
+        verify(providerFactory, times(1)).getSearchProviders();
+        verifyNoInteractions(nonSearchProvider);
         verify(searchProvider, times(1)).searchSymbol(query);
     }
 
@@ -139,12 +139,12 @@ class MarketDataServiceTest {
     @DisplayName("throws exception when no providers are available")
     void shouldThrowExceptionWhenNoAvailableProviders() {
         String symbol = "AAPL";
-        when(providerFactory.getAvailableProviders()).thenReturn(Collections.emptyList());
+        when(providerFactory.getQuoteProviders(symbol)).thenReturn(Collections.emptyList());
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> marketDataService.getStockPrice(symbol));
 
-        assertTrue(exception.getMessage().contains("시장 데이터 프로바이더가 없습니다"));
+        assertTrue(exception.getMessage().contains("No available market data providers"));
     }
 
     @Test

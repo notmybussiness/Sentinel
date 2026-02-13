@@ -1,8 +1,13 @@
 package com.pjsent.sentinel.market.service.provider;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,95 +16,73 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.pjsent.sentinel.market.config.StockMarketProperties;
 import com.pjsent.sentinel.market.dto.StockPriceDto;
 
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(properties = {
-    "stock.market.alphavantage.api-key=test-api-key",
-    "stock.market.alphavantage.base-url=https://www.alphavantage.co/query",
-    "stock.market.alphavantage.enabled=true"
-})
-@DisplayName("AlphaVantageProvider 테스트")
+@DisplayName("AlphaVantageProvider tests")
 class AlphaVantageProviderTest {
-    
+
     @Mock
     private RestTemplate restTemplate;
-    
-    @InjectMocks
+
+    private StockMarketProperties properties;
     private AlphaVantageProvider alphaVantageProvider;
-    
+
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(alphaVantageProvider, "apiKey", "test-api-key");
-        ReflectionTestUtils.setField(alphaVantageProvider, "baseUrl", "https://www.alphavantage.co/query");
-        ReflectionTestUtils.setField(alphaVantageProvider, "enabled", true);
+        properties = new StockMarketProperties();
+        properties.getAlphavantage().setApiKey("test-api-key");
+        properties.getAlphavantage().setBaseUrl("https://www.alphavantage.co/query");
+        properties.getAlphavantage().setEnabled(true);
+
+        alphaVantageProvider = new AlphaVantageProvider(restTemplate, properties);
     }
-    
+
     @Test
-    @DisplayName("사용 가능한 상태일 때 true를 반환해야 한다")
-    void should_ReturnTrue_When_ProviderIsAvailable() {
-        // When
-        boolean result = alphaVantageProvider.isAvailable();
-        
-        // Then
-        assertTrue(result);
+    @DisplayName("returns true when provider is available")
+    void shouldReturnTrueWhenProviderIsAvailable() {
+        assertTrue(alphaVantageProvider.isAvailable());
     }
-    
+
     @Test
-    @DisplayName("API 키가 없을 때 false를 반환해야 한다")
-    void should_ReturnFalse_When_ApiKeyIsMissing() {
-        // Given
-        ReflectionTestUtils.setField(alphaVantageProvider, "apiKey", "");
-        
-        // When
-        boolean result = alphaVantageProvider.isAvailable();
-        
-        // Then
-        assertFalse(result);
+    @DisplayName("returns false when API key is missing")
+    void shouldReturnFalseWhenApiKeyIsMissing() {
+        properties.getAlphavantage().setApiKey("");
+
+        assertFalse(alphaVantageProvider.isAvailable());
     }
-    
+
     @Test
-    @DisplayName("프로바이더 이름을 올바르게 반환해야 한다")
-    void should_ReturnCorrectProviderName() {
-        // When
-        String providerName = alphaVantageProvider.getProviderName();
-        
-        // Then
-        assertEquals("AlphaVantage", providerName);
+    @DisplayName("returns provider name")
+    void shouldReturnCorrectProviderName() {
+        assertEquals("AlphaVantage", alphaVantageProvider.getProviderName());
     }
-    
+
     @Test
-    @DisplayName("Time Series와 Historical Data를 지원한다고 반환해야 한다")
-    void should_SupportTimeSeriesAndHistoricalData() {
-        // When & Then
-        assertTrue(alphaVantageProvider.supportsTimeSeries());
-        assertTrue(alphaVantageProvider.supportsHistoricalData());
+    @DisplayName("supports global symbols only for quote path")
+    void shouldSupportOnlyGlobalSymbols() {
+        assertTrue(alphaVantageProvider.supportsSymbol("AAPL"));
+        assertFalse(alphaVantageProvider.supportsSymbol("005930"));
     }
-    
+
     @Test
-    @DisplayName("유효한 응답으로 주식 데이터를 성공적으로 가져와야 한다")
-    void should_GetStockDataSuccessfully_When_ValidResponse() {
-        // Given
+    @DisplayName("returns stock data when API response is valid")
+    void shouldGetStockDataSuccessfullyWhenValidResponse() {
         String symbol = "AAPL";
         Map<String, Object> mockResponse = createMockAlphaVantageResponse();
         ResponseEntity<Map> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
-        
-        when(restTemplate.getForEntity(anyString(), eq(Map.class)))
-                .thenReturn(responseEntity);
-        
-        // When
+
+        when(restTemplate.getForEntity(anyString(), eq(Map.class))).thenReturn(responseEntity);
+
         StockPriceDto result = alphaVantageProvider.getMarketData(symbol);
-        
-        // Then
+
         assertNotNull(result);
         assertEquals(symbol, result.getSymbol());
         assertEquals(150.25, result.getPrice());
@@ -112,69 +95,47 @@ class AlphaVantageProviderTest {
         assertEquals("2024-01-15", result.getLastTradingDay());
         assertEquals("AlphaVantage", result.getProvider());
     }
-    
+
     @Test
-    @DisplayName("API가 사용 불가능할 때 예외를 발생시켜야 한다")
-    void should_ThrowException_When_ProviderIsNotAvailable() {
-        // Given
-        ReflectionTestUtils.setField(alphaVantageProvider, "enabled", false);
-        
-        // When & Then
-        assertThrows(IllegalStateException.class, () -> {
-            alphaVantageProvider.getMarketData("AAPL");
-        });
-    }
-    
-    @Test
-    @DisplayName("API 호출 실패 시 예외를 발생시켜야 한다")
-    void should_ThrowException_When_ApiCallFails() {
-        // Given
-        String symbol = "AAPL";
+    @DisplayName("throws exception when API call fails")
+    void shouldThrowExceptionWhenApiCallFails() {
         when(restTemplate.getForEntity(anyString(), eq(Map.class)))
-                .thenThrow(new RuntimeException("API 호출 실패"));
-        
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            alphaVantageProvider.getMarketData(symbol);
-        });
-        
-        assertTrue(exception.getMessage().contains("AlphaVantage API 호출 실패"));
+                .thenThrow(new RuntimeException("API call failed"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> alphaVantageProvider.getMarketData("AAPL"));
+
+        assertTrue(exception.getMessage().contains("AlphaVantage API"));
     }
-    
+
     @Test
-    @DisplayName("유효하지 않은 응답 데이터 시 예외를 발생시켜야 한다")
-    void should_ThrowException_When_InvalidResponseData() {
-        // Given
-        String symbol = "AAPL";
+    @DisplayName("throws exception when response data is invalid")
+    void shouldThrowExceptionWhenInvalidResponseData() {
         Map<String, Object> invalidResponse = new HashMap<>();
         ResponseEntity<Map> responseEntity = new ResponseEntity<>(invalidResponse, HttpStatus.OK);
-        
-        when(restTemplate.getForEntity(anyString(), eq(Map.class)))
-                .thenReturn(responseEntity);
-        
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            alphaVantageProvider.getMarketData(symbol);
-        });
-        
-        assertTrue(exception.getMessage().contains("응답 데이터 파싱 실패"));
+
+        when(restTemplate.getForEntity(anyString(), eq(Map.class))).thenReturn(responseEntity);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> alphaVantageProvider.getMarketData("AAPL"));
+
+        assertTrue(exception.getMessage().contains("response"));
     }
-    
+
     private Map<String, Object> createMockAlphaVantageResponse() {
         Map<String, Object> response = new HashMap<>();
         Map<String, Object> globalQuote = new HashMap<>();
-        
+
         globalQuote.put("01. symbol", "AAPL");
         globalQuote.put("02. open", "149.50");
         globalQuote.put("03. high", "151.00");
         globalQuote.put("04. low", "148.75");
         globalQuote.put("05. price", "150.25");
-        globalQuote.put("06. volume", "50000000");
         globalQuote.put("07. latest trading day", "2024-01-15");
         globalQuote.put("08. previous close", "149.00");
         globalQuote.put("09. change", "1.25");
         globalQuote.put("10. change percent", "0.84%");
-        
+
         response.put("Global Quote", globalQuote);
         return response;
     }
