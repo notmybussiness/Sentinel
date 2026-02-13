@@ -61,6 +61,7 @@ import static org.mockito.Mockito.*;
         "kakao.oauth.redirect-uri=http://localhost:8080/test",
         "stock.market.alphavantage.api-key=test-key",
         "stock.market.finnhub.api-key=test-key",
+        "cors.allowed-origins=http://localhost:3000",
         "spring.cache.type=none"
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)

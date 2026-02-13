@@ -59,12 +59,12 @@ class PortfolioPriceSchedulerTest {
         stockHolding = mock(PortfolioHolding.class);
         cryptoHolding = mock(PortfolioHolding.class);
 
-        given(stockHolding.getSymbol()).willReturn("AAPL");
-        given(stockHolding.getAssetType()).willReturn(AssetType.STOCK);
+        lenient().when(stockHolding.getSymbol()).thenReturn("AAPL");
+        lenient().when(stockHolding.getAssetType()).thenReturn(AssetType.STOCK);
 
-        given(cryptoHolding.getSymbol()).willReturn("BTC");
-        given(cryptoHolding.getAssetType()).willReturn(AssetType.CRYPTO);
-        given(cryptoHolding.getBaseCurrency()).willReturn("USD");
+        lenient().when(cryptoHolding.getSymbol()).thenReturn("BTC");
+        lenient().when(cryptoHolding.getAssetType()).thenReturn(AssetType.CRYPTO);
+        lenient().when(cryptoHolding.getBaseCurrency()).thenReturn("USD");
     }
 
     @Nested
@@ -78,7 +78,6 @@ class PortfolioPriceSchedulerTest {
             List<PortfolioHolding> holdings = new ArrayList<>();
             holdings.add(stockHolding);
             given(portfolio.getHoldings()).willReturn(holdings);
-            given(portfolio.getId()).willReturn(1L);
             given(portfolioRepository.findAll()).willReturn(List.of(portfolio));
 
             StockPriceDto stockPrice = StockPriceDto.builder()
@@ -104,7 +103,6 @@ class PortfolioPriceSchedulerTest {
             holdings.add(stockHolding);
             holdings.add(cryptoHolding);
             given(portfolio.getHoldings()).willReturn(holdings);
-            given(portfolio.getId()).willReturn(1L);
             given(portfolioRepository.findAll()).willReturn(List.of(portfolio));
 
             StockPriceDto stockPrice = StockPriceDto.builder()
@@ -161,7 +159,6 @@ class PortfolioPriceSchedulerTest {
             holdings.add(failingHolding);
             holdings.add(stockHolding);
             given(portfolio.getHoldings()).willReturn(holdings);
-            given(portfolio.getId()).willReturn(1L);
             given(portfolioRepository.findAll()).willReturn(List.of(portfolio));
 
             // FAIL 심볼은 예외 발생
@@ -202,9 +199,7 @@ class PortfolioPriceSchedulerTest {
             holdings2.add(holding2);
 
             given(portfolio1.getHoldings()).willReturn(holdings1);
-            given(portfolio1.getId()).willReturn(1L);
             given(portfolio2.getHoldings()).willReturn(holdings2);
-            given(portfolio2.getId()).willReturn(2L);
             given(portfolioRepository.findAll()).willReturn(List.of(portfolio1, portfolio2));
 
             StockPriceDto aaplPrice = StockPriceDto.builder().symbol("AAPL").price(150.0).build();

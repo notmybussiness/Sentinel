@@ -18,6 +18,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,6 +49,12 @@ class OpenApiContractTest {
 
     @MockBean
     private RedisTemplate<String, Object> redisTemplate;
+
+    @MockBean
+    private ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
+
+    @MockBean
+    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
 
     @MockBean
     private KafkaTemplate<String, Object> kafkaTemplate;

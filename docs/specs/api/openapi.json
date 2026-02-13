@@ -99,22 +99,22 @@
               }
             }
           },
-          "200" : {
-            "description" : "Portfolio updated",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PortfolioDto"
-                }
-              }
-            }
-          },
           "400" : {
             "description" : "Validation failed",
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Portfolio updated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PortfolioDto"
                 }
               }
             }
@@ -135,9 +135,6 @@
           }
         } ],
         "responses" : {
-          "204" : {
-            "description" : "Portfolio deleted"
-          },
           "404" : {
             "description" : "Portfolio not found",
             "content" : {
@@ -147,6 +144,9 @@
                 }
               }
             }
+          },
+          "204" : {
+            "description" : "Portfolio deleted"
           }
         }
       }
@@ -194,22 +194,22 @@
               }
             }
           },
-          "200" : {
-            "description" : "Holding updated",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PortfolioHoldingDto"
-                }
-              }
-            }
-          },
           "404" : {
             "description" : "Holding not found",
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Holding updated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PortfolioHoldingDto"
                 }
               }
             }
@@ -238,9 +238,6 @@
           }
         } ],
         "responses" : {
-          "204" : {
-            "description" : "Holding deleted"
-          },
           "404" : {
             "description" : "Holding not found",
             "content" : {
@@ -250,6 +247,9 @@
                 }
               }
             }
+          },
+          "204" : {
+            "description" : "Holding deleted"
           }
         }
       }
@@ -590,12 +590,12 @@
           "example" : "AAPL"
         } ],
         "responses" : {
-          "200" : {
-            "description" : "Price refreshed and published",
+          "500" : {
+            "description" : "Provider error",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/StockPriceDto"
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -610,12 +610,12 @@
               }
             }
           },
-          "500" : {
-            "description" : "Provider error",
+          "200" : {
+            "description" : "Price refreshed and published",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                  "$ref" : "#/components/schemas/StockPriceDto"
                 }
               }
             }
@@ -765,22 +765,22 @@
               }
             }
           },
-          "200" : {
-            "description" : "Token refreshed",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
-          },
           "401" : {
             "description" : "Invalid refresh token",
             "content" : {
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Token refreshed",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LoginResponseDto"
                 }
               }
             }
@@ -802,8 +802,11 @@
           }
         } ],
         "responses" : {
-          "400" : {
-            "description" : "Invalid authorization header",
+          "200" : {
+            "description" : "Logout succeeded"
+          },
+          "500" : {
+            "description" : "Unexpected error",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -812,11 +815,8 @@
               }
             }
           },
-          "200" : {
-            "description" : "Logout succeeded"
-          },
-          "500" : {
-            "description" : "Unexpected error",
+          "400" : {
+            "description" : "Invalid authorization header",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -1190,12 +1190,12 @@
           "example" : "AAPL"
         } ],
         "responses" : {
-          "200" : {
-            "description" : "Stock price returned",
+          "500" : {
+            "description" : "Provider error",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/StockPriceDto"
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -1210,12 +1210,12 @@
               }
             }
           },
-          "500" : {
-            "description" : "Provider error",
+          "200" : {
+            "description" : "Stock price returned",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                  "$ref" : "#/components/schemas/StockPriceDto"
                 }
               }
             }
@@ -1620,16 +1620,6 @@
           }
         } ],
         "responses" : {
-          "400" : {
-            "description" : "Invalid authorization header",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
           "401" : {
             "description" : "Authentication failed",
             "content" : {
@@ -1646,6 +1636,16 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid authorization header",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -1686,16 +1686,6 @@
           }
         } ],
         "responses" : {
-          "401" : {
-            "description" : "Authentication failed",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
           "200" : {
             "description" : "Login succeeded",
             "content" : {
@@ -1708,6 +1698,16 @@
           },
           "500" : {
             "description" : "Unexpected error",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication failed",
             "content" : {
               "*/*" : {
                 "schema" : {

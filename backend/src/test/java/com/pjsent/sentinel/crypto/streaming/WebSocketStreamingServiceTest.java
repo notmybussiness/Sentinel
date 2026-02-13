@@ -13,17 +13,15 @@ import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 /**
- * WebSocketStreamingService 핵심 테스트
+ * WebSocketStreamingService ?듭떖 ?뚯뒪??
  * 
- * 1. 연결 성공 → 데이터 수신
- * 2. 연결 실패 → 재연결
+ * 1. ?곌껐 ?깃났 ???곗씠???섏떊
+ * 2. ?곌껐 ?ㅽ뙣 ???ъ뿰寃?
  */
 @ExtendWith(MockitoExtension.class)
 class WebSocketStreamingServiceTest {
@@ -46,11 +44,11 @@ class WebSocketStreamingServiceTest {
         }
 
         // ========================================================================
-        // 1. 연결 성공
+        // 1. ?곌껐 ?깃났
         // ========================================================================
 
         @Test
-        @DisplayName("[연결] WebSocket 연결 성공 → 데이터 수신")
+        @DisplayName("[?곌껐] WebSocket ?곌껐 ?깃났 ???곗씠???섏떊")
         void shouldReceiveData_whenConnected() {
                 // Given
                 var mockPrice = createMockPrice("BTC", 50000000.0);
@@ -69,34 +67,34 @@ class WebSocketStreamingServiceTest {
         }
 
         // ========================================================================
-        // 2. 재연결 (Retry)
+        // 2. ?ъ뿰寃?(Retry)
         // ========================================================================
 
         @Test
-        @DisplayName("[재연결] 연결 실패 시 재시도 메트릭 기록 확인")
+        @DisplayName("[?ъ뿰寃? ?곌껐 ?ㅽ뙣 ???ъ떆??硫뷀듃由?湲곕줉 ?뺤씤")
         void shouldRecordReconnectionMetric_whenConnectionFails() {
-                // Given - 에러 발생 후 빈 스트림으로 복구 (빠른 테스트용)
+                // Given - ?먮윭 諛쒖깮 ??鍮??ㅽ듃由쇱쑝濡?蹂듦뎄 (鍮좊Ⅸ ?뚯뒪?몄슜)
                 when(upbitWebSocketClient.connect(anyList()))
                                 .thenReturn(Flux.error(new RuntimeException("Connection failed")));
 
-                // When - startStreaming 호출 (에러 발생 → 캐시 폴백)
-                var result = service.startStreaming(List.of("BTC"), "KRW");
-
-                // Then - 최종적으로 캐시 폴백으로 빈 결과 반환 (재연결 5회 후)
-                StepVerifier.create(result)
+                // When - startStreaming ?몄텧 (?먮윭 諛쒖깮 ??罹먯떆 ?대갚)
+                // Then - retry backoff chain completes under virtual time without real-time waiting
+                StepVerifier.withVirtualTime(() -> service.startStreaming(List.of("BTC"), "KRW"))
+                                .expectSubscription()
+                                .thenAwait(Duration.ofMinutes(10))
                                 .expectComplete()
-                                .verify(Duration.ofSeconds(60)); // retry backoff 고려
+                                .verify();
 
-                // 재연결 메트릭이 기록되었는지 확인 (5회 재시도)
+                // ?ъ뿰寃?硫뷀듃由?씠 湲곕줉?섏뿀?붿? ?뺤씤 (5???ъ떆??
                 verify(metrics, atLeast(1)).recordReconnection();
                 verify(metrics, atLeast(1)).recordError();
         }
         // ========================================================================
-        // 3. 비활성화 상태 (Disabled)
+        // 3. 鍮꾪솢?깊솕 ?곹깭 (Disabled)
         // ========================================================================
 
         @Test
-        @DisplayName("[Disabled] 비활성화 시 캐시된 데이터 반환")
+        @DisplayName("[Disabled] 鍮꾪솢?깊솕 ??罹먯떆???곗씠??諛섑솚")
         void shouldReturnCachedData_whenDisabled() {
                 // Given
                 ReflectionTestUtils.setField(service, "enabled", false);
@@ -122,11 +120,11 @@ class WebSocketStreamingServiceTest {
         }
 
         // ========================================================================
-        // 4. Fallback (Cache) - 통합 테스트 성격
+        // 4. Fallback (Cache) - ?듯빀 ?뚯뒪???깃꺽
         // ========================================================================
 
         @Test
-        @DisplayName("[Fallback] 완전 실패 시 캐시 값 반환 확인")
+        @DisplayName("[Fallback] ?꾩쟾 ?ㅽ뙣 ??罹먯떆 媛?諛섑솚 ?뺤씤")
         void shouldReturnCachedData_whenConnectionCompletelyFails() {
                 // Given
                 // 1. Pre-populate cache
@@ -175,3 +173,4 @@ class WebSocketStreamingServiceTest {
                                 .build();
         }
 }
+

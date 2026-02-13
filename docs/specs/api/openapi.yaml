@@ -51,16 +51,16 @@ paths:
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
-        '200':
-          description: Portfolio updated
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/PortfolioDto'}
         '400':
           description: Validation failed
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Portfolio updated
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioDto'}
     delete:
       tags: [Portfolio]
       summary: Delete portfolio
@@ -71,12 +71,12 @@ paths:
         required: true
         schema: {type: integer, format: int64}
       responses:
-        '204': {description: Portfolio deleted}
         '404':
           description: Portfolio not found
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '204': {description: Portfolio deleted}
   /api/v1/portfolios/{portfolioId}/holdings/{holdingId}:
     put:
       tags: [Portfolio]
@@ -102,16 +102,16 @@ paths:
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
-        '200':
-          description: Holding updated
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/PortfolioHoldingDto'}
         '404':
           description: Holding not found
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Holding updated
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioHoldingDto'}
     delete:
       tags: [Portfolio]
       summary: Delete holding
@@ -126,12 +126,12 @@ paths:
         required: true
         schema: {type: integer, format: int64}
       responses:
-        '204': {description: Holding deleted}
         '404':
           description: Holding not found
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '204': {description: Holding deleted}
   /api/v1/rebalancing/simulate:
     post:
       tags: [rebalancing-controller]
@@ -323,21 +323,21 @@ paths:
         schema: {type: string}
         example: AAPL
       responses:
-        '200':
-          description: Price refreshed and published
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/StockPriceDto'}
-        '400':
-          description: Invalid symbol
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
         '500':
           description: Provider error
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '400':
+          description: Invalid symbol
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Price refreshed and published
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/StockPriceDto'}
   /api/v1/crypto/prices:
     post:
       tags: [Crypto]
@@ -418,16 +418,16 @@ paths:
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
-        '200':
-          description: Token refreshed
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/LoginResponseDto'}
         '401':
           description: Invalid refresh token
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Token refreshed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/LoginResponseDto'}
   /api/v1/auth/logout:
     post:
       tags: [Auth]
@@ -439,14 +439,14 @@ paths:
         required: true
         schema: {type: string}
       responses:
-        '400':
-          description: Invalid authorization header
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
         '200': {description: Logout succeeded}
         '500':
           description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '400':
+          description: Invalid authorization header
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
@@ -664,21 +664,21 @@ paths:
         schema: {type: string}
         example: AAPL
       responses:
-        '200':
-          description: Stock price returned
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/StockPriceDto'}
-        '400':
-          description: Invalid symbol
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
         '500':
           description: Provider error
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '400':
+          description: Invalid symbol
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Stock price returned
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/StockPriceDto'}
   /api/v1/market/indices:
     get:
       tags: [Market]
@@ -920,11 +920,6 @@ paths:
         required: true
         schema: {type: string}
       responses:
-        '400':
-          description: Invalid authorization header
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
         '401':
           description: Authentication failed
           content:
@@ -935,6 +930,11 @@ paths:
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/UserDto'}
+        '400':
+          description: Invalid authorization header
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
   /api/v1/auth/kakao:
     get:
       tags: [Auth]
@@ -957,11 +957,6 @@ paths:
         required: true
         schema: {type: string}
       responses:
-        '401':
-          description: Authentication failed
-          content:
-            '*/*':
-              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
         '200':
           description: Login succeeded
           content:
@@ -969,6 +964,11 @@ paths:
               schema: {$ref: '#/components/schemas/LoginResponseDto'}
         '500':
           description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '401':
+          description: Authentication failed
           content:
             '*/*':
               schema: {$ref: '#/components/schemas/ApiErrorResponse'}

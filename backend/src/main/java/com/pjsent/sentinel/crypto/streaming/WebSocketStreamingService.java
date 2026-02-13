@@ -148,8 +148,10 @@ public class WebSocketStreamingService implements StreamingService {
      */
     private Flux<CryptoPriceDto> getCachedPricesAsFlux(List<String> symbols, String baseCurrency) {
         return Flux.fromIterable(symbols)
-                .map(symbol -> getCachedPrice(symbol, baseCurrency))
-                .filter(price -> price != null);
+                .flatMap(symbol -> {
+                    CryptoPriceDto cached = getCachedPrice(symbol, baseCurrency);
+                    return cached != null ? Flux.just(cached) : Flux.empty();
+                });
     }
 
     // ========================================================================
