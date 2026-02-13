@@ -18,8 +18,9 @@ spring:
 
   # JPA Settings
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:
@@ -41,11 +42,16 @@ spring:
 
   # AutoConfiguration (Redis 명시적 활성화)
   autoconfigure:
-    exclude: []  # 모든 exclude 제거
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
 
 # Server Configuration
 server:
   port: 0  # Random port for tests
+
+# CORS (required by SecurityConfig in context-load/integration tests)
+cors:
+  allowed-origins: http://localhost:3000
 
 # JWT
 jwt:
@@ -94,3 +100,9 @@ logging:
     com.pjsent.sentinel: INFO
     org.springframework.cache: DEBUG
     org.springframework.data.redis: DEBUG
+
+# Actuator health checks can fail in tests when reactive redis contributors are absent
+management:
+  health:
+    redis:
+      enabled: false

@@ -2,6 +2,7 @@ package com.pjsent.sentinel.common.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  * 전략: Cache-First → TTL 만료 시 Error
  */
 @Service
+@ConditionalOnBean(RedisTemplate.class)
 @RequiredArgsConstructor
 @Slf4j
 public class FallbackService {
