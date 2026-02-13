@@ -275,7 +275,7 @@ export default function AiPage() {
                         <Brain className="w-16 h-16 mx-auto text-gray-600 mb-4" />
                         <h3 className="text-xl font-bold text-gray-400 mb-2">Ready for Analysis</h3>
                         <p className="text-gray-500 max-w-md mx-auto">
-                            Select a portfolio and analysis type, then click "Analyze Portfolio" to get AI-powered insights.
+                            Select a portfolio and analysis type, then click &quot;Analyze Portfolio&quot; to get AI-powered insights.
                         </p>
                     </CardContent>
                 </Card>

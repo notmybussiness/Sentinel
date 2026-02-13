@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "api:generate": "orval --config orval.config.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -26,6 +27,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.7",
+    "orval": "^7.13.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

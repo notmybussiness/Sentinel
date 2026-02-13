@@ -1,15 +1,30 @@
 import { MarketIndex, CryptoPrice, Portfolio, AiAnalysisResult, PortfolioHistoryPoint, AssetAllocation, User, AuthTokens, ChartData, PriceHistoryDto, AssetType, AiAnalysisRequest, AiAnalysisResponse, AiServiceStatus, BacktestRequest, BacktestResponse, BacktestValidationResponse, BacktestStatus, HistoricalPriceData, RebalancingRequest, RebalancingResponse, RebalancingSimulationResponse, StrategyInfoResponse } from './types';
 import { MOCK_MARKET_INDICES, MOCK_CRYPTO_PRICES, MOCK_PORTFOLIOS, MOCK_AI_ANALYSIS, MOCK_PORTFOLIO_HISTORY, MOCK_ASSET_ALLOCATION } from './mock-data';
+import {
+    createPortfolio as createPortfolioApi,
+    deletePortfolio as deletePortfolioApi,
+    devLogin as devLoginApi,
+    getCurrentUser as getCurrentUserApi,
+    getKakaoLoginUrl as getKakaoLoginUrlApi,
+    getMarketIndices as getMarketIndicesApi,
+    getPortfolio as getPortfolioApi,
+    getPortfolios as getPortfoliosApi,
+    getStockPrice as getStockPriceApi,
+    logout as logoutApi,
+    recalculatePortfolio as recalculatePortfolioApi,
+    searchSymbol as searchSymbolApi,
+    updatePortfolio as updatePortfolioApi,
+} from './generated/sdk';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-// 임시로 mock delay 유지 (점진적 마이그레이션)
+// ?袁⑸뻻嚥?mock delay ?醫? (?癒?춭??筌띾뜆?졿뉩紐껋쟿??곷?
 const SIMULATED_DELAY_MS = 800;
 function delay<T>(data: T): Promise<T> {
     return new Promise((resolve) => setTimeout(() => resolve(data), SIMULATED_DELAY_MS));
 }
 
-// 토큰 갱신 함수
+// ?醫뤾쿃 揶쏄퉮????λ땾
 async function refreshAccessToken(): Promise<string | null> {
     const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
     if (!refreshToken) return null;
@@ -32,7 +47,7 @@ async function refreshAccessToken(): Promise<string | null> {
     }
 }
 
-// 로그아웃 (토큰 삭제)
+// 嚥≪뮄??袁⑹뜍 (?醫뤾쿃 ????
 export function logout() {
     if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
@@ -42,7 +57,7 @@ export function logout() {
     }
 }
 
-// 인증 헤더 포함 fetch
+// ?紐꾩쵄 ??삳쐭 ??釉?fetch
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
     const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
@@ -57,7 +72,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
 
     const response = await fetch(`${API_URL}${url}`, { ...options, headers });
 
-    // 401 시 토큰 갱신 시도
+    // 401 ???醫뤾쿃 揶쏄퉮????뺣즲
     if (response.status === 401 && accessToken) {
         const newToken = await refreshAccessToken();
         if (newToken) {
@@ -72,7 +87,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
     return response;
 }
 
-// Backend MarketIndexDto → FE MarketIndex 매핑 (value → price)
+// Backend MarketIndexDto ??FE MarketIndex 筌띲끋釉?(value ??price)
 interface BackendMarketIndex {
     symbol: string;
     name: string;
@@ -82,7 +97,7 @@ interface BackendMarketIndex {
     timestamp: string;
 }
 
-// Backend CryptoPriceDto → FE CryptoPrice 매핑
+// Backend CryptoPriceDto ??FE CryptoPrice 筌띲끋釉?
 interface BackendCryptoPrice {
     symbol: string;
     name: string;
@@ -102,14 +117,14 @@ function mapCryptoPrice(item: BackendCryptoPrice): CryptoPrice {
         symbol: item.symbol,
         name: item.koreanName || item.name,
         price: item.price,
-        change: item.change || 0, // 전일 대비 가격 변동
-        changePercent: item.changePercent, // 전일 대비 변동률 (%)
+        change: item.change || 0, // ?袁⑹뵬 ????揶쎛野?癰궰??
+        changePercent: item.changePercent, // ?袁⑹뵬 ????癰궰??뉗ぇ (%)
         volume: item.volume,
-        marketCap: item.tradeValue, // tradeValue를 marketCap으로 대체
+        marketCap: item.tradeValue, // tradeValue??marketCap??곗쨮 ??筌?
     };
 }
 
-// Backend PortfolioDto → FE Portfolio 매핑
+// Backend PortfolioDto ??FE Portfolio 筌띲끋釉?
 interface BackendPortfolioHolding {
     id: number;
     symbol: string;
@@ -144,14 +159,14 @@ function mapPortfolio(item: BackendPortfolio): Portfolio {
         totalValue: item.totalValue,
         totalProfit: item.totalGainLoss,
         totalProfitRate: item.totalGainLossPercent,
-        cash: 0, // Backend에서 별도 제공하지 않음
+        cash: 0, // Backend?癒?퐣 癰귢쑬猷???볥궗??? ??놁벉
         holdings: (item.holdings || []).map(h => ({
             id: h.id,
             symbol: h.symbol,
             quantity: h.quantity,
-            averagePrice: h.averageCost,     // BE: averageCost → FE: averagePrice
+            averagePrice: h.averageCost,     // BE: averageCost ??FE: averagePrice
             currentPrice: h.currentPrice,
-            totalValue: h.marketValue,       // BE: marketValue → FE: totalValue
+            totalValue: h.marketValue,       // BE: marketValue ??FE: totalValue
             profit: h.gainLoss,
             profitRate: h.gainLossPercent,
             assetType: h.assetType,
@@ -162,30 +177,27 @@ function mapPortfolio(item: BackendPortfolio): Portfolio {
 
 export const api = {
     auth: {
-        // 카카오 로그인 URL을 서버에서 가져옴
+        // 燁삳똻萸??嚥≪뮄???URL????뺤쒔?癒?퐣 揶쎛?紐꾩긾
         getKakaoLoginUrl: async (): Promise<string> => {
-            const response = await fetch(`${API_URL}/api/v1/auth/kakao`);
-            if (!response.ok) throw new Error('Failed to get Kakao login URL');
-            return response.text();
+            const response = await getKakaoLoginUrlApi();
+            return response.data as string;
         },
-        // 개발용 자동 로그인
+        // 揶쏆뮆而???癒?짗 嚥≪뮄???
         devLogin: async (): Promise<{ accessToken: string; refreshToken: string; user: User }> => {
-            const response = await fetch(`${API_URL}/api/v1/auth/dev-login`, { method: 'POST' });
-            if (!response.ok) throw new Error('Dev login failed');
-            return response.json();
+            const response = await devLoginApi();
+            return response.data as { accessToken: string; refreshToken: string; user: User };
         },
         getMe: async (): Promise<User | null> => {
             try {
-                const response = await fetchWithAuth('/api/v1/auth/me');
-                if (!response.ok) return null;
-                return response.json();
+                const response = await getCurrentUserApi();
+                return response.data as User;
             } catch {
                 return null;
             }
         },
         logout: async (): Promise<void> => {
             try {
-                await fetchWithAuth('/api/v1/auth/logout', { method: 'POST' });
+                await logoutApi();
             } finally {
                 logout();
             }
@@ -194,13 +206,8 @@ export const api = {
     market: {
         getIndices: async (): Promise<MarketIndex[]> => {
             try {
-                const response = await fetch(`${API_URL}/api/v1/market/indices`);
-                if (!response.ok) {
-                    console.error('Failed to fetch indices, falling back to mock');
-                    return MOCK_MARKET_INDICES;
-                }
-                const data: BackendMarketIndex[] = await response.json();
-                // Backend value → FE price 매핑
+                const response = await getMarketIndicesApi();
+                const data = response.data as BackendMarketIndex[];
                 return data.map(item => ({
                     symbol: item.symbol,
                     name: item.name,
@@ -214,16 +221,14 @@ export const api = {
             }
         },
         getPrice: async (symbol: string): Promise<MarketIndex> => {
-            const response = await fetch(`${API_URL}/api/v1/market/price/${symbol}`);
-            if (!response.ok) throw new Error('Failed to fetch price');
-            return response.json();
+            const response = await getStockPriceApi(symbol);
+            return response.data as MarketIndex;
         },
         search: async (query: string): Promise<MarketIndex[]> => {
-            const response = await fetch(`${API_URL}/api/v1/market/search?query=${encodeURIComponent(query)}`);
-            if (!response.ok) throw new Error('Failed to search');
-            return response.json();
+            const response = await searchSymbolApi({ query });
+            return response.data as MarketIndex[];
         },
-        // 기존 호환성을 위해 유지 (crypto.getTopCrypto로 리다이렉트)
+        // 疫꿸퀣???紐낆넎?源놁뱽 ?袁る퉸 ?醫? (crypto.getTopCrypto嚥??귐됰뼄?????
         getTopCrypto: async (): Promise<CryptoPrice[]> => {
             try {
                 const response = await fetch(`${API_URL}/api/v1/crypto/trending`);
@@ -270,12 +275,8 @@ export const api = {
     portfolio: {
         getAll: async (): Promise<Portfolio[]> => {
             try {
-                const response = await fetchWithAuth('/api/v1/portfolios');
-                if (!response.ok) {
-                    console.error('Failed to fetch portfolios, falling back to mock');
-                    return MOCK_PORTFOLIOS;
-                }
-                const data: BackendPortfolio[] = await response.json();
+                const response = await getPortfoliosApi();
+                const data = response.data as BackendPortfolio[];
                 return data.map(mapPortfolio);
             } catch (error) {
                 console.error('Error fetching portfolios:', error);
@@ -284,13 +285,9 @@ export const api = {
         },
         getById: async (id: number): Promise<Portfolio | undefined> => {
             try {
-                const response = await fetchWithAuth(`/api/v1/portfolios/${id}`);
+                const response = await getPortfolioApi(id);
                 if (response.status === 404) return undefined;
-                if (!response.ok) {
-                    const p = MOCK_PORTFOLIOS.find(p => p.id === id);
-                    return p;
-                }
-                const data: BackendPortfolio = await response.json();
+                const data = response.data as BackendPortfolio;
                 return mapPortfolio(data);
             } catch (error) {
                 console.error('Error fetching portfolio:', error);
@@ -298,26 +295,21 @@ export const api = {
             }
         },
         create: async (data: { name: string; description?: string; initialCash?: number }): Promise<Portfolio> => {
-            const response = await fetchWithAuth('/api/v1/portfolios', {
-                method: 'POST',
-                body: JSON.stringify(data),
-            });
-            if (!response.ok) throw new Error('Failed to create portfolio');
-            const result: BackendPortfolio = await response.json();
+            const payload = {
+                name: data.name,
+                description: data.description,
+            };
+            const response = await createPortfolioApi(payload);
+            const result = response.data as BackendPortfolio;
             return mapPortfolio(result);
         },
         update: async (id: number, data: { name?: string; description?: string }): Promise<Portfolio> => {
-            const response = await fetchWithAuth(`/api/v1/portfolios/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(data),
-            });
-            if (!response.ok) throw new Error('Failed to update portfolio');
-            const result: BackendPortfolio = await response.json();
+            const response = await updatePortfolioApi(id, { name: data.name ?? "", description: data.description });
+            const result = response.data as BackendPortfolio;
             return mapPortfolio(result);
         },
         delete: async (id: number): Promise<void> => {
-            const response = await fetchWithAuth(`/api/v1/portfolios/${id}`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Failed to delete portfolio');
+            await deletePortfolioApi(id);
         },
         addHolding: async (portfolioId: number, data: { symbol: string; quantity: number; averagePrice: number; assetType: string }): Promise<Portfolio> => {
             // Backend expects averageCost instead of averagePrice
@@ -335,7 +327,7 @@ export const api = {
             const result: BackendPortfolio = await response.json();
             return mapPortfolio(result);
         },
-        // Holding 수정
+        // Holding ??륁젟
         updateHolding: async (portfolioId: number, holdingId: number, data: { quantity?: number; averagePrice?: number }): Promise<Portfolio> => {
             const backendData = {
                 quantity: data.quantity,
@@ -349,23 +341,20 @@ export const api = {
             const result: BackendPortfolio = await response.json();
             return mapPortfolio(result);
         },
-        // Holding 삭제
+        // Holding ????
         deleteHolding: async (portfolioId: number, holdingId: number): Promise<void> => {
             const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/holdings/${holdingId}`, {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error('Failed to delete holding');
         },
-        // 포트폴리오 재계산
+        // ?????????????
         recalculate: async (portfolioId: number): Promise<Portfolio> => {
-            const response = await fetchWithAuth(`/api/v1/portfolios/${portfolioId}/recalculate`, {
-                method: 'POST',
-            });
-            if (!response.ok) throw new Error('Failed to recalculate portfolio');
-            const result: BackendPortfolio = await response.json();
+            const response = await recalculatePortfolioApi(portfolioId);
+            const result = response.data as BackendPortfolio;
             return mapPortfolio(result);
         },
-        // 아래는 아직 Backend에서 제공하지 않음 - Mock 유지
+        // ?袁⑥삋???袁⑹춦 Backend?癒?퐣 ??볥궗??? ??놁벉 - Mock ?醫?
         getHistory: () => delay<PortfolioHistoryPoint[]>(MOCK_PORTFOLIO_HISTORY),
         getAllocation: () => delay<AssetAllocation[]>(MOCK_ASSET_ALLOCATION),
     },
@@ -448,7 +437,7 @@ export const api = {
         },
     },
     backtest: {
-        // 백테스트 실행
+        // 獄쏄퉲???쎈뱜 ??쎈뻬
         run: async (request: BacktestRequest): Promise<BacktestResponse> => {
             const response = await fetchWithAuth('/api/v1/backtest/run', {
                 method: 'POST',
@@ -460,7 +449,7 @@ export const api = {
             }
             return response.json();
         },
-        // 백테스트 검증
+        // 獄쏄퉲???쎈뱜 野꺜筌?
         validate: async (request: BacktestRequest): Promise<BacktestValidationResponse> => {
             const response = await fetchWithAuth('/api/v1/backtest/validate', {
                 method: 'POST',
@@ -469,7 +458,7 @@ export const api = {
             if (!response.ok) throw new Error('Validation failed');
             return response.json();
         },
-        // 히스토리컬 데이터 조회
+        // ??됰뮞?醫듼봺???怨쀬뵠??鈺곌퀬??
         getHistorical: async (symbol: string, startDate: string, endDate: string): Promise<HistoricalPriceData | null> => {
             try {
                 const response = await fetchWithAuth(`/api/v1/backtest/historical/${encodeURIComponent(symbol)}?startDate=${startDate}&endDate=${endDate}`);
@@ -481,7 +470,7 @@ export const api = {
                 return null;
             }
         },
-        // 백테스트 서비스 상태
+        // 獄쏄퉲???쎈뱜 ??뺥돩???怨밴묶
         getStatus: async (): Promise<BacktestStatus | null> => {
             try {
                 const response = await fetch(`${API_URL}/api/v1/backtest/status`);
@@ -494,7 +483,7 @@ export const api = {
         },
     },
     rebalancing: {
-        // 리밸런싱 추천
+        // ?귐됯강?怨쀫뼓 ?곕뗄荑?
         getRecommendations: async (request: RebalancingRequest): Promise<RebalancingResponse> => {
             const response = await fetchWithAuth('/api/v1/rebalancing/recommend', {
                 method: 'POST',
@@ -506,7 +495,7 @@ export const api = {
             }
             return response.json();
         },
-        // 리밸런싱 시뮬레이션
+        // ?귐됯강?怨쀫뼓 ?????됱뵠??
         simulate: async (request: RebalancingRequest): Promise<RebalancingSimulationResponse> => {
             const response = await fetchWithAuth('/api/v1/rebalancing/simulate', {
                 method: 'POST',
@@ -518,7 +507,7 @@ export const api = {
             }
             return response.json();
         },
-        // 사용 가능한 전략 목록
+        // ????揶쎛?館釉??袁⑥셽 筌뤴뫖以?
         getStrategies: async (): Promise<StrategyInfoResponse | null> => {
             try {
                 const response = await fetch(`${API_URL}/api/v1/rebalancing/strategies`);
@@ -531,3 +520,6 @@ export const api = {
         },
     },
 };
+
+
+

@@ -1,0 +1,1554 @@
+openapi: 3.0.1
+info: {title: OpenAPI definition, version: v0}
+servers:
+- {url: 'http://localhost', description: Generated server url}
+tags:
+- {name: Auth, description: Authentication and session APIs}
+- {name: Crypto Streaming, description: 암호화폐 실시간 스트리밍 API}
+- {name: Portfolio, description: Portfolio management APIs}
+- {name: Crypto, description: 암호화폐 데이터 API}
+- {name: AI, description: AI 기반 포트폴리오 분석 API}
+- {name: Market, description: Market data APIs}
+paths:
+  /api/v1/portfolios/{portfolioId}:
+    get:
+      tags: [Portfolio]
+      summary: Get single portfolio
+      operationId: getPortfolio
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '404':
+          description: Portfolio not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Portfolio returned
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioDto'}
+    put:
+      tags: [Portfolio]
+      summary: Update portfolio
+      operationId: updatePortfolio
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdatePortfolioRequest'}
+        required: true
+      responses:
+        '404':
+          description: Portfolio not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Portfolio updated
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioDto'}
+        '400':
+          description: Validation failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+    delete:
+      tags: [Portfolio]
+      summary: Delete portfolio
+      operationId: deletePortfolio
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '204': {description: Portfolio deleted}
+        '404':
+          description: Portfolio not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/portfolios/{portfolioId}/holdings/{holdingId}:
+    put:
+      tags: [Portfolio]
+      summary: Update holding
+      operationId: updateHolding
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      - name: holdingId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdateHoldingRequest'}
+        required: true
+      responses:
+        '400':
+          description: Validation failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Holding updated
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioHoldingDto'}
+        '404':
+          description: Holding not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+    delete:
+      tags: [Portfolio]
+      summary: Delete holding
+      operationId: deleteHolding
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      - name: holdingId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '204': {description: Holding deleted}
+        '404':
+          description: Holding not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/rebalancing/simulate:
+    post:
+      tags: [rebalancing-controller]
+      operationId: simulateRebalancing
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RebalancingRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/RebalancingSimulationResponse'}
+  /api/v1/rebalancing/recommend:
+    post:
+      tags: [rebalancing-controller]
+      operationId: getRecommendations
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RebalancingRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/RebalancingResponse'}
+  /api/v1/portfolios:
+    get:
+      tags: [Portfolio]
+      summary: Get all portfolios
+      operationId: getPortfolios
+      responses:
+        '200':
+          description: Portfolios returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PortfolioDto'}
+        '500':
+          description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+    post:
+      tags: [Portfolio]
+      summary: Create portfolio
+      operationId: createPortfolio
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreatePortfolioRequest'}
+        required: true
+      responses:
+        '400':
+          description: Validation failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '201':
+          description: Portfolio created
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioDto'}
+  /api/v1/portfolios/{portfolioId}/recalculate:
+    post:
+      tags: [Portfolio]
+      summary: Recalculate portfolio
+      operationId: recalculatePortfolio
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '404':
+          description: Portfolio not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Portfolio recalculated
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioDto'}
+  /api/v1/portfolios/{portfolioId}/holdings:
+    post:
+      tags: [Portfolio]
+      summary: Add holding
+      operationId: addHolding
+      parameters:
+      - name: portfolioId
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AddHoldingRequest'}
+        required: true
+      responses:
+        '404':
+          description: Portfolio not found
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '400':
+          description: Validation failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '201':
+          description: Holding added
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioHoldingDto'}
+  /api/v1/market/prices:
+    get:
+      tags: [Market]
+      summary: Get multiple stock prices (query)
+      description: Deprecated. Use POST /api/v1/market/prices instead
+      operationId: getStockPrices
+      parameters:
+      - name: symbols
+        in: query
+        description: Comma separated symbols
+        required: true
+        schema: {type: string}
+        example: AAPL,MSFT
+      responses:
+        '200':
+          description: Stock prices returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/StockPriceDto'}
+        '400':
+          description: Invalid request
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+      deprecated: true
+    post:
+      tags: [Market]
+      summary: Get multiple stock prices (batch)
+      description: Canonical batch read path
+      operationId: getBatchPrices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items: {type: string}
+        required: true
+      responses:
+        '200':
+          description: Stock prices returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/StockPriceDto'}
+        '400':
+          description: Invalid symbol list
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '500':
+          description: Provider error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/market/price/{symbol}/refresh:
+    post:
+      tags: [Market]
+      summary: Refresh stock price and publish event
+      description: Explicit write path for refresh + publish
+      operationId: refreshStockPrice
+      parameters:
+      - name: symbol
+        in: path
+        description: Ticker symbol
+        required: true
+        schema: {type: string}
+        example: AAPL
+      responses:
+        '200':
+          description: Price refreshed and published
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/StockPriceDto'}
+        '400':
+          description: Invalid symbol
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '500':
+          description: Provider error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/crypto/prices:
+    post:
+      tags: [Crypto]
+      summary: 배치 가격 조회
+      description: 여러 암호화폐의 현재 가격을 한 번에 조회합니다.
+      operationId: getBatchPrices_1
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/BatchPriceRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CryptoPriceDto'}
+  /api/v1/batch/history/import:
+    post:
+      tags: [batch-controller]
+      operationId: runHistoryImport
+      parameters:
+      - name: symbol
+        in: query
+        required: false
+        schema: {type: string, default: BTC}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: string}
+  /api/v1/backtest/validate:
+    post:
+      tags: [backtest-controller]
+      operationId: validateBacktest
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/BacktestRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/BacktestValidationResponse'}
+  /api/v1/backtest/run:
+    post:
+      tags: [backtest-controller]
+      operationId: runBacktest
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/BacktestRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/BacktestResponse'}
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh JWT token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RefreshTokenRequest'}
+        required: true
+      responses:
+        '400':
+          description: Validation failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Token refreshed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/LoginResponseDto'}
+        '401':
+          description: Invalid refresh token
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout current user
+      operationId: logout
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema: {type: string}
+      responses:
+        '400':
+          description: Invalid authorization header
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200': {description: Logout succeeded}
+        '500':
+          description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/auth/dev-login:
+    post:
+      tags: [Auth]
+      summary: Development login
+      operationId: devLogin
+      responses:
+        '200':
+          description: Dev login succeeded
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/LoginResponseDto'}
+        '500':
+          description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/ai/test:
+    post:
+      tags: [AI]
+      summary: AI 테스트 (개발용)
+      description: Gemini AI API를 간단히 테스트합니다.
+      operationId: testAi
+      parameters:
+      - name: message
+        in: query
+        required: true
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: string}
+  /api/v1/ai/analyze:
+    post:
+      tags: [AI]
+      summary: 포트폴리오 AI 분석
+      description: Gemini AI를 활용하여 포트폴리오를 분석하고 투자 제안을 제공합니다.
+      operationId: analyzePortfolio
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PortfolioAnalysisRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PortfolioAnalysisResponse'}
+  /api/news/search:
+    post:
+      tags: [news-rag-controller]
+      operationId: searchNews
+      requestBody:
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/NewsSearchRequest'}
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: object}
+  /api/v1/rebalancing/strategies:
+    get:
+      tags: [rebalancing-controller]
+      operationId: getStrategies
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/StrategyInfoResponse'}
+  /api/v1/price-history/symbols:
+    get:
+      tags: [price-history-controller]
+      operationId: getSymbolsByAssetType
+      parameters:
+      - name: assetType
+        in: query
+        required: true
+        schema:
+          type: string
+          enum: [STOCK, CRYPTO, ETF, INDEX]
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {type: string}
+  /api/v1/price-history/latest:
+    get:
+      tags: [price-history-controller]
+      operationId: getLatestPrices
+      parameters:
+      - name: symbols
+        in: query
+        required: true
+        schema:
+          type: array
+          items: {type: string}
+      - name: assetType
+        in: query
+        required: true
+        schema:
+          type: string
+          enum: [STOCK, CRYPTO, ETF, INDEX]
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PriceHistoryDto'}
+  /api/v1/price-history/latest/{symbol}:
+    get:
+      tags: [price-history-controller]
+      operationId: getLatestPrice
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/PriceHistoryDto'}
+  /api/v1/price-history/chart:
+    get:
+      tags: [price-history-controller]
+      operationId: getChartData
+      parameters:
+      - name: symbol
+        in: query
+        required: true
+        schema: {type: string}
+      - name: startTime
+        in: query
+        required: true
+        schema: {type: string, format: date-time}
+      - name: endTime
+        in: query
+        required: true
+        schema: {type: string, format: date-time}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ChartDataDto'}
+  /api/v1/market/status:
+    get:
+      tags: [Market]
+      summary: Get market provider status
+      operationId: getServiceStatus
+      responses:
+        '200':
+          description: Service status returned
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ServiceStatusResponse'}
+        '500':
+          description: Status check failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/market/search:
+    get:
+      tags: [Market]
+      summary: Search symbol
+      operationId: searchSymbol
+      parameters:
+      - name: query
+        in: query
+        description: Keyword
+        required: true
+        schema: {type: string}
+        example: apple
+      responses:
+        '400':
+          description: Invalid query
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Search results returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/SearchResultDto'}
+  /api/v1/market/price/{symbol}:
+    get:
+      tags: [Market]
+      summary: Get latest stock price
+      description: Read-only path with no side effects
+      operationId: getStockPrice
+      parameters:
+      - name: symbol
+        in: path
+        description: Ticker symbol
+        required: true
+        schema: {type: string}
+        example: AAPL
+      responses:
+        '200':
+          description: Stock price returned
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/StockPriceDto'}
+        '400':
+          description: Invalid symbol
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '500':
+          description: Provider error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/market/indices:
+    get:
+      tags: [Market]
+      summary: Get major market indices
+      operationId: getMarketIndices
+      responses:
+        '200':
+          description: Indices returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/MarketIndexDto'}
+        '500':
+          description: Provider error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/crypto/trending:
+    get:
+      tags: [Crypto]
+      summary: 트렌딩 암호화폐 조회
+      description: 거래대금 기준 상위 암호화폐를 조회합니다.
+      operationId: getTrendingCoins
+      parameters:
+      - name: baseCurrency
+        in: query
+        description: 기준 통화
+        required: false
+        schema: {type: string, default: KRW}
+        example: KRW
+      - name: limit
+        in: query
+        description: 조회 개수
+        required: false
+        schema: {type: integer, format: int32, default: 10}
+        example: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/TrendingCoinDto'}
+  /api/v1/crypto/stream/status:
+    get:
+      tags: [Crypto Streaming]
+      summary: 스트리밍 서비스 상태
+      description: 모든 스트리밍 서비스의 상태를 확인합니다.
+      operationId: getStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+  /api/v1/crypto/stream/prices:
+    get:
+      tags: [Crypto Streaming]
+      summary: 실시간 가격 스트리밍
+      description: SSE를 통해 실시간 암호화폐 가격을 스트리밍합니다. method 파라미터로 방식 선택 가능.
+      operationId: streamPrices
+      parameters:
+      - name: symbols
+        in: query
+        description: 암호화폐 심볼 (쉼표로 구분)
+        required: true
+        schema: {type: string}
+        example: BTC,ETH,XRP
+      - name: baseCurrency
+        in: query
+        description: 기준 통화
+        required: false
+        schema: {type: string, default: KRW}
+        example: KRW
+      - name: method
+        in: query
+        description: 스트리밍 방식 (SSE, WebSocket, LongPolling)
+        required: false
+        schema: {type: string, default: SSE}
+        example: SSE
+      responses:
+        '200':
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ServerSentEventCryptoPriceDto'}
+  /api/v1/crypto/stream/methods:
+    get:
+      tags: [Crypto Streaming]
+      summary: 스트리밍 방식 목록 조회
+      description: 사용 가능한 스트리밍 방식과 상세 정보를 반환합니다.
+      operationId: getAvailableMethods
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+  /api/v1/crypto/status:
+    get:
+      tags: [Crypto]
+      summary: 서비스 상태 확인
+      description: 암호화폐 데이터 서비스의 상태를 확인합니다.
+      operationId: getServiceStatus_1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: object}
+  /api/v1/crypto/search:
+    get:
+      tags: [Crypto]
+      summary: 암호화폐 검색
+      description: 심볼 또는 이름으로 암호화폐를 검색합니다.
+      operationId: searchCrypto
+      parameters:
+      - name: query
+        in: query
+        description: 검색어
+        required: true
+        schema: {type: string}
+        example: bitcoin
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CryptoSearchResultDto'}
+  /api/v1/crypto/price/{symbol}:
+    get:
+      tags: [Crypto]
+      summary: 단일 암호화폐 가격 조회
+      description: 특정 암호화폐의 현재 가격을 조회합니다.
+      operationId: getCryptoPrice
+      parameters:
+      - name: symbol
+        in: path
+        description: 암호화폐 심볼
+        required: true
+        schema: {type: string}
+        example: BTC
+      - name: baseCurrency
+        in: query
+        description: 기준 통화
+        required: false
+        schema: {type: string, default: KRW}
+        example: KRW
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/CryptoPriceDto'}
+  /api/v1/crypto/historical/{symbol}:
+    get:
+      tags: [Crypto]
+      summary: 과거 데이터 조회
+      description: 암호화폐의 과거 가격 데이터를 조회합니다.
+      operationId: getHistoricalData
+      parameters:
+      - name: symbol
+        in: path
+        description: 암호화폐 심볼
+        required: true
+        schema: {type: string}
+        example: BTC
+      - name: baseCurrency
+        in: query
+        description: 기준 통화
+        required: false
+        schema: {type: string, default: KRW}
+        example: KRW
+      - name: days
+        in: query
+        description: 조회 일수
+        required: false
+        schema: {type: integer, format: int32, default: 30}
+        example: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CryptoPriceDto'}
+  /api/v1/backtest/status:
+    get:
+      tags: [backtest-controller]
+      operationId: getStatus_1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/BacktestStatusResponse'}
+  /api/v1/backtest/historical/{symbol}:
+    get:
+      tags: [backtest-controller]
+      operationId: getHistoricalPrices
+      parameters:
+      - name: symbol
+        in: path
+        required: true
+        schema: {type: string}
+      - name: startDate
+        in: query
+        required: true
+        schema: {type: string, format: date}
+      - name: endDate
+        in: query
+        required: true
+        schema: {type: string, format: date}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/HistoricalPriceResponse'}
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      operationId: getCurrentUser
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        schema: {type: string}
+      responses:
+        '400':
+          description: Invalid authorization header
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '401':
+          description: Authentication failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Current user returned
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/UserDto'}
+  /api/v1/auth/kakao:
+    get:
+      tags: [Auth]
+      summary: Get Kakao login URL
+      operationId: getKakaoLoginUrl
+      responses:
+        '200':
+          description: Login URL retrieved
+          content:
+            '*/*':
+              schema: {type: string}
+  /api/v1/auth/kakao/callback:
+    get:
+      tags: [Auth]
+      summary: Handle Kakao OAuth callback
+      operationId: kakaoCallback
+      parameters:
+      - name: code
+        in: query
+        required: true
+        schema: {type: string}
+      responses:
+        '401':
+          description: Authentication failed
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+        '200':
+          description: Login succeeded
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/LoginResponseDto'}
+        '500':
+          description: Unexpected error
+          content:
+            '*/*':
+              schema: {$ref: '#/components/schemas/ApiErrorResponse'}
+  /api/v1/ai/status:
+    get:
+      tags: [AI]
+      summary: AI 서비스 상태 확인
+      description: Gemini AI 서비스의 사용 가능 여부를 확인합니다.
+      operationId: getAiStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+  /api/news/health:
+    get:
+      tags: [news-rag-controller]
+      operationId: healthCheck
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema: {type: object}
+  /api/health:
+    get:
+      tags: [health-controller]
+      operationId: health
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+  /api/dev/verify:
+    get:
+      tags: [dev-controller]
+      operationId: verifyToken
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema: {type: string}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+  /api/dev/token:
+    get:
+      tags: [dev-controller]
+      operationId: generateToken
+      parameters:
+      - name: userId
+        in: query
+        required: false
+        schema: {type: integer, format: int64, default: 1}
+      - name: email
+        in: query
+        required: false
+        schema: {type: string, default: test@example.com}
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties: {type: object}
+components:
+  schemas:
+    UpdatePortfolioRequest:
+      required: [name]
+      type: object
+      properties:
+        name: {maxLength: 255, minLength: 0, type: string}
+        description: {maxLength: 1000, minLength: 0, type: string}
+    ApiErrorResponse:
+      type: object
+      properties:
+        timestamp: {type: string, description: Error timestamp, format: date-time}
+        status: {type: integer, description: HTTP status code, format: int32, example: 400}
+        error: {type: string, description: HTTP error name, example: Bad Request}
+        message: {type: string, description: Error message, example: Invalid request
+            parameter}
+        path: {type: string, description: Request path, example: /api/v1/market/price/AAPL}
+        details:
+          type: object
+          additionalProperties: {type: object, description: Optional details for validation
+              or business errors}
+          description: Optional details for validation or business errors
+      description: Standard API error response
+    PortfolioDto:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        userId: {type: integer, format: int64}
+        name: {type: string}
+        description: {type: string}
+        totalValue: {type: number}
+        totalCost: {type: number}
+        totalGainLoss: {type: number}
+        totalGainLossPercent: {type: number}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        holdings:
+          type: array
+          items: {$ref: '#/components/schemas/PortfolioHoldingDto'}
+    PortfolioHoldingDto:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        portfolioId: {type: integer, format: int64}
+        symbol: {type: string}
+        quantity: {type: number}
+        averageCost: {type: number}
+        currentPrice: {type: number}
+        marketValue: {type: number}
+        totalCost: {type: number}
+        gainLoss: {type: number}
+        gainLossPercent: {type: number}
+        assetType: {type: string}
+        baseCurrency: {type: string}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    UpdateHoldingRequest:
+      required: [averageCost, quantity]
+      type: object
+      properties:
+        quantity: {minimum: 1.0E-6, exclusiveMinimum: false, type: number}
+        averageCost: {minimum: 1.0E-4, exclusiveMinimum: false, type: number}
+        baseCurrency: {type: string}
+    RebalancingRequest:
+      required: [portfolioId, strategy]
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        strategy:
+          type: string
+          enum: [EQUAL_WEIGHT, TARGET_ALLOCATION, RISK_PARITY, MOMENTUM, DIVIDEND_FOCUSED]
+        thresholdPercent: {maximum: 100, minimum: 0, type: number, format: double}
+        considerTaxes: {type: boolean}
+        targetAllocations:
+          type: object
+          additionalProperties: {type: number, format: double}
+        lookbackDays: {maximum: 365, minimum: 7, type: integer, format: int32}
+    HoldingState:
+      type: object
+      properties:
+        symbol: {type: string}
+        shares: {type: number, format: double}
+        value: {type: number, format: double}
+        weight: {type: number, format: double}
+    PortfolioState:
+      type: object
+      properties:
+        totalValue: {type: number, format: double}
+        holdings:
+          type: array
+          items: {$ref: '#/components/schemas/HoldingState'}
+    RebalancingSimulationResponse:
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        portfolioName: {type: string}
+        beforeRebalancing: {$ref: '#/components/schemas/PortfolioState'}
+        afterRebalancing: {$ref: '#/components/schemas/PortfolioState'}
+        transactions:
+          type: array
+          items: {$ref: '#/components/schemas/Transaction'}
+        totalTransactionCost: {type: number, format: double}
+        netChange: {type: number, format: double}
+    Transaction:
+      type: object
+      properties:
+        symbol: {type: string}
+        action: {type: string}
+        quantity: {type: number, format: double}
+        price: {type: number, format: double}
+        amount: {type: number, format: double}
+        commission: {type: number, format: double}
+    RebalancingRecommendation:
+      type: object
+      properties:
+        symbol: {type: string}
+        currentWeight: {type: number, format: double}
+        targetWeight: {type: number, format: double}
+        currentShares: {type: number, format: double}
+        targetShares: {type: number, format: double}
+        action: {type: string}
+        quantity: {type: number, format: double}
+        estimatedAmount: {type: number, format: double}
+    RebalancingResponse:
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        portfolioName: {type: string}
+        strategy: {type: string}
+        currentValue: {type: number, format: double}
+        needsRebalancing: {type: boolean}
+        recommendations:
+          type: array
+          items: {$ref: '#/components/schemas/RebalancingRecommendation'}
+        totalTransactionCost: {type: number, format: double}
+        estimatedTaxImpact: {type: number, format: double}
+        analyzedAt: {type: string, format: date-time}
+    CreatePortfolioRequest:
+      required: [name]
+      type: object
+      properties:
+        name: {maxLength: 255, minLength: 0, type: string}
+        description: {maxLength: 1000, minLength: 0, type: string}
+    AddHoldingRequest:
+      required: [assetType, averageCost, quantity, symbol]
+      type: object
+      properties:
+        symbol: {maxLength: 20, minLength: 0, type: string}
+        quantity: {minimum: 1.0E-6, exclusiveMinimum: false, type: number}
+        averageCost: {minimum: 1.0E-4, exclusiveMinimum: false, type: number}
+        assetType: {type: string}
+        baseCurrency: {maxLength: 10, minLength: 0, type: string}
+    StockPriceDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        price: {type: number, format: double}
+        open: {type: number, format: double}
+        high: {type: number, format: double}
+        low: {type: number, format: double}
+        close: {type: number, format: double}
+        change: {type: number, format: double}
+        changePercent: {type: number, format: double}
+        lastTradingDay: {type: string}
+        timeStamp: {type: string, format: date-time}
+        provider: {type: string}
+    BatchPriceRequest:
+      type: object
+      properties:
+        symbols:
+          type: array
+          items: {type: string}
+        baseCurrency: {type: string}
+    CryptoPriceDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        baseCurrency: {type: string}
+        marketCode: {type: string}
+        price: {type: number, format: double}
+        openPrice: {type: number, format: double}
+        highPrice: {type: number, format: double}
+        lowPrice: {type: number, format: double}
+        volume: {type: number, format: double}
+        change: {type: number, format: double}
+        changePercent: {type: number, format: double}
+        tradeValue: {type: number, format: double}
+        timestamp: {type: string, format: date-time}
+        provider: {type: string}
+    BacktestRequest:
+      required: [endDate, initialCapital, portfolioId, rebalanceFrequency, startDate]
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        startDate: {type: string, format: date}
+        endDate: {type: string, format: date}
+        initialCapital: {type: number, format: double}
+        rebalanceFrequency:
+          type: string
+          enum: [NONE, MONTHLY, QUARTERLY, YEARLY]
+        transactionCostPercent: {maximum: 0.1, exclusiveMaximum: false, minimum: 0.0,
+          exclusiveMinimum: false, type: number, format: double}
+    BacktestValidationResponse:
+      type: object
+      properties:
+        valid: {type: boolean}
+        errors:
+          type: array
+          items: {type: string}
+        warnings:
+          type: array
+          items: {type: string}
+        dataAvailability:
+          type: object
+          additionalProperties: {type: boolean}
+        portfolioSummary: {$ref: '#/components/schemas/PortfolioSummary'}
+    PortfolioSummary:
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        portfolioName: {type: string}
+        stockCount: {type: integer, format: int32}
+        cryptoCount: {type: integer, format: int32}
+        symbols:
+          type: array
+          items: {type: string}
+    BacktestResponse:
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        portfolioName: {type: string}
+        startDate: {type: string, format: date}
+        endDate: {type: string, format: date}
+        initialCapital: {type: number, format: double}
+        finalValue: {type: number, format: double}
+        rebalanceFrequency:
+          type: string
+          enum: [NONE, MONTHLY, QUARTERLY, YEARLY]
+        performance: {$ref: '#/components/schemas/PerformanceMetrics'}
+        equityCurve:
+          type: array
+          items: {$ref: '#/components/schemas/EquityPoint'}
+        rebalanceEvents:
+          type: array
+          items: {$ref: '#/components/schemas/RebalanceEvent'}
+        holdingsSummary:
+          type: array
+          items: {$ref: '#/components/schemas/HoldingSummary'}
+        executedAt: {type: string, format: date-time}
+        totalTransactionCosts: {type: number, format: double}
+        costImpactPercent: {type: number, format: double}
+        transactionCostPercent: {type: number, format: double}
+    EquityPoint:
+      type: object
+      properties:
+        date: {type: string, format: date}
+        value: {type: number, format: double}
+        dailyReturn: {type: number, format: double}
+        cumulativeReturn: {type: number, format: double}
+    HoldingSummary:
+      type: object
+      properties:
+        symbol: {type: string}
+        finalQuantity: {type: number, format: double}
+        finalValue: {type: number, format: double}
+        finalWeight: {type: number, format: double}
+        totalReturn: {type: number, format: double}
+    PerformanceMetrics:
+      type: object
+      properties:
+        totalReturn: {type: number, format: double}
+        cagr: {type: number, format: double}
+        sharpeRatio: {type: number, format: double}
+        sortinoRatio: {type: number, format: double}
+        maxDrawdown: {type: number, format: double}
+        volatility: {type: number, format: double}
+        winRate: {type: number, format: double}
+    RebalanceEvent:
+      type: object
+      properties:
+        date: {type: string, format: date}
+        reason: {type: string}
+        trades:
+          type: array
+          items: {$ref: '#/components/schemas/Trade'}
+        totalTransactionCost: {type: number, format: double}
+    Trade:
+      type: object
+      properties:
+        symbol: {type: string}
+        action:
+          type: string
+          enum: [BUY, SELL, HOLD]
+        quantity: {type: number, format: double}
+        price: {type: number, format: double}
+        amount: {type: number, format: double}
+        transactionCost: {type: number, format: double}
+    RefreshTokenRequest:
+      required: [refreshToken]
+      type: object
+      properties:
+        refreshToken: {type: string}
+    LoginResponseDto:
+      type: object
+      properties:
+        accessToken: {type: string}
+        refreshToken: {type: string}
+        expiresIn: {type: integer, format: int64}
+        user: {$ref: '#/components/schemas/UserDto'}
+    UserDto:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        email: {type: string}
+        name: {type: string}
+        profileImageUrl: {type: string}
+        isActive: {type: boolean}
+        createdAt: {type: string, format: date-time}
+    PortfolioAnalysisRequest:
+      type: object
+      properties:
+        portfolioId: {type: integer, format: int64}
+        analysisType:
+          type: string
+          enum: [OVERVIEW, DIVERSIFICATION, RISK, PERFORMANCE, RECOMMENDATION]
+        includeMarketContext: {type: boolean}
+      description: 분석 요청 (portfolioId, analysisType 필수)
+    PortfolioAnalysisResponse:
+      type: object
+      properties:
+        summary: {type: string}
+        insights:
+          type: array
+          items: {type: string}
+        recommendations:
+          type: array
+          items: {type: string}
+        riskLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        diversificationScore: {type: number, format: double}
+        analysisType:
+          type: string
+          enum: [OVERVIEW, DIVERSIFICATION, RISK, PERFORMANCE, RECOMMENDATION]
+        analyzedAt: {type: string, format: date-time}
+    Holding:
+      type: object
+      properties:
+        symbol: {type: string}
+        name: {type: string}
+        weight: {type: number, format: double}
+    NewsSearchRequest:
+      type: object
+      properties:
+        query: {type: string}
+        portfolioContext: {$ref: '#/components/schemas/PortfolioContext'}
+        filters: {$ref: '#/components/schemas/SearchFilters'}
+        topK: {type: integer, format: int32}
+    PortfolioContext:
+      type: object
+      properties:
+        holdings:
+          type: array
+          items: {$ref: '#/components/schemas/Holding'}
+        sectors:
+          type: array
+          items: {type: string}
+        totalValue: {type: number, format: double}
+    SearchFilters:
+      type: object
+      properties:
+        startDate: {type: string}
+        endDate: {type: string}
+        minRelevance: {type: number, format: double}
+    StrategyInfo:
+      type: object
+      properties:
+        name: {type: string}
+        displayName: {type: string}
+        description: {type: string}
+        supported: {type: boolean}
+    StrategyInfoResponse:
+      type: object
+      properties:
+        strategies:
+          type: array
+          items: {$ref: '#/components/schemas/StrategyInfo'}
+    PriceHistoryDto:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        symbol: {type: string}
+        assetType:
+          type: string
+          enum: [STOCK, CRYPTO, ETF, INDEX]
+        baseCurrency: {type: string}
+        timestamp: {type: string, format: date-time}
+        open: {type: number}
+        high: {type: number}
+        low: {type: number}
+        close: {type: number}
+        volume: {type: number}
+    ChartDataDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        baseCurrency: {type: string}
+        data:
+          type: array
+          items: {$ref: '#/components/schemas/DataPoint'}
+        statistics: {$ref: '#/components/schemas/Statistics'}
+    DataPoint:
+      type: object
+      properties:
+        time: {type: string}
+        value: {type: number}
+        open: {type: number}
+        high: {type: number}
+        low: {type: number}
+        volume: {type: number}
+    Statistics:
+      type: object
+      properties:
+        changePercent: {type: number}
+        changeAmount: {type: number}
+        highestPrice: {type: number}
+        lowestPrice: {type: number}
+        averageVolume: {type: number}
+    ServiceStatusResponse:
+      type: object
+      properties:
+        available: {type: boolean, description: Provider availability, example: true}
+        message: {type: string, description: Provider status message, example: Finnhub
+            (Primary)}
+      description: Market service availability status
+    SearchResultDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        name: {type: string}
+        exchange: {type: string}
+        type: {type: string}
+    MarketIndexDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        name: {type: string}
+        value: {type: number, format: double}
+        change: {type: number, format: double}
+        changePercent: {type: number, format: double}
+        timestamp: {type: string, format: date-time}
+    TrendingCoinDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        name: {type: string}
+        koreanName: {type: string}
+        marketCode: {type: string}
+        price: {type: number, format: double}
+        changePercent: {type: number, format: double}
+        volume: {type: number, format: double}
+        tradeValue: {type: number, format: double}
+        rank: {type: integer, format: int32}
+        baseCurrency: {type: string}
+    ServerSentEventCryptoPriceDto: {type: object}
+    CryptoSearchResultDto:
+      type: object
+      properties:
+        symbol: {type: string}
+        name: {type: string}
+        koreanName: {type: string}
+        marketCode: {type: string}
+        baseCurrency: {type: string}
+        tradeable: {type: boolean}
+        exchange: {type: string}
+    BacktestStatusResponse:
+      type: object
+      properties:
+        available: {type: boolean}
+        providers:
+          type: array
+          items: {type: string}
+        supportedFrequencies:
+          type: array
+          items: {type: string}
+        maxDateRange: {type: string}
+    HistoricalPriceData:
+      type: object
+      properties:
+        date: {type: string, format: date}
+        open: {type: number, format: double}
+        high: {type: number, format: double}
+        low: {type: number, format: double}
+        close: {type: number, format: double}
+        volume: {type: integer, format: int64}
+        adjustedClose: {type: number, format: double}
+    HistoricalPriceResponse:
+      type: object
+      properties:
+        symbol: {type: string}
+        startDate: {type: string, format: date}
+        endDate: {type: string, format: date}
+        dataPoints: {type: integer, format: int32}
+        prices:
+          type: array
+          items: {$ref: '#/components/schemas/HistoricalPriceData'}
